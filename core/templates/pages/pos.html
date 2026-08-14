@@ -1,0 +1,1609 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    BentaPOS - Point of Sale
+{% endblock %}
+
+{% block page_title %}
+    Point of Sale
+{% endblock %}
+
+{% block page_subtitle %}
+    Sales overview and transaction monitoring
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   POS PAGE
+========================================================= */
+
+.pos-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   SUMMARY CARDS
+========================================================= */
+
+.pos-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 24px;
+}
+
+
+.pos-stat-card {
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    padding: 18px;
+
+    min-height: 110px;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: space-between;
+}
+
+
+.pos-stat-label {
+    color: #888;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.pos-stat-value {
+    margin-top: 8px;
+
+    color: #111;
+
+    font-size: 25px;
+
+    font-weight: 700;
+}
+
+
+.pos-stat-subtitle {
+    margin-top: 4px;
+
+    color: #aaa;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+
+.pos-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.7fr)
+        minmax(300px, 1fr);
+
+    gap: 20px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   PANEL
+========================================================= */
+
+.pos-panel {
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+.pos-panel-header {
+    padding: 17px 18px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.pos-panel-title {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.pos-panel-subtitle {
+    margin-top: 3px;
+
+    font-size: 10px;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   HEADER ACTIONS
+========================================================= */
+
+.pos-header-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.date-badge {
+    padding: 5px 8px;
+
+    border-radius: 6px;
+
+    background: #f5f5f5;
+
+    color: #666;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+.print-button {
+    height: 32px;
+
+    padding: 0 11px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    border: 1px solid #111;
+
+    border-radius: 7px;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+
+.print-button svg {
+    width: 14px;
+
+    height: 14px;
+}
+
+
+.print-button:hover {
+    background: #333;
+
+    transform: translateY(-1px);
+}
+
+
+.print-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   TRANSACTION TABLE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.pos-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 850px;
+}
+
+
+.pos-table th {
+    padding: 11px 14px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #eee;
+
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+
+.pos-table td {
+    padding: 13px 14px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    color: #333;
+
+    font-size: 11px;
+
+    white-space: nowrap;
+}
+
+
+.pos-table tbody tr:hover {
+    background: #fafafa;
+}
+
+
+.sale-id {
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.staff-name {
+    font-weight: 600;
+
+    color: #222;
+}
+
+
+.amount {
+    font-weight: 600;
+}
+
+
+.total-amount {
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.discount-amount {
+    color: #888;
+}
+
+
+/* =========================================================
+   TRANSACTION COUNT
+========================================================= */
+
+.item-count {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 28px;
+
+    height: 24px;
+
+    padding: 0 7px;
+
+    border-radius: 6px;
+
+    background: #f2f2f2;
+
+    color: #555;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   STAFF PERFORMANCE
+========================================================= */
+
+.staff-list {
+    width: 100%;
+}
+
+
+.staff-row {
+    padding: 15px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.staff-row:last-child {
+    border-bottom: none;
+}
+
+
+.staff-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-width: 0;
+}
+
+
+.staff-avatar {
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    background: #111;
+
+    color: #fff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+}
+
+
+.staff-info {
+    min-width: 0;
+}
+
+
+.staff-username {
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #222;
+}
+
+
+.staff-transactions {
+    margin-top: 3px;
+
+    font-size: 9px;
+
+    color: #999;
+}
+
+
+.staff-sales {
+    text-align: right;
+
+    flex-shrink: 0;
+}
+
+
+.staff-sales-value {
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.staff-items {
+    margin-top: 3px;
+
+    font-size: 9px;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+    padding: 45px 20px;
+
+    text-align: center;
+
+    color: #999;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   PRINT REPORT
+   Hidden during normal page view
+========================================================= */
+
+#print-report {
+    display: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .pos-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .pos-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .pos-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .pos-panel-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .pos-header-actions {
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+}
+
+
+@media (max-width: 550px) {
+
+    .pos-stats {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   PRINT STYLES
+========================================================= */
+
+@media print {
+
+    @page {
+        size: landscape;
+
+        margin: 12mm;
+    }
+
+
+    /*
+       Hide EVERYTHING from the normal dashboard
+    */
+
+    body * {
+        visibility: hidden;
+    }
+
+
+    /*
+       Show only print report
+    */
+
+    #print-report,
+    #print-report * {
+        visibility: visible;
+    }
+
+
+    #print-report {
+
+        display: block !important;
+
+        position: absolute;
+
+        left: 0;
+
+        top: 0;
+
+        width: 100%;
+
+        background: #fff;
+
+        color: #000;
+
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+    }
+
+
+    /* =====================================================
+       PRINT HEADER
+    ===================================================== */
+
+    .print-header {
+
+        text-align: center;
+
+        margin-bottom: 20px;
+
+        padding-bottom: 12px;
+
+        border-bottom: 2px solid #000;
+    }
+
+
+    .print-header h1 {
+
+        margin: 0;
+
+        font-size: 24px;
+
+        font-weight: 700;
+    }
+
+
+    .print-header h2 {
+
+        margin: 5px 0;
+
+        font-size: 17px;
+
+        font-weight: 600;
+    }
+
+
+    .print-header p {
+
+        margin: 0;
+
+        font-size: 11px;
+    }
+
+
+    /* =====================================================
+       PRINT SUMMARY
+    ===================================================== */
+
+    .print-summary {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        border: 1px solid #000;
+
+        margin-bottom: 20px;
+    }
+
+
+    .print-summary-item {
+
+        padding: 10px;
+
+        text-align: center;
+
+        border-right: 1px solid #000;
+    }
+
+
+    .print-summary-item:last-child {
+
+        border-right: none;
+    }
+
+
+    .print-summary-label {
+
+        display: block;
+
+        margin-bottom: 4px;
+
+        font-size: 10px;
+
+        color: #333;
+    }
+
+
+    .print-summary-value {
+
+        display: block;
+
+        font-size: 14px;
+
+        font-weight: 700;
+    }
+
+
+    /* =====================================================
+       PRINT SECTION TITLE
+    ===================================================== */
+
+    .print-section-title {
+
+        margin: 20px 0 8px;
+
+        padding-bottom: 5px;
+
+        border-bottom: 1px solid #000;
+
+        font-size: 14px;
+
+        font-weight: 700;
+    }
+
+
+    /* =====================================================
+       PRINT TABLE
+    ===================================================== */
+
+    .print-table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        margin-bottom: 20px;
+    }
+
+
+    .print-table th {
+
+        padding: 7px;
+
+        border: 1px solid #000;
+
+        background: #eee;
+
+        color: #000;
+
+        font-size: 10px;
+
+        font-weight: 700;
+
+        text-align: left;
+    }
+
+
+    .print-table td {
+
+        padding: 7px;
+
+        border: 1px solid #000;
+
+        color: #000;
+
+        font-size: 10px;
+    }
+
+
+    .print-table tr {
+
+        page-break-inside: avoid;
+    }
+
+
+    /* =====================================================
+       PRINT FOOTER
+    ===================================================== */
+
+    .print-footer {
+
+        margin-top: 25px;
+
+        padding-top: 8px;
+
+        border-top: 1px solid #000;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        font-size: 9px;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="pos-page">
+
+
+    <!-- =====================================================
+         SUMMARY CARDS
+    ===================================================== -->
+
+    <div class="pos-stats">
+
+
+        <!-- TOTAL SALES -->
+
+        <div class="pos-stat-card">
+
+            <div class="pos-stat-label">
+                TODAY'S SALES
+            </div>
+
+            <div class="pos-stat-value">
+                ₱{{ total_sales|floatformat:2 }}
+            </div>
+
+            <div class="pos-stat-subtitle">
+                Total completed sales
+            </div>
+
+        </div>
+
+
+        <!-- TRANSACTIONS -->
+
+        <div class="pos-stat-card">
+
+            <div class="pos-stat-label">
+                TRANSACTIONS
+            </div>
+
+            <div class="pos-stat-value">
+                {{ total_transactions }}
+            </div>
+
+            <div class="pos-stat-subtitle">
+                Completed transactions
+            </div>
+
+        </div>
+
+
+        <!-- ITEMS SOLD -->
+
+        <div class="pos-stat-card">
+
+            <div class="pos-stat-label">
+                ITEMS SOLD
+            </div>
+
+            <div class="pos-stat-value">
+                {{ total_items }}
+            </div>
+
+            <div class="pos-stat-subtitle">
+                Products sold today
+            </div>
+
+        </div>
+
+
+        <!-- DISCOUNTS -->
+
+        <div class="pos-stat-card">
+
+            <div class="pos-stat-label">
+                DISCOUNTS
+            </div>
+
+            <div class="pos-stat-value">
+                ₱{{ total_discount|floatformat:2 }}
+            </div>
+
+            <div class="pos-stat-subtitle">
+                Total discounts given
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MAIN GRID
+    ===================================================== -->
+
+    <div class="pos-grid">
+
+
+        <!-- =================================================
+             RECENT TRANSACTIONS
+        ================================================= -->
+
+        <section class="pos-panel">
+
+            <div class="pos-panel-header">
+
+                <div>
+
+                    <div class="pos-panel-title">
+                        Recent Transactions
+                    </div>
+
+                    <div class="pos-panel-subtitle">
+                        Latest sales processed by staff
+                    </div>
+
+                </div>
+
+
+                <!-- HEADER ACTIONS -->
+
+                <div class="pos-header-actions">
+
+                    <div class="date-badge">
+
+                        {{ today|date:"M d, Y" }}
+
+                    </div>
+
+
+                    <!-- PRINT BUTTON -->
+
+                    <button
+                        type="button"
+                        class="print-button"
+                        onclick="printSalesReport()"
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+
+                            <polyline points="6 9 6 2 18 2 18 9"/>
+
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+
+                            <rect x="6" y="14" width="12" height="8"/>
+
+                        </svg>
+
+                        Print
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TRANSACTION TABLE
+            ================================================= -->
+
+            <div class="table-wrapper">
+
+                <table class="pos-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                SALE
+                            </th>
+
+                            <th>
+                                STAFF
+                            </th>
+
+                            <th>
+                                ITEMS
+                            </th>
+
+                            <th>
+                                SUBTOTAL
+                            </th>
+
+                            <th>
+                                DISCOUNT
+                            </th>
+
+                            <th>
+                                TOTAL
+                            </th>
+
+                            <th>
+                                PAYMENT
+                            </th>
+
+                            <th>
+                                CHANGE
+                            </th>
+
+                            <th>
+                                DATE
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for sale in recent_sales %}
+
+                        <tr>
+
+                            <td>
+
+                                <span class="sale-id">
+                                    #{{ sale.id }}
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="staff-name">
+
+                                    {% if sale.staff.get_full_name %}
+
+                                        {{ sale.staff.get_full_name }}
+
+                                    {% elif sale.staff %}
+
+                                        {{ sale.staff.username }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="item-count">
+
+                                    {{ sale.items.all|length }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                ₱{{ sale.subtotal|floatformat:2 }}
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="discount-amount">
+
+                                    -₱{{ sale.discount_amount|floatformat:2 }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="total-amount">
+
+                                    ₱{{ sale.total|floatformat:2 }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                ₱{{ sale.payment|floatformat:2 }}
+
+                            </td>
+
+
+                            <td>
+
+                                ₱{{ sale.change|floatformat:2 }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ sale.created_at|date:"M d, Y H:i" }}
+
+                            </td>
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="9">
+
+                                <div class="empty-state">
+
+                                    No transactions have been recorded yet.
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             STAFF PERFORMANCE
+        ================================================= -->
+
+        <section class="pos-panel">
+
+            <div class="pos-panel-header">
+
+                <div>
+
+                    <div class="pos-panel-title">
+                        Staff Performance
+                    </div>
+
+                    <div class="pos-panel-subtitle">
+                        Today's sales by staff
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="staff-list">
+
+                {% for staff in staff_sales %}
+
+                <div class="staff-row">
+
+
+                    <div class="staff-left">
+
+                        <div class="staff-avatar">
+
+                            {% if staff.staff__username %}
+
+                                {{ staff.staff__username|first|upper }}
+
+                            {% else %}
+
+                                ?
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="staff-info">
+
+                            <div class="staff-username">
+
+                                {{ staff.staff__username }}
+
+                            </div>
+
+
+                            <div class="staff-transactions">
+
+                                {{ staff.transactions }}
+                                transaction{{ staff.transactions|pluralize }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="staff-sales">
+
+                        <div class="staff-sales-value">
+
+                            ₱{{ staff.total_sales|floatformat:2 }}
+
+                        </div>
+
+
+                        <div class="staff-items">
+
+                            {{ staff.items_sold|default:0 }}
+
+                            items sold
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                {% empty %}
+
+                <div class="empty-state">
+
+                    No staff sales today.
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     PRINT-ONLY REPORT
+
+     This is NOT visible on the normal POS page.
+     It appears only when printing.
+========================================================= -->
+
+<div id="print-report">
+
+
+    <!-- PRINT HEADER -->
+
+    <div class="print-header">
+
+        <h1>
+            BentaPOS
+        </h1>
+
+        <h2>
+            Sales Report
+        </h2>
+
+        <p>
+            {{ today|date:"F d, Y" }}
+        </p>
+
+    </div>
+
+
+    <!-- PRINT SUMMARY -->
+
+    <div class="print-summary">
+
+
+        <div class="print-summary-item">
+
+            <span class="print-summary-label">
+                Total Sales
+            </span>
+
+            <strong class="print-summary-value">
+                ₱{{ total_sales|floatformat:2 }}
+            </strong>
+
+        </div>
+
+
+        <div class="print-summary-item">
+
+            <span class="print-summary-label">
+                Transactions
+            </span>
+
+            <strong class="print-summary-value">
+                {{ total_transactions }}
+            </strong>
+
+        </div>
+
+
+        <div class="print-summary-item">
+
+            <span class="print-summary-label">
+                Items Sold
+            </span>
+
+            <strong class="print-summary-value">
+                {{ total_items }}
+            </strong>
+
+        </div>
+
+
+        <div class="print-summary-item">
+
+            <span class="print-summary-label">
+                Total Discounts
+            </span>
+
+            <strong class="print-summary-value">
+                ₱{{ total_discount|floatformat:2 }}
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TRANSACTIONS
+    ===================================================== -->
+
+    <div class="print-section-title">
+
+        Recent Transactions
+
+    </div>
+
+
+    <table class="print-table">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Sale
+                </th>
+
+                <th>
+                    Staff
+                </th>
+
+                <th>
+                    Items
+                </th>
+
+                <th>
+                    Subtotal
+                </th>
+
+                <th>
+                    Discount
+                </th>
+
+                <th>
+                    Total
+                </th>
+
+                <th>
+                    Payment
+                </th>
+
+                <th>
+                    Change
+                </th>
+
+                <th>
+                    Date
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for sale in recent_sales %}
+
+            <tr>
+
+                <td>
+                    #{{ sale.id }}
+                </td>
+
+
+                <td>
+
+                    {% if sale.staff.get_full_name %}
+
+                        {{ sale.staff.get_full_name }}
+
+                    {% elif sale.staff %}
+
+                        {{ sale.staff.username }}
+
+                    {% else %}
+
+                        —
+
+                    {% endif %}
+
+                </td>
+
+
+                <td>
+                    {{ sale.items.all|length }}
+                </td>
+
+
+                <td>
+                    ₱{{ sale.subtotal|floatformat:2 }}
+                </td>
+
+
+                <td>
+                    ₱{{ sale.discount_amount|floatformat:2 }}
+                </td>
+
+
+                <td>
+                    ₱{{ sale.total|floatformat:2 }}
+                </td>
+
+
+                <td>
+                    ₱{{ sale.payment|floatformat:2 }}
+                </td>
+
+
+                <td>
+                    ₱{{ sale.change|floatformat:2 }}
+                </td>
+
+
+                <td>
+                    {{ sale.created_at|date:"M d, Y H:i" }}
+                </td>
+
+            </tr>
+
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="9">
+
+                    No transactions recorded.
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+
+    <!-- =====================================================
+         STAFF PERFORMANCE
+    ===================================================== -->
+
+    <div class="print-section-title">
+
+        Staff Performance
+
+    </div>
+
+
+    <table class="print-table">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Staff
+                </th>
+
+                <th>
+                    Transactions
+                </th>
+
+                <th>
+                    Items Sold
+                </th>
+
+                <th>
+                    Total Sales
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for staff in staff_sales %}
+
+            <tr>
+
+                <td>
+                    {{ staff.staff__username }}
+                </td>
+
+                <td>
+                    {{ staff.transactions }}
+                </td>
+
+                <td>
+                    {{ staff.items_sold|default:0 }}
+                </td>
+
+                <td>
+                    ₱{{ staff.total_sales|floatformat:2 }}
+                </td>
+
+            </tr>
+
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="4">
+
+                    No staff sales recorded.
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+
+    <!-- =====================================================
+         PRINT FOOTER
+    ===================================================== -->
+
+    <div class="print-footer">
+
+        <span>
+            Generated by BentaPOS
+        </span>
+
+        <span>
+            Printed on {{ today|date:"M d, Y" }}
+        </span>
+
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+/* =========================================================
+   PRINT SALES REPORT
+========================================================= */
+
+function printSalesReport() {
+
+    window.print();
+
+}
+
+</script>
+
+{% endblock %}

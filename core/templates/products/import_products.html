@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+
+{% block title %}
+BentaPOS - Import Products
+{% endblock %}
+
+{% block page_title %}
+Import Products
+{% endblock %}
+
+{% block page_subtitle %}
+Import multiple products using an Excel file
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    .import-container {
+
+        max-width: 640px;
+
+        margin: 0 auto;
+
+    }
+
+
+    .import-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 28px;
+
+        box-shadow:
+            0 1px 3px rgba(0,0,0,.02);
+
+    }
+
+
+    .import-info {
+
+        background: #fafafa;
+
+        border: 1px solid #eaeaea;
+
+        border-radius: 9px;
+
+        padding: 16px;
+
+        margin-bottom: 24px;
+
+    }
+
+
+    .import-info-title {
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        color: #111;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .import-info-text {
+
+        font-size: 12px;
+
+        color: #777;
+
+        line-height: 1.6;
+
+    }
+
+
+    .file-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 7px;
+
+        margin-bottom: 20px;
+
+    }
+
+
+    .form-label {
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        color: #222;
+
+    }
+
+
+    .file-input {
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 10px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        font-size: 13px;
+
+    }
+
+
+    .file-help {
+
+        font-size: 11px;
+
+        color: #777;
+
+    }
+
+
+    .columns-box {
+
+        margin-bottom: 24px;
+
+        padding: 14px;
+
+        border: 1px solid #eaeaea;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+    }
+
+
+    .columns-title {
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #333;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .columns {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 7px;
+
+    }
+
+
+    .column {
+
+        padding: 5px 9px;
+
+        background: #f1f3f4;
+
+        border-radius: 6px;
+
+        font-size: 11px;
+
+        color: #555;
+
+        font-weight: 600;
+
+    }
+
+
+    .form-actions {
+
+        display: flex;
+
+        justify-content: flex-end;
+
+        gap: 10px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid #f0f0f0;
+
+    }
+
+
+    .btn-secondary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #333;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+    }
+
+
+    .btn-secondary:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+    }
+
+
+    .btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 10px 18px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background: #222;
+
+    }
+
+
+    .btn-primary svg {
+
+        width: 16px;
+
+        height: 16px;
+
+    }
+
+
+    @media (max-width: 550px) {
+
+        .import-card {
+
+            padding: 20px;
+
+        }
+
+
+        .form-actions {
+
+            flex-direction: column-reverse;
+
+        }
+
+
+        .btn-primary,
+        .btn-secondary {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="import-container">
+
+    <div class="import-card">
+
+
+        <!-- INFORMATION -->
+
+        <div class="import-info">
+
+            <div class="import-info-title">
+
+                Excel Import
+
+            </div>
+
+            <div class="import-info-text">
+
+                Upload an Excel file containing multiple products.
+                Each row will be added as a new product in your inventory.
+
+            </div>
+
+        </div>
+
+
+        <!-- REQUIRED COLUMNS -->
+
+        <div class="columns-box">
+
+            <div class="columns-title">
+
+                Required Excel Columns
+
+            </div>
+
+
+            <div class="columns">
+
+                <span class="column">
+                    product_model
+                </span>
+
+                <span class="column">
+                    description
+                </span>
+
+                <span class="column">
+                    category
+                </span>
+
+                <span class="column">
+                    price
+                </span>
+
+                <span class="column">
+                    qty
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="file-group">
+
+                <label
+                    for="excel_file"
+                    class="form-label"
+                >
+                    Excel File *
+                </label>
+
+
+                <input
+                    type="file"
+                    name="excel_file"
+                    id="excel_file"
+                    class="file-input"
+                    accept=".xlsx"
+                    required
+                >
+
+
+                <span class="file-help">
+
+                    Only .xlsx files are supported.
+
+                </span>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="form-actions">
+
+                <a
+                    href="{% url 'product_list' %}"
+                    class="btn-secondary"
+                >
+                    Cancel
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path
+                            d="M21 15v4a2 2 0 0 1-2 2H5
+                               a2 2 0 0 1-2-2v-4"
+                        />
+
+                        <polyline
+                            points="17 8 12 3 7 8"
+                        />
+
+                        <line
+                            x1="12"
+                            y1="3"
+                            x2="12"
+                            y2="15"
+                        />
+
+                    </svg>
+
+                    Import Products
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

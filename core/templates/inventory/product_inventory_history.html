@@ -1,0 +1,1246 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+BentaPOS - Inventory History
+{% endblock %}
+
+
+{% block page_title %}
+Inventory History
+{% endblock %}
+
+
+{% block page_subtitle %}
+View inventory transactions for this product
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================= */
+
+    .history-page {
+        width: 100%;
+    }
+
+
+    /* =========================================================
+       TOP ACTION
+    ========================================================= */
+
+    .top-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+
+        color: #444;
+        font-size: 13px;
+        font-weight: 600;
+
+        text-decoration: none;
+    }
+
+
+    .back-link:hover {
+        color: #000;
+    }
+
+
+    .back-link svg {
+        width: 16px;
+        height: 16px;
+    }
+
+
+    /* =========================================================
+       PRODUCT INFORMATION CARD
+    ========================================================= */
+
+    .product-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 22px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .product-card-content {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 20px;
+    }
+
+
+    .product-information {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 14px;
+    }
+
+
+    .product-avatar {
+
+        width: 48px;
+        height: 48px;
+
+        border-radius: 10px;
+
+        background: #111;
+
+        color: #fff;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        font-size: 15px;
+
+        font-weight: 700;
+
+        flex-shrink: 0;
+    }
+
+
+    .product-name {
+
+        font-size: 18px;
+
+        font-weight: 700;
+
+        color: #111;
+
+        margin-bottom: 4px;
+    }
+
+
+    .product-meta {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        flex-wrap: wrap;
+
+        color: #777;
+
+        font-size: 12px;
+    }
+
+
+    .category-badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 4px 9px;
+
+        border-radius: 20px;
+
+        background: #f1f3f4;
+
+        color: #555;
+
+        font-size: 11px;
+
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+       CURRENT STOCK
+    ========================================================= */
+
+    .current-stock {
+
+        text-align: right;
+
+        flex-shrink: 0;
+    }
+
+
+    .current-stock-label {
+
+        font-size: 10px;
+
+        font-weight: 600;
+
+        color: #888;
+
+        text-transform: uppercase;
+
+        letter-spacing: .7px;
+
+        margin-bottom: 5px;
+    }
+
+
+    .current-stock-value {
+
+        font-size: 26px;
+
+        font-weight: 700;
+
+        color: #111;
+
+        line-height: 1;
+    }
+
+
+    .current-stock-unit {
+
+        font-size: 11px;
+
+        color: #888;
+
+        margin-top: 4px;
+    }
+
+
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
+
+    .summary-grid {
+
+        display: grid;
+
+        grid-template-columns: repeat(4, 1fr);
+
+        gap: 16px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .summary-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 18px;
+
+        min-height: 95px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content: space-between;
+    }
+
+
+    .summary-label {
+
+        font-size: 10px;
+
+        font-weight: 600;
+
+        color: #777;
+
+        text-transform: uppercase;
+
+        letter-spacing: .7px;
+    }
+
+
+    .summary-value {
+
+        font-size: 25px;
+
+        font-weight: 700;
+
+        color: #111;
+
+        line-height: 1;
+    }
+
+
+    .summary-description {
+
+        font-size: 10px;
+
+        color: #999;
+    }
+
+
+    /* =========================================================
+       TRANSACTION CARD
+    ========================================================= */
+
+    .transaction-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+    }
+
+
+    .transaction-header {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        padding: 18px 20px;
+
+        border-bottom: 1px solid #eaeaea;
+    }
+
+
+    .transaction-title {
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        color: #111;
+    }
+
+
+    .transaction-subtitle {
+
+        margin-top: 3px;
+
+        font-size: 11px;
+
+        color: #888;
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .table-wrapper {
+
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+
+    .data-table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        text-align: left;
+
+        font-size: 13px;
+
+        min-width: 850px;
+    }
+
+
+    .data-table th {
+
+        background: #fafafa;
+
+        padding: 13px 18px;
+
+        font-size: 10px;
+
+        font-weight: 600;
+
+        color: #555;
+
+        text-transform: uppercase;
+
+        letter-spacing: .7px;
+
+        border-bottom: 1px solid #eaeaea;
+
+        white-space: nowrap;
+    }
+
+
+    .data-table td {
+
+        padding: 15px 18px;
+
+        border-bottom: 1px solid #f0f0f0;
+
+        color: #222;
+
+        vertical-align: middle;
+    }
+
+
+    .data-table tbody tr:last-child td {
+
+        border-bottom: none;
+    }
+
+
+    .data-table tbody tr:hover {
+
+        background: #fcfcfc;
+    }
+
+
+    /* =========================================================
+       TRANSACTION TYPE
+    ========================================================= */
+
+    .transaction-badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 5px 10px;
+
+        border-radius: 20px;
+
+        font-size: 10px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+
+    .transaction-in {
+
+        background: #e6f4ea;
+
+        color: #137333;
+    }
+
+
+    .transaction-out {
+
+        background: #fce8e6;
+
+        color: #c5221f;
+    }
+
+
+    .transaction-adjustment {
+
+        background: #fef7e0;
+
+        color: #b06000;
+    }
+
+
+    /* =========================================================
+       QUANTITY
+    ========================================================= */
+
+    .quantity-in {
+
+        color: #137333;
+
+        font-weight: 700;
+    }
+
+
+    .quantity-out {
+
+        color: #c5221f;
+
+        font-weight: 700;
+    }
+
+
+    .quantity-adjustment {
+
+        color: #b06000;
+
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+       STOCK LEVELS
+    ========================================================= */
+
+    .stock-value {
+
+        font-weight: 600;
+
+        color: #222;
+    }
+
+
+    .new-stock-value {
+
+        font-weight: 700;
+
+        color: #111;
+    }
+
+
+    /* =========================================================
+       REFERENCE
+    ========================================================= */
+
+    .reference {
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #333;
+    }
+
+
+    .no-reference {
+
+        color: #aaa;
+
+        font-size: 12px;
+    }
+
+
+    /* =========================================================
+       NOTES
+    ========================================================= */
+
+    .notes {
+
+        max-width: 200px;
+
+        color: #666;
+
+        font-size: 12px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+
+    /* =========================================================
+       CREATED BY
+    ========================================================= */
+
+    .created-by {
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #444;
+    }
+
+
+    .created-date {
+
+        margin-top: 3px;
+
+        font-size: 10px;
+
+        color: #999;
+
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+       EMPTY STATE
+    ========================================================= */
+
+    .empty-state {
+
+        text-align: center;
+
+        color: #888;
+
+        padding: 50px 20px !important;
+
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 900px) {
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+
+    }
+
+
+    @media (max-width: 650px) {
+
+        .product-card-content {
+
+            align-items: flex-start;
+
+            flex-direction: column;
+        }
+
+
+        .current-stock {
+
+            text-align: left;
+        }
+
+
+        .summary-grid {
+
+            grid-template-columns: 1fr;
+        }
+
+
+        .transaction-header {
+
+            align-items: flex-start;
+
+            flex-direction: column;
+
+            gap: 5px;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="history-page">
+
+
+    <!-- =====================================================
+         BACK
+    ====================================================== -->
+
+    <div class="top-actions">
+
+        <a
+            href="{% url 'inventory' %}"
+            class="back-link"
+        >
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+
+                <line
+                    x1="19"
+                    y1="12"
+                    x2="5"
+                    y2="12"
+                />
+
+                <polyline
+                    points="12 19 5 12 12 5"
+                />
+
+            </svg>
+
+            Back to Inventory
+
+        </a>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PRODUCT INFORMATION
+    ====================================================== -->
+
+    <div class="product-card">
+
+        <div class="product-card-content">
+
+
+            <!-- PRODUCT -->
+
+            <div class="product-information">
+
+                <div class="product-avatar">
+
+                    {{ product.product_model|first|upper }}
+
+                </div>
+
+
+                <div>
+
+                    <div class="product-name">
+
+                        {{ product.product_model }}
+
+                    </div>
+
+
+                    <div class="product-meta">
+
+                        <span>
+                            Product #{{ product.id }}
+                        </span>
+
+                        <span>
+                            •
+                        </span>
+
+                        <span class="category-badge">
+
+                            {{ product.category }}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CURRENT STOCK -->
+
+            <div class="current-stock">
+
+                <div class="current-stock-label">
+
+                    Current Stock
+
+                </div>
+
+
+                <div class="current-stock-value">
+
+                    {{ product.qty }}
+
+                </div>
+
+
+                <div class="current-stock-unit">
+
+                    units available
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+
+        <!-- TOTAL TRANSACTIONS -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Total Transactions
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ total_transactions }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Inventory activity
+
+            </div>
+
+        </div>
+
+
+
+        <!-- STOCK IN -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Stock In
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ total_stock_in }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Total units added
+
+            </div>
+
+        </div>
+
+
+
+        <!-- STOCK OUT -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Stock Out
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ total_stock_out }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Total units removed
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ADJUSTMENTS -->
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Adjustments
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ adjustment_count }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Inventory adjustments
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TRANSACTION HISTORY
+    ====================================================== -->
+
+    <div class="transaction-card">
+
+
+        <div class="transaction-header">
+
+            <div>
+
+                <div class="transaction-title">
+
+                    Transaction History
+
+                </div>
+
+                <div class="transaction-subtitle">
+
+                    All inventory movements for
+                    {{ product.product_model }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="table-wrapper">
+
+            <table class="data-table">
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Quantity
+                        </th>
+
+                        <th>
+                            Previous Stock
+                        </th>
+
+                        <th>
+                            New Stock
+                        </th>
+
+                        <th>
+                            Reference
+                        </th>
+
+                        <th>
+                            Notes
+                        </th>
+
+                        <th>
+                            Created By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+
+                <tbody>
+
+
+                    {% for transaction in transactions %}
+
+
+                    <tr>
+
+
+                        <!-- DATE -->
+
+                        <td>
+
+                            <div>
+
+                                {{ transaction.created_at|date:"M d, Y" }}
+
+                            </div>
+
+                            <div class="created-date">
+
+                                {{ transaction.created_at|date:"h:i A" }}
+
+                            </div>
+
+                        </td>
+
+
+
+                        <!-- TYPE -->
+
+                        <td>
+
+
+                            {% if transaction.transaction_type == "IN" %}
+
+                                <span
+                                    class="transaction-badge transaction-in"
+                                >
+
+                                    Stock In
+
+                                </span>
+
+
+                            {% elif transaction.transaction_type == "OUT" %}
+
+                                <span
+                                    class="transaction-badge transaction-out"
+                                >
+
+                                    Stock Out
+
+                                </span>
+
+
+                            {% else %}
+
+                                <span
+                                    class="transaction-badge transaction-adjustment"
+                                >
+
+                                    Adjustment
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+
+                        <!-- QUANTITY -->
+
+                        <td>
+
+
+                            {% if transaction.transaction_type == "IN" %}
+
+                                <span class="quantity-in">
+
+                                    +{{ transaction.quantity }}
+
+                                </span>
+
+
+                            {% elif transaction.transaction_type == "OUT" %}
+
+                                <span class="quantity-out">
+
+                                    -{{ transaction.quantity }}
+
+                                </span>
+
+
+                            {% else %}
+
+                                <span class="quantity-adjustment">
+
+                                    {{ transaction.quantity }}
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+
+                        <!-- PREVIOUS STOCK -->
+
+                        <td>
+
+                            <span class="stock-value">
+
+                                {{ transaction.previous_qty }}
+
+                            </span>
+
+                        </td>
+
+
+
+                        <!-- NEW STOCK -->
+
+                        <td>
+
+                            <span class="new-stock-value">
+
+                                {{ transaction.new_qty }}
+
+                            </span>
+
+                        </td>
+
+
+
+                        <!-- REFERENCE -->
+
+                        <td>
+
+
+                            {% if transaction.reference %}
+
+                                <span class="reference">
+
+                                    {{ transaction.reference }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="no-reference">
+
+                                    —
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+
+                        <!-- NOTES -->
+
+                        <td>
+
+
+                            {% if transaction.notes %}
+
+                                <div
+                                    class="notes"
+                                    title="{{ transaction.notes }}"
+                                >
+
+                                    {{ transaction.notes }}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="no-reference">
+
+                                    —
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+
+                        <!-- CREATED BY -->
+
+                        <td>
+
+
+                            {% if transaction.created_by %}
+
+                                <div class="created-by">
+
+                                    {{ transaction.created_by.username }}
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="created-by">
+
+                                    System
+
+                                </div>
+
+                            {% endif %}
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                    {% empty %}
+
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="empty-state"
+                        >
+
+                            No inventory transactions found
+                            for this product.
+
+                        </td>
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+
+{% block title %}
+BentaPOS - Product Management
+{% endblock %}
+
+{% block page_title %}
+Product Management
+{% endblock %}
+
+{% block page_subtitle %}
+Manage products, prices, categories, and inventory
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    .product-page {
+        width: 100%;
+    }
+
+
+    /* HEADER */
+
+    .page-header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        margin-bottom: 24px;
+
+    }
+
+
+    .btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        padding: 10px 18px;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background: #222;
+
+        color: #fff;
+
+    }
+
+
+    .btn-primary svg {
+
+        width: 16px;
+
+        height: 16px;
+
+    }
+
+
+    /* TABLE */
+
+    .table-card {
+
+        width: 100%;
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+    }
+
+
+    .data-table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        text-align: left;
+
+        font-size: 13px;
+
+    }
+
+
+    .data-table th {
+
+        background: #fafafa;
+
+        padding: 14px 20px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        color: #555;
+
+        text-transform: uppercase;
+
+        letter-spacing: .8px;
+
+        border-bottom: 1px solid #eaeaea;
+
+    }
+
+
+    .data-table td {
+
+        padding: 16px 20px;
+
+        border-bottom: 1px solid #f0f0f0;
+
+        color: #222;
+
+        vertical-align: middle;
+
+    }
+
+
+    .data-table tbody tr:last-child td {
+
+        border-bottom: none;
+
+    }
+
+
+    .data-table tbody tr:hover {
+
+        background: #fcfcfc;
+
+    }
+
+
+    /* PRODUCT */
+
+    .product-name {
+
+        font-weight: 600;
+
+        color: #111;
+
+    }
+
+
+    .product-description {
+
+        color: #888;
+
+        font-size: 12px;
+
+        max-width: 250px;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+    }
+
+
+    /* PRICE */
+
+    .price {
+
+        font-weight: 600;
+
+        color: #111;
+
+    }
+
+
+    /* QTY */
+
+    .qty {
+
+        font-weight: 600;
+
+    }
+
+
+    /* CATEGORY */
+
+    .badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 5px 10px;
+
+        border-radius: 20px;
+
+        background: #f1f3f4;
+
+        color: #555;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+    }
+
+
+    /* ACTIONS */
+
+    .table-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        white-space: nowrap;
+
+    }
+
+
+    .action-link {
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        color: #444;
+
+        text-decoration: none;
+
+    }
+
+
+    .action-link:hover {
+
+        color: #000;
+
+        text-decoration: underline;
+
+    }
+
+
+    .delete-link:hover {
+
+        color: #dc2626;
+
+    }
+
+
+    /* EMPTY */
+
+    .empty-state {
+
+        text-align: center;
+
+        color: #888;
+
+        padding: 40px 20px !important;
+
+    }
+
+
+    /* MOBILE */
+
+    @media (max-width: 900px) {
+
+        .table-card {
+
+            overflow-x: auto;
+
+        }
+
+        .data-table {
+
+            min-width: 850px;
+
+        }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+        .page-header-actions {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+            gap: 12px;
+
+        }
+
+        .btn-primary {
+
+            width: 100%;
+
+        }
+
+    }
+
+    .btn-secondary {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 10px 18px;
+
+    border: 1px solid #d1d1d1;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+}
+
+.btn-secondary:hover {
+
+    background: #f5f5f5;
+
+    color: #000;
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="product-page">
+
+
+    <!-- HEADER -->
+
+    <div class="page-header-actions">
+
+        <div></div>
+
+        <div style="display:flex; gap:10px;">
+
+            <!-- IMPORT EXCEL -->
+
+            <a
+                href="{% url 'import-products' %}"
+                class="btn-secondary"
+            >
+
+                Import Excel
+
+            </a>
+
+
+            <!-- ADD PRODUCT -->
+
+            <a
+                href="{% url 'add-product' %}"
+                class="btn-primary"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+
+                    <line
+                        x1="12"
+                        y1="5"
+                        x2="12"
+                        y2="19"
+                    />
+
+                    <line
+                        x1="5"
+                        y1="12"
+                        x2="19"
+                        y2="12"
+                    />
+
+                </svg>
+
+                Add Product
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div class="table-card">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Product</th>
+
+                    <th>Description</th>
+
+                    <th>Category</th>
+
+                    <th>Price</th>
+
+                    <th>Qty</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for product in products %}
+
+                <tr>
+
+                    <td data-label="ID">
+                        #{{ product.id }}
+                    </td>
+
+
+                    <td data-label="Product">
+
+                        <div class="product-name">
+                            {{ product.product_model }}
+                        </div>
+
+                    </td>
+
+
+                    <td data-label="Description">
+
+                        <div class="product-description">
+
+                            {% if product.description %}
+
+                                {{ product.description }}
+
+                            {% else %}
+
+                                No description
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+
+                    <td data-label="Category">
+
+                        <span class="badge">
+
+                            {{ product.category }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td data-label="Price">
+
+                        <span class="price">
+
+                            ₱{{ product.price|floatformat:2 }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td data-label="Qty">
+
+                        <span class="qty">
+
+                            {{ product.qty }}
+
+                        </span>
+
+                    </td>
+
+
+                    <td data-label="Actions">
+
+                        <div class="table-actions">
+
+                            <a
+                                href="{% url 'edit-product' product.id %}"
+                                class="action-link"
+                            >
+                                Edit
+                            </a>
+
+
+                            <span style="color:#ddd;">
+                                |
+                            </span>
+
+
+                            <a
+                                href="{% url 'delete-product' product.id %}"
+                                class="action-link delete-link"
+                            >
+                                Delete
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="empty-state"
+                    >
+
+                        No products found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,768 @@
+{% extends "staff.html" %}
+
+{% block content %}
+
+<style>
+
+    .inventory-page {
+        width: 100%;
+    }
+
+
+    /* ==============================
+       PAGE HEADER
+    ============================== */
+
+    .page-header {
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 20px;
+
+    }
+
+    .page-title {
+
+        font-size: 20px;
+        font-weight: 700;
+
+    }
+
+    .page-subtitle {
+
+        font-size: 11px;
+        color: #666;
+
+        margin-top: 4px;
+
+    }
+
+
+    /* ==============================
+       SEARCH
+    ============================== */
+
+    .search-input {
+
+        width: 320px;
+        height: 42px;
+
+        padding: 0 13px;
+
+        background: #080808;
+
+        border: 1px solid #282828;
+        border-radius: 8px;
+
+        color: #fff;
+
+        outline: none;
+
+        font-size: 12px;
+
+    }
+
+    .search-input::placeholder {
+
+        color: #555;
+
+    }
+
+    .search-input:focus {
+
+        border-color: #555;
+
+    }
+
+
+    /* ==============================
+       SUMMARY
+    ============================== */
+
+    .inventory-summary {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        gap: 12px;
+
+        margin-bottom: 20px;
+
+    }
+
+    .summary-card {
+
+        background: #070707;
+
+        border: 1px solid #222;
+
+        border-radius: 10px;
+
+        padding: 16px;
+
+    }
+
+    .summary-label {
+
+        font-size: 10px;
+
+        color: #666;
+
+        text-transform: uppercase;
+
+        letter-spacing: .5px;
+
+    }
+
+    .summary-value {
+
+        margin-top: 7px;
+
+        font-size: 22px;
+
+        font-weight: 800;
+
+    }
+
+
+    /* ==============================
+       INVENTORY TABLE
+    ============================== */
+
+    .inventory-panel {
+
+        background: #070707;
+
+        border: 1px solid #222;
+
+        border-radius: 10px;
+
+        overflow: hidden;
+
+    }
+
+    .table-wrapper {
+
+        overflow-x: auto;
+
+    }
+
+    table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+    }
+
+    thead {
+
+        background: #0c0c0c;
+
+    }
+
+    th {
+
+        padding: 13px 16px;
+
+        text-align: left;
+
+        font-size: 10px;
+
+        font-weight: 700;
+
+        color: #666;
+
+        text-transform: uppercase;
+
+        letter-spacing: .5px;
+
+        border-bottom: 1px solid #222;
+
+    }
+
+    td {
+
+        padding: 14px 16px;
+
+        font-size: 12px;
+
+        border-bottom: 1px solid #181818;
+
+    }
+
+    tbody tr:hover {
+
+        background: #0b0b0b;
+
+    }
+
+    tbody tr:last-child td {
+
+        border-bottom: none;
+
+    }
+
+
+    /* ==============================
+       PRODUCT
+    ============================== */
+
+    .product-name {
+
+        font-weight: 700;
+
+        color: #fff;
+
+    }
+
+    .product-description {
+
+        margin-top: 3px;
+
+        font-size: 10px;
+
+        color: #555;
+
+    }
+
+    .category {
+
+        color: #999;
+
+    }
+
+    .price {
+
+        font-weight: 700;
+
+    }
+
+
+    /* ==============================
+       STOCK
+    ============================== */
+
+    .stock {
+
+        font-weight: 700;
+
+    }
+
+    .stock-good {
+
+        color: #4ade80;
+
+    }
+
+    .stock-low {
+
+        color: #facc15;
+
+    }
+
+    .stock-out {
+
+        color: #f87171;
+
+    }
+
+
+    /* ==============================
+       STATUS
+    ============================== */
+
+    .status {
+
+        display: inline-flex;
+
+        padding: 4px 8px;
+
+        border-radius: 5px;
+
+        font-size: 9px;
+
+        font-weight: 700;
+
+    }
+
+    .status-good {
+
+        background: #071c10;
+
+        border: 1px solid #14532d;
+
+        color: #4ade80;
+
+    }
+
+    .status-low {
+
+        background: #1c1705;
+
+        border: 1px solid #854d0e;
+
+        color: #facc15;
+
+    }
+
+    .status-out {
+
+        background: #1c0909;
+
+        border: 1px solid #7f1d1d;
+
+        color: #f87171;
+
+    }
+
+
+    /* ==============================
+       EMPTY
+    ============================== */
+
+    .empty {
+
+        padding: 60px 20px;
+
+        text-align: center;
+
+        color: #555;
+
+        font-size: 13px;
+
+    }
+
+
+    /* ==============================
+       RESPONSIVE
+    ============================== */
+
+    @media (max-width: 900px) {
+
+        .page-header {
+
+            flex-direction: column;
+
+            align-items: stretch;
+
+            gap: 14px;
+
+        }
+
+        .search-input {
+
+            width: 100%;
+
+        }
+
+        .inventory-summary {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+</style>
+
+
+<div class="inventory-page">
+
+
+    <!-- ==========================================
+         HEADER
+    =========================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <div class="page-title">
+
+                Inventory
+
+            </div>
+
+            <div class="page-subtitle">
+
+                View current product stock and availability
+
+            </div>
+
+        </div>
+
+
+        <input
+            type="text"
+            id="inventorySearch"
+            class="search-input"
+            placeholder="Search product or category..."
+        >
+
+    </div>
+
+
+    <!-- ==========================================
+         SUMMARY
+    =========================================== -->
+
+    <div class="inventory-summary">
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Products
+
+            </div>
+
+            <div class="summary-value">
+
+                {{ products|length }}
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Total Stock
+
+            </div>
+
+            <div
+                class="summary-value"
+                id="totalStock"
+            >
+
+                0
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Out of Stock
+
+            </div>
+
+            <div
+                class="summary-value"
+                id="outOfStock"
+            >
+
+                0
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         INVENTORY
+    =========================================== -->
+
+    <div class="inventory-panel">
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Price
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="inventoryTable">
+
+
+                    {% for product in products %}
+
+                    <tr
+                        class="inventory-row"
+                        data-search="{{ product.product_model|lower }} {{ product.category|lower }}"
+                        data-stock="{{ product.qty }}"
+                    >
+
+                        <td>
+
+                            <div class="product-name">
+
+                                {{ product.product_model }}
+
+                            </div>
+
+
+                            {% if product.description %}
+
+                            <div class="product-description">
+
+                                {{ product.description|truncatechars:80 }}
+
+                            </div>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="category">
+
+                                {{ product.category }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="price">
+
+                                ₱{{ product.price|floatformat:2 }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if product.qty == 0 %}
+
+                                <span class="stock stock-out">
+
+                                    {{ product.qty }}
+
+                                </span>
+
+                            {% elif product.qty <= 5 %}
+
+                                <span class="stock stock-low">
+
+                                    {{ product.qty }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="stock stock-good">
+
+                                    {{ product.qty }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if product.qty == 0 %}
+
+                                <span class="status status-out">
+
+                                    OUT OF STOCK
+
+                                </span>
+
+                            {% elif product.qty <= 5 %}
+
+                                <span class="status status-low">
+
+                                    LOW STOCK
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="status status-good">
+
+                                    AVAILABLE
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            <div class="empty">
+
+                                No products in inventory.
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+/* ==========================================
+   SEARCH INVENTORY
+========================================== */
+
+const searchInput =
+    document.getElementById(
+        "inventorySearch"
+    );
+
+
+if (searchInput) {
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            const search =
+                this.value
+                    .toLowerCase()
+                    .trim();
+
+
+            document
+                .querySelectorAll(
+                    ".inventory-row"
+                )
+                .forEach(
+                    row => {
+
+                        const text =
+                            row.dataset.search;
+
+
+                        row.style.display =
+                            text.includes(search)
+                                ? ""
+                                : "none";
+
+                    }
+                );
+
+        }
+    );
+
+}
+
+
+/* ==========================================
+   CALCULATE SUMMARY
+========================================== */
+
+let totalStock = 0;
+
+let outOfStock = 0;
+
+
+document
+    .querySelectorAll(
+        ".inventory-row"
+    )
+    .forEach(
+        row => {
+
+            const stock =
+                Number(
+                    row.dataset.stock
+                ) || 0;
+
+
+            totalStock += stock;
+
+
+            if (stock === 0) {
+
+                outOfStock++;
+
+            }
+
+        }
+    );
+
+
+document
+    .getElementById(
+        "totalStock"
+    )
+    .textContent =
+        totalStock;
+
+
+document
+    .getElementById(
+        "outOfStock"
+    )
+    .textContent =
+        outOfStock;
+
+
+</script>
+
+{% endblock %}

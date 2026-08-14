@@ -1,0 +1,670 @@
+{% extends "base.html" %}
+
+{% block title %}
+    BentaPOS - Sales
+{% endblock %}
+
+{% block page_title %}
+    Sales
+{% endblock %}
+
+{% block page_subtitle %}
+    View and manage completed sales transactions
+{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+    .sales-page {
+        width: 100%;
+    }
+
+    /* =========================================
+       SUMMARY
+    ========================================= */
+
+    .sales-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .summary-card {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .summary-label {
+        font-size: 11px;
+        color: #888;
+        margin-bottom: 8px;
+    }
+
+    .summary-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111;
+    }
+
+    /* =========================================
+       SALES CARD
+    ========================================= */
+
+    .sales-card {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .sales-card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #e8e8e8;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .sales-card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #111;
+    }
+
+    .sales-card-subtitle {
+        margin-top: 3px;
+        font-size: 11px;
+        color: #888;
+    }
+
+    /* =========================================
+       SEARCH
+    ========================================= */
+
+    .sales-search {
+        width: 230px;
+        height: 38px;
+
+        border: 1px solid #ddd;
+        border-radius: 7px;
+
+        padding: 0 11px;
+
+        outline: none;
+
+        font-size: 12px;
+        background: #fff;
+    }
+
+    .sales-search:focus {
+        border-color: #111;
+    }
+
+    /* =========================================
+       TABLE
+    ========================================= */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .sales-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 850px;
+    }
+
+    .sales-table th {
+        padding: 12px 18px;
+
+        text-align: left;
+
+        background: #fafafa;
+        border-bottom: 1px solid #e8e8e8;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        color: #777;
+
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+
+    .sales-table td {
+        padding: 14px 18px;
+
+        border-bottom: 1px solid #f0f0f0;
+
+        font-size: 12px;
+        color: #333;
+    }
+
+    .sales-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .sale-id {
+        font-weight: 700;
+        color: #111;
+    }
+
+    .staff-name {
+        font-weight: 600;
+        color: #222;
+    }
+
+    .sale-date {
+        color: #777;
+        font-size: 11px;
+    }
+
+    .sale-total {
+        font-weight: 700;
+        color: #111;
+    }
+
+    /* =========================================
+       DISCOUNT
+    ========================================= */
+
+    .discount-badge {
+        display: inline-flex;
+
+        padding: 4px 7px;
+
+        border-radius: 5px;
+
+        background: #f5f5f5;
+        border: 1px solid #e5e5e5;
+
+        font-size: 10px;
+        color: #555;
+    }
+
+    /* =========================================
+       VIEW BUTTON
+    ========================================= */
+
+    .view-sale-btn {
+        display: inline-flex;
+
+        align-items: center;
+        justify-content: center;
+
+        height: 30px;
+
+        padding: 0 10px;
+
+        border-radius: 6px;
+
+        background: #000;
+        color: #fff;
+
+        font-size: 10px;
+        font-weight: 600;
+
+        transition: .15s;
+    }
+
+    .view-sale-btn:hover {
+        background: #222;
+    }
+
+    /* =========================================
+       EMPTY
+    ========================================= */
+
+    .empty-sales {
+        padding: 60px 20px;
+
+        text-align: center;
+
+        color: #888;
+
+        font-size: 13px;
+    }
+
+    /* =========================================
+       RESPONSIVE
+    ========================================= */
+
+    @media (max-width: 1000px) {
+
+        .sales-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+    @media (max-width: 600px) {
+
+        .sales-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .sales-card-header {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .sales-search {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="sales-page">
+
+    <!-- =========================================
+         SUMMARY
+    ========================================== -->
+
+    <div class="sales-summary">
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Total Transactions
+            </div>
+
+            <div
+                class="summary-value"
+                id="transactionCount"
+            >
+                {{ sales|length }}
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Total Sales
+            </div>
+
+            <div
+                class="summary-value"
+                id="totalSales"
+            >
+                ₱0.00
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Total Discount
+            </div>
+
+            <div
+                class="summary-value"
+                id="totalDiscount"
+            >
+                ₱0.00
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+                Average Sale
+            </div>
+
+            <div
+                class="summary-value"
+                id="averageSale"
+            >
+                ₱0.00
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         SALES TABLE
+    ========================================== -->
+
+    <div class="sales-card">
+
+        <div class="sales-card-header">
+
+            <div>
+
+                <div class="sales-card-title">
+                    Sales Transactions
+                </div>
+
+                <div class="sales-card-subtitle">
+                    Complete history of completed POS transactions
+                </div>
+
+            </div>
+
+
+            <input
+                type="text"
+                id="salesSearch"
+                class="sales-search"
+                placeholder="Search sale, staff, date..."
+            >
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Sale #
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Staff
+                        </th>
+
+                        <th>
+                            Items
+                        </th>
+
+                        <th>
+                            Discount
+                        </th>
+
+                        <th>
+                            Payment
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="salesTableBody">
+
+                    {% for sale in sales %}
+
+                    <tr
+                        class="sale-row"
+                        data-search="
+                            {{ sale.id }}
+                            {{ sale.staff.username|default:'' }}
+                            {{ sale.created_at|date:'M d Y' }}
+                        "
+                        data-total="{{ sale.total }}"
+                        data-discount="{{ sale.discount_amount }}"
+                    >
+
+                        <td>
+
+                            <span class="sale-id">
+                                #{{ sale.id }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="sale-date">
+
+                                {{ sale.created_at|date:"M d, Y" }}
+
+                                <br>
+
+                                {{ sale.created_at|date:"h:i A" }}
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="staff-name">
+
+                                {% if sale.staff %}
+
+                                    {{ sale.staff.get_full_name|default:sale.staff.username }}
+
+                                {% else %}
+
+                                    Unknown
+
+                                {% endif %}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.items.count }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if sale.discount_class %}
+
+                                <span class="discount-badge">
+
+                                    {{ sale.discount_class.name }}
+
+                                    ·
+
+                                    {{ sale.discount_percent }}%
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="discount-badge">
+                                    None
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.payment|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="sale-total">
+
+                                ₱{{ sale.total|floatformat:2 }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <a
+                                href="{% url 'sale-detail' sale.id %}"
+                                class="view-sale-btn"
+                            >
+                                View
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="8">
+
+                            <div class="empty-sales">
+                                No sales transactions found.
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const rows = document.querySelectorAll(".sale-row");
+
+    let totalSales = 0;
+    let totalDiscount = 0;
+
+    rows.forEach(function (row) {
+
+        totalSales +=
+            Number(row.dataset.total || 0);
+
+        totalDiscount +=
+            Number(row.dataset.discount || 0);
+
+    });
+
+
+    const transactionCount = rows.length;
+
+    const averageSale =
+        transactionCount > 0
+            ? totalSales / transactionCount
+            : 0;
+
+
+    document.getElementById("totalSales").textContent =
+        "₱" + totalSales.toLocaleString(
+            "en-PH",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+
+    document.getElementById("totalDiscount").textContent =
+        "₱" + totalDiscount.toLocaleString(
+            "en-PH",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+
+    document.getElementById("averageSale").textContent =
+        "₱" + averageSale.toLocaleString(
+            "en-PH",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+
+    /* =========================================
+       SEARCH
+    ========================================== */
+
+    const searchInput =
+        document.getElementById("salesSearch");
+
+
+    searchInput.addEventListener(
+        "input",
+        function () {
+
+            const search =
+                this.value
+                    .toLowerCase()
+                    .trim();
+
+
+            rows.forEach(function (row) {
+
+                const text =
+                    row.dataset.search
+                        .toLowerCase();
+
+
+                row.style.display =
+                    text.includes(search)
+                        ? ""
+                        : "none";
+
+            });
+
+        }
+    );
+
+});
+
+</script>
+
+{% endblock %}

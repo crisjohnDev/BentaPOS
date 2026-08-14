@@ -1,0 +1,698 @@
+{% extends 'base.html' %}
+
+{% block title %}
+
+    {% if is_edit %}
+        BentaPOS - Edit Product
+    {% else %}
+        BentaPOS - Add Product
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_title %}
+
+    {% if is_edit %}
+        Edit Product
+    {% else %}
+        Add New Product
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_subtitle %}
+
+    {% if is_edit %}
+        Update product information and inventory
+    {% else %}
+        Add a new product to your inventory
+    {% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       CONTAINER
+    ========================================================= */
+
+    .form-container {
+
+        max-width: 640px;
+
+        margin: 0 auto;
+
+    }
+
+
+    /* =========================================================
+       FORM CARD
+    ========================================================= */
+
+    .form-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 28px;
+
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.02);
+
+    }
+
+
+    /* =========================================================
+       FORM LAYOUT
+    ========================================================= */
+
+    .form-grid {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 20px;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 6px;
+
+    }
+
+
+    .form-row {
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 16px;
+
+    }
+
+
+    /* =========================================================
+       LABEL
+    ========================================================= */
+
+    .form-label {
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        color: #222;
+
+    }
+
+
+    /* =========================================================
+       INPUT
+    ========================================================= */
+
+    .form-input {
+
+        width: 100%;
+
+        height: 42px;
+
+        padding: 0 14px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        color: #111;
+
+        background: #fff;
+
+        outline: none;
+
+        box-sizing: border-box;
+
+        transition:
+            border-color 0.18s ease,
+            box-shadow 0.18s ease;
+
+    }
+
+
+    .form-input:focus {
+
+        border-color: #000;
+
+        box-shadow:
+            0 0 0 3px rgba(0, 0, 0, 0.05);
+
+    }
+
+
+    .form-input::placeholder {
+
+        color: #aaa;
+
+    }
+
+
+    /* =========================================================
+       TEXTAREA
+    ========================================================= */
+
+    .form-textarea {
+
+        width: 100%;
+
+        min-height: 100px;
+
+        padding: 12px 14px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        color: #111;
+
+        background: #fff;
+
+        outline: none;
+
+        resize: vertical;
+
+        box-sizing: border-box;
+
+        font-family: inherit;
+
+        transition:
+            border-color 0.18s ease,
+            box-shadow 0.18s ease;
+
+    }
+
+
+    .form-textarea:focus {
+
+        border-color: #000;
+
+        box-shadow:
+            0 0 0 3px rgba(0, 0, 0, 0.05);
+
+    }
+
+
+    .form-textarea::placeholder {
+
+        color: #aaa;
+
+    }
+
+
+    /* =========================================================
+       HELP TEXT
+    ========================================================= */
+
+    .form-help {
+
+        font-size: 11px;
+
+        color: #777;
+
+        line-height: 1.4;
+
+    }
+
+
+    /* =========================================================
+       ERROR / MESSAGE
+    ========================================================= */
+
+    .error-list {
+
+        background: #fdf2f2;
+
+        border: 1px solid #f8b4b4;
+
+        color: #9b1c1c;
+
+        padding: 12px 16px;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        margin-bottom: 20px;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* =========================================================
+       FORM ACTIONS
+    ========================================================= */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 12px;
+
+        margin-top: 10px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid #f0f0f0;
+
+    }
+
+
+    /* =========================================================
+       SECONDARY BUTTON
+    ========================================================= */
+
+    .btn-secondary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #333;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+        transition: background 0.18s ease;
+
+    }
+
+
+    .btn-secondary:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+    }
+
+
+    /* =========================================================
+       PRIMARY BUTTON
+    ========================================================= */
+
+    .btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 20px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition:
+            background 0.18s ease,
+            transform 0.1s ease;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background: #222;
+
+    }
+
+
+    .btn-primary:active {
+
+        transform: scale(0.98);
+
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 550px) {
+
+        .form-card {
+
+            padding: 20px;
+
+        }
+
+
+        .form-row {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .form-actions {
+
+            flex-direction: column-reverse;
+
+            align-items: stretch;
+
+        }
+
+
+        .btn-primary,
+        .btn-secondary {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="form-container">
+
+    <div class="form-card">
+
+
+        <!-- =====================================================
+             MESSAGES
+        ====================================================== -->
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="error-list">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             FORM
+        ====================================================== -->
+
+        <form
+            method="POST"
+            class="form-grid"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 PRODUCT MODEL
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_product_model"
+                    class="form-label"
+                >
+                    Product Model *
+                </label>
+
+
+                <input
+                    type="text"
+                    name="product_model"
+                    id="id_product_model"
+                    class="form-input"
+                    required
+
+                    {% if is_edit %}
+
+                        value="{{ product.product_model }}"
+
+                    {% else %}
+
+                        value="{{ request.POST.product_model|default:'' }}"
+
+                    {% endif %}
+
+                    placeholder="e.g. Coca-Cola 1.5L"
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 DESCRIPTION
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_description"
+                    class="form-label"
+                >
+                    Description
+                </label>
+
+
+                <textarea
+                    name="description"
+                    id="id_description"
+                    class="form-textarea"
+                    placeholder="Enter product description"
+                >{% if is_edit %}{{ product.description|default:'' }}{% else %}{{ request.POST.description|default:'' }}{% endif %}</textarea>
+
+            </div>
+
+
+            <!-- =================================================
+                 CATEGORY
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_category"
+                    class="form-label"
+                >
+                    Category *
+                </label>
+
+
+                <input
+                    type="text"
+                    name="category"
+                    id="id_category"
+                    class="form-input"
+                    required
+
+                    {% if is_edit %}
+
+                        value="{{ product.category }}"
+
+                    {% else %}
+
+                        value="{{ request.POST.category|default:'' }}"
+
+                    {% endif %}
+
+                    placeholder="e.g. Beverages"
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 PRICE + QUANTITY
+            ================================================== -->
+
+            <div class="form-row">
+
+
+                <!-- PRICE -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_price"
+                        class="form-label"
+                    >
+                        Price *
+                    </label>
+
+
+                    <input
+                        type="number"
+                        name="price"
+                        id="id_price"
+                        class="form-input"
+                        required
+                        min="0"
+                        step="0.01"
+
+                        {% if is_edit %}
+
+                            value="{{ product.price }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.price|default:'' }}"
+
+                        {% endif %}
+
+                        placeholder="0.00"
+                    >
+
+                    <span class="form-help">
+                        Enter the selling price.
+                    </span>
+
+                </div>
+
+
+                <!-- QUANTITY -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_qty"
+                        class="form-label"
+                    >
+                        Quantity *
+                    </label>
+
+
+                    <input
+                        type="number"
+                        name="qty"
+                        id="id_qty"
+                        class="form-input"
+                        required
+                        min="0"
+                        step="1"
+
+                        {% if is_edit %}
+
+                            value="{{ product.qty }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.qty|default:'0' }}"
+
+                        {% endif %}
+
+                        placeholder="0"
+                    >
+
+                    <span class="form-help">
+                        Current available stock.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+
+            <div class="form-actions">
+
+
+                <!-- CANCEL -->
+
+                <a
+                    href="{% url 'product_list' %}"
+                    class="btn-secondary"
+                >
+                    Cancel
+                </a>
+
+
+                <!-- SAVE -->
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    {% if is_edit %}
+
+                        Save Changes
+
+                    {% else %}
+
+                        Add Product
+
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

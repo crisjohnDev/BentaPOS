@@ -1,0 +1,3232 @@
+
+{% extends "staff.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+
+    /* =========================================================
+       POS LAYOUT
+    ========================================================= */
+
+    .pos-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 390px;
+        gap: 20px;
+        align-items: start;
+    }
+
+
+    /* =========================================================
+       PRODUCTS
+    ========================================================= */
+
+    .products-panel {
+        min-width: 0;
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .panel-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .panel-subtitle {
+        font-size: 11px;
+        color: #777;
+        margin-top: 3px;
+    }
+
+
+    /* =========================================================
+       SEARCH
+    ========================================================= */
+
+    .search-wrapper {
+        position: relative;
+        margin-bottom: 16px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #777;
+        pointer-events: none;
+    }
+
+    .search-input {
+        width: 100%;
+        height: 46px;
+        padding: 0 15px 0 42px;
+
+        border: 1px solid #2b2b2b;
+        border-radius: 9px;
+
+        background: #101010;
+        color: #fff;
+
+        outline: none;
+        font-size: 13px;
+    }
+
+    .search-input::placeholder {
+        color: #666;
+    }
+
+    .search-input:focus {
+        border-color: #555;
+    }
+
+
+    /* =========================================================
+       PRODUCT GRID
+    ========================================================= */
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .product-card {
+        background: #0d0d0d;
+        border: 1px solid #252525;
+        border-radius: 10px;
+        padding: 15px;
+        min-height: 175px;
+
+        display: flex;
+        flex-direction: column;
+
+        transition: .15s;
+    }
+
+    .product-card:hover {
+        border-color: #444;
+        transform: translateY(-1px);
+    }
+
+    .product-icon {
+        width: 42px;
+        height: 42px;
+
+        border-radius: 9px;
+
+        background: #fff;
+        color: #000;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 14px;
+        font-weight: 700;
+
+        margin-bottom: 12px;
+    }
+
+    .product-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.3;
+        margin-bottom: 4px;
+    }
+
+    .product-category {
+        font-size: 10px;
+        color: #777;
+        margin-bottom: 10px;
+    }
+
+    .product-bottom {
+        margin-top: auto;
+
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+
+        gap: 8px;
+    }
+
+    .product-price {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .product-stock {
+        font-size: 10px;
+        color: #666;
+        margin-top: 3px;
+    }
+
+    .add-btn {
+        height: 34px;
+        padding: 0 12px;
+
+        border: 1px solid #fff;
+        border-radius: 7px;
+
+        background: #fff;
+        color: #000;
+
+        font-size: 11px;
+        font-weight: 600;
+
+        cursor: pointer;
+    }
+
+    .add-btn:hover {
+        background: #ddd;
+    }
+
+    .add-btn:disabled {
+        background: #222;
+        border-color: #222;
+        color: #666;
+        cursor: not-allowed;
+    }
+
+    .empty-products {
+        grid-column: 1 / -1;
+
+        background: #0d0d0d;
+        border: 1px solid #252525;
+        border-radius: 10px;
+
+        padding: 45px 20px;
+
+        text-align: center;
+
+        color: #666;
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+       SALE PANEL
+    ========================================================= */
+
+    .sale-panel {
+        background: #0d0d0d;
+
+        border: 1px solid #252525;
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        position: sticky;
+        top: 84px;
+
+        box-shadow:
+            0 10px 30px rgba(0,0,0,.3);
+    }
+
+    .sale-header {
+        padding: 18px;
+        border-bottom: 1px solid #242424;
+    }
+
+    .sale-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .sale-count {
+        font-size: 11px;
+        color: #777;
+        margin-top: 3px;
+    }
+
+
+    /* =========================================================
+       CART
+    ========================================================= */
+
+    .cart-items {
+        max-height: 360px;
+        overflow-y: auto;
+    }
+
+    .cart-items::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .cart-items::-webkit-scrollbar-track {
+        background: #0b0b0b;
+    }
+
+    .cart-items::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 10px;
+    }
+
+    .empty-cart {
+        padding: 45px 20px;
+
+        text-align: center;
+
+        color: #666;
+        font-size: 12px;
+    }
+
+    .cart-item {
+        padding: 13px 16px;
+        border-bottom: 1px solid #1d1d1d;
+    }
+
+    .cart-item-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .cart-product-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #eee;
+    }
+
+    .cart-product-price {
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    .cart-item-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-top: 9px;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+
+        border: 1px solid #333;
+        border-radius: 6px;
+
+        overflow: hidden;
+    }
+
+    .quantity-btn {
+        width: 28px;
+        height: 28px;
+
+        border: none;
+
+        background: #161616;
+        color: #fff;
+
+        cursor: pointer;
+    }
+
+    .quantity-btn:hover {
+        background: #292929;
+    }
+
+    .quantity-value {
+        width: 30px;
+
+        text-align: center;
+
+        font-size: 11px;
+        font-weight: 600;
+
+        color: #fff;
+    }
+
+    .remove-btn {
+        border: none;
+        background: transparent;
+
+        color: #777;
+
+        cursor: pointer;
+
+        font-size: 11px;
+    }
+
+    .remove-btn:hover {
+        color: #fff;
+    }
+
+
+    /* =========================================================
+       PAYMENT
+    ========================================================= */
+
+    .payment-section {
+        padding: 17px;
+        border-top: 1px solid #242424;
+    }
+
+    .field-label {
+        display: block;
+
+        font-size: 11px;
+        font-weight: 600;
+
+        color: #999;
+
+        margin-bottom: 7px;
+    }
+
+    .discount-select,
+    .discount-input,
+    .cash-input {
+
+        width: 100%;
+        height: 40px;
+
+        border: 1px solid #333;
+        border-radius: 7px;
+
+        background: #111;
+        color: #fff;
+
+        padding: 0 11px;
+
+        font-size: 12px;
+
+        outline: none;
+    }
+
+    .discount-select:focus,
+    .discount-input:focus,
+    .cash-input:focus {
+
+        border-color: #666;
+
+        box-shadow:
+            0 0 0 3px rgba(255,255,255,.04);
+    }
+
+    .discount-select option {
+
+        background: #111;
+        color: #fff;
+    }
+
+    .discount-input::placeholder,
+    .cash-input::placeholder {
+
+        color: #666;
+    }
+
+    .discount-notice {
+
+        margin-top: 8px;
+
+        padding: 9px;
+
+        border: 1px solid #222;
+        border-radius: 7px;
+
+        background: #090909;
+
+        color: #666;
+
+        font-size: 10px;
+
+        line-height: 1.6;
+    }
+
+    .discount-percentage-wrapper {
+        margin-top: 10px;
+    }
+
+
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
+
+    .summary {
+
+        margin-top: 17px;
+
+        padding-top: 15px;
+
+        border-top: 1px solid #242424;
+    }
+
+    .summary-row {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        align-items: center;
+
+        font-size: 12px;
+
+        margin-bottom: 9px;
+    }
+
+    .summary-label {
+        color: #777;
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .discount-value {
+        color: #aaa;
+    }
+
+    .total-row {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        margin-top: 12px;
+
+        padding-top: 13px;
+
+        border-top: 1px solid #242424;
+    }
+
+    .total-label {
+
+        font-size: 13px;
+        font-weight: 700;
+
+        color: #fff;
+    }
+
+    .total-value {
+
+        font-size: 22px;
+        font-weight: 800;
+
+        color: #fff;
+    }
+
+
+    /* =========================================================
+       CHANGE
+    ========================================================= */
+
+    .change-box {
+
+        margin-top: 12px;
+
+        padding: 11px;
+
+        background: #151515;
+
+        border: 1px solid #242424;
+
+        border-radius: 7px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+    }
+
+    .change-label {
+        font-size: 11px;
+        color: #777;
+    }
+
+    .change-value {
+
+        font-size: 14px;
+
+        font-weight: 700;
+
+        color: #fff;
+    }
+
+
+    /* =========================================================
+       COMPLETE BUTTON
+    ========================================================= */
+
+    .complete-btn {
+
+        width: 100%;
+
+        height: 46px;
+
+        margin-top: 14px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #000;
+
+        font-size: 13px;
+
+        font-weight: 700;
+
+        cursor: pointer;
+    }
+
+    .complete-btn:hover {
+        background: #ddd;
+    }
+
+    .complete-btn:disabled {
+
+        background: #222;
+
+        color: #666;
+
+        cursor: not-allowed;
+    }
+
+    .complete-btn.processing {
+
+        opacity: .7;
+
+        cursor: wait;
+    }
+
+
+    /* =========================================================
+       RECEIPT MODAL
+    ========================================================= */
+
+    .receipt-overlay {
+
+        position: fixed;
+
+        inset: 0;
+
+        background: rgba(0,0,0,.82);
+
+        display: none;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 20px;
+
+        z-index: 9999;
+    }
+
+    .receipt-overlay.show {
+        display: flex;
+    }
+
+    .receipt-modal {
+
+        width: 390px;
+
+        max-width: 100%;
+
+        max-height: 90vh;
+
+        overflow-y: auto;
+
+        background: #fff;
+
+        color: #000;
+
+        border-radius: 8px;
+
+        box-shadow:
+            0 20px 70px rgba(0,0,0,.7);
+    }
+
+
+    /* =========================================================
+       RECEIPT
+    ========================================================= */
+
+    .receipt-paper {
+
+        padding: 25px 22px;
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 12px;
+
+        background: #fff;
+
+        color: #000;
+    }
+
+    .receipt-center {
+        text-align: center;
+    }
+
+    .receipt-logo {
+
+        width: 55px;
+        height: 55px;
+
+        object-fit: contain;
+
+        margin-bottom: 7px;
+    }
+
+    .receipt-business {
+
+        font-size: 19px;
+
+        font-weight: 800;
+
+        margin-bottom: 3px;
+    }
+
+    .receipt-subtitle {
+
+        font-size: 10px;
+
+        color: #555;
+    }
+
+    .receipt-line {
+
+        border-top: 1px dashed #000;
+
+        margin: 12px 0;
+    }
+
+    .receipt-info {
+
+        line-height: 1.7;
+    }
+
+    .receipt-row {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        gap: 10px;
+
+        margin-bottom: 4px;
+    }
+
+    .receipt-item-name {
+
+        flex: 1;
+
+        word-break: break-word;
+    }
+
+    .receipt-item-price {
+
+        text-align: right;
+
+        white-space: nowrap;
+    }
+
+    .receipt-total {
+
+        font-size: 15px;
+
+        font-weight: 800;
+
+        margin-top: 8px;
+    }
+
+    .receipt-footer {
+
+        text-align: center;
+
+        margin-top: 15px;
+
+        font-size: 10px;
+
+        line-height: 1.6;
+    }
+
+
+    /* =========================================================
+       RECEIPT ACTIONS
+    ========================================================= */
+
+    .receipt-actions {
+
+        display: flex;
+
+        gap: 8px;
+
+        padding: 12px;
+
+        background: #111;
+
+        border-top: 1px solid #222;
+    }
+
+    .receipt-action {
+
+        flex: 1;
+
+        height: 40px;
+
+        border-radius: 6px;
+
+        cursor: pointer;
+
+        font-size: 11px;
+
+        font-weight: 700;
+    }
+
+    .print-receipt-btn {
+
+        border: none;
+
+        background: #fff;
+
+        color: #000;
+    }
+
+    .close-receipt-btn {
+
+        border: 1px solid #444;
+
+        background: #181818;
+
+        color: #fff;
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 1200px) {
+
+        .product-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 950px) {
+
+        .pos-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sale-panel {
+            position: static;
+        }
+
+        .product-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 750px) {
+
+        .product-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+    @media (max-width: 450px) {
+
+        .product-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .receipt-modal {
+            width: 100%;
+        }
+
+    }
+
+</style>
+
+
+<!-- =========================================================
+     POS
+========================================================= -->
+
+<div class="pos-layout">
+
+
+    <!-- =====================================================
+         PRODUCTS
+    ====================================================== -->
+
+    <section class="products-panel">
+
+        <div class="panel-header">
+
+            <div>
+
+                <div class="panel-title">
+                    Products
+                </div>
+
+                <div class="panel-subtitle">
+                    Select a product to add it to the sale
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <div class="search-wrapper">
+
+            <span class="search-icon">
+
+                <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+
+                    <circle
+                        cx="11"
+                        cy="11"
+                        r="7"
+                    />
+
+                    <line
+                        x1="16.5"
+                        y1="16.5"
+                        x2="21"
+                        y2="21"
+                    />
+
+                </svg>
+
+            </span>
+
+
+            <input
+                type="text"
+                id="productSearch"
+                class="search-input"
+                placeholder="Search product or category..."
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <!-- PRODUCT GRID -->
+
+        <div
+            class="product-grid"
+            id="productGrid"
+        >
+
+            {% for product in products %}
+
+                <div
+                    class="product-card"
+                    data-name="{{ product.product_model|lower }}"
+                    data-category="{{ product.category|lower }}"
+                >
+
+                    <div class="product-icon">
+
+                        {{ product.product_model|first|upper }}
+
+                    </div>
+
+
+                    <div class="product-name">
+
+                        {{ product.product_model }}
+
+                    </div>
+
+
+                    <div class="product-category">
+
+                        {{ product.category }}
+
+                    </div>
+
+
+                    <div class="product-bottom">
+
+                        <div>
+
+                            <div class="product-price">
+
+                                ₱{{ product.price|floatformat:2 }}
+
+                            </div>
+
+                            <div class="product-stock">
+
+                                Stock: {{ product.qty }}
+
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="add-btn"
+                            onclick="addToCart(
+                                {{ product.id }},
+                                '{{ product.product_model|escapejs }}',
+                                '{{ product.price }}',
+                                {{ product.qty }}
+                            )"
+                            {% if product.qty <= 0 %}
+                                disabled
+                            {% endif %}
+                        >
+
+                            {% if product.qty > 0 %}
+                                Add
+                            {% else %}
+                                Out
+                            {% endif %}
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <div class="empty-products">
+
+                    No products available.
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         SALE
+    ====================================================== -->
+
+    <aside class="sale-panel">
+
+
+        <div class="sale-header">
+
+            <div class="sale-title">
+                Current Sale
+            </div>
+
+            <div
+                class="sale-count"
+                id="saleCount"
+            >
+                0 items
+            </div>
+
+        </div>
+
+
+        <!-- CART -->
+
+        <div
+            class="cart-items"
+            id="cartItems"
+        >
+
+            <div class="empty-cart">
+                No products added yet.
+            </div>
+
+        </div>
+
+
+
+        <!-- PAYMENT -->
+
+        <div class="payment-section">
+
+
+            <!-- =================================================
+                 DISCOUNT CLASS
+            ================================================== -->
+
+            <label class="field-label">
+                Discount Class
+            </label>
+
+
+            <select
+                id="discountClass"
+                class="discount-select"
+                onchange="updateDiscount()"
+            >
+
+                {% for discount in discount_classes %}
+
+                    <option
+                        value="{{ discount.id }}"
+                        data-code="{{ discount.code }}"
+                        data-max-discount="{{ discount.max_discount }}"
+                        data-open-discount="{% if discount.open_discount %}true{% else %}false{% endif %}"
+                    >
+
+                        {{ discount.name }}
+
+                        {% if discount.code == "A" %}
+
+                            — No Discount
+
+                        {% elif discount.code == "B" %}
+
+                            — 1% to {{ discount.max_discount|floatformat:0 }}%
+
+                        {% elif discount.code == "C" %}
+
+                            — Custom Discount
+
+                        {% elif discount.open_discount %}
+
+                            — Open Discount
+
+                        {% else %}
+
+                            — Max {{ discount.max_discount|floatformat:0 }}%
+
+                        {% endif %}
+
+                    </option>
+
+                {% empty %}
+
+                    <!-- FALLBACK IF DATABASE HAS NO RECORDS -->
+
+                    <option
+                        value="A"
+                        data-code="A"
+                        data-max-discount="0"
+                        data-open-discount="false"
+                    >
+                        Class A — No Discount
+                    </option>
+
+                    <option
+                        value="B"
+                        data-code="B"
+                        data-max-discount="10"
+                        data-open-discount="false"
+                    >
+                        Class B — 1% to 10%
+                    </option>
+
+                    <option
+                        value="C"
+                        data-code="C"
+                        data-max-discount="100"
+                        data-open-discount="true"
+                    >
+                        Class C — Custom Discount
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <div class="discount-notice">
+
+                Class A = No discount<br>
+
+                Class B = Select from 1% to maximum allowed<br>
+
+                Class C = Enter a custom discount percentage
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CLASS B PERCENTAGE
+            ================================================== -->
+
+            <div
+                id="discountPercentageWrapper"
+                class="discount-percentage-wrapper"
+                style="display:none;"
+            >
+
+                <label class="field-label">
+
+                    Discount Percentage
+
+                </label>
+
+
+                <select
+                    id="discountPercentage"
+                    class="discount-select"
+                    onchange="updateTotals()"
+                >
+
+                </select>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CLASS C CUSTOM DISCOUNT
+            ================================================== -->
+
+            <div
+                id="openDiscountWrapper"
+                style="display:none; margin-top:10px;"
+            >
+
+                <label class="field-label">
+
+                    Enter Discount Percentage
+
+                </label>
+
+
+                <input
+                    type="number"
+                    id="openDiscount"
+                    class="discount-input"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="Enter percentage"
+                    oninput="updateTotals()"
+                >
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SUMMARY
+            ================================================= -->
+
+            <div class="summary">
+
+
+                <div class="summary-row">
+
+                    <span class="summary-label">
+                        Subtotal
+                    </span>
+
+                    <span
+                        class="summary-value"
+                        id="subtotal"
+                    >
+                        ₱0.00
+                    </span>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span class="summary-label">
+                        Discount
+                    </span>
+
+                    <span
+                        class="summary-value discount-value"
+                        id="discountAmount"
+                    >
+                        -₱0.00
+                    </span>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span class="summary-label">
+                        Discount %
+                    </span>
+
+                    <span
+                        class="summary-value"
+                        id="discountPercentDisplay"
+                    >
+                        0.00%
+                    </span>
+
+                </div>
+
+
+                <div class="total-row">
+
+                    <span class="total-label">
+                        Total
+                    </span>
+
+                    <span
+                        class="total-value"
+                        id="total"
+                    >
+                        ₱0.00
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CASH
+            ================================================== -->
+
+            <div style="margin-top:16px;">
+
+                <label class="field-label">
+                    Cash Received
+                </label>
+
+
+                <input
+                    type="number"
+                    id="cashReceived"
+                    class="cash-input"
+                    min="0"
+                    step="0.01"
+                    placeholder="₱0.00"
+                    oninput="calculateChange()"
+                >
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CHANGE
+            ================================================== -->
+
+            <div class="change-box">
+
+                <span class="change-label">
+                    Change
+                </span>
+
+                <span
+                    class="change-value"
+                    id="change"
+                >
+                    ₱0.00
+                </span>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 COMPLETE SALE
+            ================================================== -->
+
+            <button
+                type="button"
+                class="complete-btn"
+                id="completeSaleBtn"
+                onclick="completeSale()"
+                disabled
+            >
+
+                COMPLETE SALE
+
+            </button>
+
+
+        </div>
+
+    </aside>
+
+</div>
+
+
+
+<!-- =========================================================
+     RECEIPT POPUP
+========================================================= -->
+
+<div
+    class="receipt-overlay"
+    id="receiptOverlay"
+>
+
+    <div class="receipt-modal">
+
+        <div
+            class="receipt-paper"
+            id="receiptPaper"
+        >
+
+            <!-- RECEIPT CONTENT GENERATED BY JS -->
+
+        </div>
+
+
+        <div class="receipt-actions">
+
+            <button
+                type="button"
+                class="receipt-action print-receipt-btn"
+                onclick="printReceipt()"
+            >
+                PRINT RECEIPT
+            </button>
+
+            <button
+                type="button"
+                class="receipt-action close-receipt-btn"
+                onclick="closeReceipt()"
+            >
+                CLOSE
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     CSRF
+========================================================= -->
+
+<form
+    id="saleForm"
+    method="POST"
+    action="{% url 'complete-sale' %}"
+    style="display:none;"
+>
+
+    {% csrf_token %}
+
+</form>
+
+
+
+<script>
+
+    /* =========================================================
+       CART
+    ========================================================= */
+
+    let cart = [];
+
+
+
+    /* =========================================================
+       ADD TO CART
+    ========================================================= */
+
+    function addToCart(id, name, price, stock) {
+
+        const existing = cart.find(
+            item => item.id === id
+        );
+
+
+        if (existing) {
+
+            if (existing.quantity < existing.stock) {
+
+                existing.quantity++;
+
+            } else {
+
+                alert(
+                    "You cannot add more than the available stock."
+                );
+
+                return;
+            }
+
+        } else {
+
+            cart.push({
+
+                id: Number(id),
+
+                name: name,
+
+                price: Number(price),
+
+                stock: Number(stock),
+
+                quantity: 1
+
+            });
+
+        }
+
+
+        renderCart();
+
+    }
+
+
+
+    /* =========================================================
+       CHANGE QUANTITY
+    ========================================================= */
+
+    function changeQuantity(id, amount) {
+
+        const item = cart.find(
+            item => item.id === id
+        );
+
+
+        if (!item) {
+            return;
+        }
+
+
+        item.quantity += amount;
+
+
+        if (item.quantity <= 0) {
+
+            cart = cart.filter(
+                item => item.id !== id
+            );
+
+        }
+
+
+        if (item.quantity > item.stock) {
+
+            item.quantity = item.stock;
+
+        }
+
+
+        renderCart();
+
+    }
+
+
+
+    /* =========================================================
+       REMOVE
+    ========================================================= */
+
+    function removeFromCart(id) {
+
+        cart = cart.filter(
+            item => item.id !== id
+        );
+
+        renderCart();
+
+    }
+
+
+
+    /* =========================================================
+       RENDER CART
+    ========================================================= */
+
+    function renderCart() {
+
+        const container =
+            document.getElementById("cartItems");
+
+        const count =
+            document.getElementById("saleCount");
+
+
+        if (cart.length === 0) {
+
+            container.innerHTML = `
+
+                <div class="empty-cart">
+                    No products added yet.
+                </div>
+
+            `;
+
+            count.textContent = "0 items";
+
+            updateTotals();
+
+            return;
+        }
+
+
+        let totalItems = 0;
+
+
+        container.innerHTML = cart.map(item => {
+
+            totalItems += item.quantity;
+
+
+            const lineTotal =
+                item.price * item.quantity;
+
+
+            return `
+
+                <div class="cart-item">
+
+                    <div class="cart-item-top">
+
+                        <div class="cart-product-name">
+
+                            ${escapeHtml(item.name)}
+
+                        </div>
+
+                        <div class="cart-product-price">
+
+                            ₱${lineTotal.toFixed(2)}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="cart-item-bottom">
+
+                        <div class="quantity-controls">
+
+                            <button
+                                type="button"
+                                class="quantity-btn"
+                                onclick="changeQuantity(
+                                    ${item.id},
+                                    -1
+                                )"
+                            >
+                                −
+                            </button>
+
+
+                            <div class="quantity-value">
+
+                                ${item.quantity}
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="quantity-btn"
+                                onclick="changeQuantity(
+                                    ${item.id},
+                                    1
+                                )"
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="remove-btn"
+                            onclick="removeFromCart(
+                                ${item.id}
+                            )"
+                        >
+                            Remove
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("");
+
+
+        count.textContent =
+            `${totalItems} item${totalItems !== 1 ? "s" : ""}`;
+
+
+        updateTotals();
+
+    }
+
+
+
+    /* =========================================================
+       SUBTOTAL
+    ========================================================= */
+
+    function calculateSubtotal() {
+
+        return cart.reduce(
+            (total, item) => {
+
+                return total +
+                    (
+                        item.price *
+                        item.quantity
+                    );
+
+            },
+            0
+        );
+
+    }
+
+
+
+    /* =========================================================
+       SELECTED DISCOUNT
+    ========================================================= */
+
+    function getSelectedDiscountOption() {
+
+        const select =
+            document.getElementById(
+                "discountClass"
+            );
+
+
+        if (
+            !select ||
+            select.selectedIndex < 0
+        ) {
+
+            return null;
+
+        }
+
+
+        return select.options[
+            select.selectedIndex
+        ];
+
+    }
+
+
+
+    /* =========================================================
+       DISCOUNT PERCENTAGE
+    ========================================================= */
+
+    function getDiscountPercentage() {
+
+        const selected =
+            getSelectedDiscountOption();
+
+
+        if (!selected) {
+            return 0;
+        }
+
+
+        const code =
+            selected.dataset.code || "";
+
+
+        const maxDiscount =
+            Number(
+                selected.dataset.maxDiscount || 0
+            );
+
+
+        /* =====================================================
+           CLASS A
+        ===================================================== */
+
+        if (code === "A") {
+
+            return 0;
+
+        }
+
+
+        /* =====================================================
+           CLASS B
+        ===================================================== */
+
+        if (code === "B") {
+
+            const input =
+                document.getElementById(
+                    "discountPercentage"
+                );
+
+
+            let percentage =
+                Number(input.value) || 0;
+
+
+            if (percentage < 0) {
+                percentage = 0;
+            }
+
+
+            if (
+                maxDiscount > 0 &&
+                percentage > maxDiscount
+            ) {
+
+                percentage = maxDiscount;
+
+            }
+
+
+            return percentage;
+
+        }
+
+
+        /* =====================================================
+           CLASS C
+        ===================================================== */
+
+        if (
+            code === "C" ||
+            selected.dataset.openDiscount === "true"
+        ) {
+
+            const input =
+                document.getElementById(
+                    "openDiscount"
+                );
+
+
+            let percentage =
+                Number(input.value) || 0;
+
+
+            if (percentage < 0) {
+                percentage = 0;
+            }
+
+
+            const maximum =
+                maxDiscount > 0
+                    ? maxDiscount
+                    : 100;
+
+
+            if (percentage > maximum) {
+
+                percentage = maximum;
+
+            }
+
+
+            return percentage;
+
+        }
+
+
+        return 0;
+
+    }
+
+
+
+    /* =========================================================
+       UPDATE DISCOUNT UI
+    ========================================================= */
+
+    function updateDiscount() {
+
+        const selected =
+            getSelectedDiscountOption();
+
+
+        if (!selected) {
+            return;
+        }
+
+
+        const code =
+            selected.dataset.code || "";
+
+
+        const maxDiscount =
+            Number(
+                selected.dataset.maxDiscount || 0
+            );
+
+
+        const isOpen =
+            selected.dataset.openDiscount === "true";
+
+
+        const percentageWrapper =
+            document.getElementById(
+                "discountPercentageWrapper"
+            );
+
+
+        const percentageSelect =
+            document.getElementById(
+                "discountPercentage"
+            );
+
+
+        const openWrapper =
+            document.getElementById(
+                "openDiscountWrapper"
+            );
+
+
+        const openInput =
+            document.getElementById(
+                "openDiscount"
+            );
+
+
+        /* =====================================================
+           CLASS A
+        ===================================================== */
+
+        if (code === "A") {
+
+            percentageWrapper.style.display =
+                "none";
+
+            openWrapper.style.display =
+                "none";
+
+            percentageSelect.innerHTML =
+                "";
+
+            openInput.value =
+                "";
+
+            updateTotals();
+
+            return;
+
+        }
+
+
+        /* =====================================================
+           CLASS B
+        ===================================================== */
+
+        if (code === "B") {
+
+            percentageWrapper.style.display =
+                "block";
+
+            openWrapper.style.display =
+                "none";
+
+            openInput.value =
+                "";
+
+
+            percentageSelect.innerHTML =
+                "";
+
+
+            let maximum =
+                Math.floor(maxDiscount);
+
+
+            /*
+             * If database max_discount is empty or zero,
+             * use 10% as fallback.
+             */
+
+            if (maximum <= 0) {
+
+                maximum = 10;
+
+            }
+
+
+            for (
+                let percentage = 1;
+                percentage <= maximum;
+                percentage++
+            ) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+
+                option.value =
+                    percentage;
+
+
+                option.textContent =
+                    percentage + "%";
+
+
+                percentageSelect.appendChild(
+                    option
+                );
+
+            }
+
+
+            /*
+             * Default to 1%.
+             */
+
+            percentageSelect.value = "1";
+
+
+            updateTotals();
+
+            return;
+
+        }
+
+
+        /* =====================================================
+           CLASS C
+        ===================================================== */
+
+        if (
+            code === "C" ||
+            isOpen
+        ) {
+
+            percentageWrapper.style.display =
+                "none";
+
+            openWrapper.style.display =
+                "block";
+
+
+            openInput.max =
+                maxDiscount > 0
+                    ? maxDiscount
+                    : 100;
+
+
+            updateTotals();
+
+            return;
+
+        }
+
+
+        /* =====================================================
+           DEFAULT
+        ===================================================== */
+
+        percentageWrapper.style.display =
+            "none";
+
+        openWrapper.style.display =
+            "none";
+
+        percentageSelect.innerHTML =
+            "";
+
+        openInput.value =
+            "";
+
+
+        updateTotals();
+
+    }
+
+
+
+    /* =========================================================
+       UPDATE TOTALS
+    ========================================================= */
+
+    function updateTotals() {
+
+        const subtotal =
+            calculateSubtotal();
+
+
+        const percentage =
+            getDiscountPercentage();
+
+
+        const discountAmount =
+            subtotal *
+            (
+                percentage / 100
+            );
+
+
+        const total =
+            subtotal -
+            discountAmount;
+
+
+        document.getElementById(
+            "subtotal"
+        ).textContent =
+            "₱" +
+            subtotal.toFixed(2);
+
+
+        document.getElementById(
+            "discountAmount"
+        ).textContent =
+            "-₱" +
+            discountAmount.toFixed(2);
+
+
+        document.getElementById(
+            "discountPercentDisplay"
+        ).textContent =
+            percentage.toFixed(2) +
+            "%";
+
+
+        document.getElementById(
+            "total"
+        ).textContent =
+            "₱" +
+            total.toFixed(2);
+
+
+        calculateChange();
+
+    }
+
+
+
+    /* =========================================================
+       TOTAL
+    ========================================================= */
+
+    function calculateTotal() {
+
+        const subtotal =
+            calculateSubtotal();
+
+
+        const percentage =
+            getDiscountPercentage();
+
+
+        const discount =
+            subtotal *
+            (
+                percentage / 100
+            );
+
+
+        return subtotal - discount;
+
+    }
+
+
+
+    /* =========================================================
+       CHANGE
+    ========================================================= */
+
+    function calculateChange() {
+
+        const total =
+            calculateTotal();
+
+
+        const cash =
+            Number(
+                document.getElementById(
+                    "cashReceived"
+                ).value
+            ) || 0;
+
+
+        let change =
+            cash - total;
+
+
+        if (change < 0) {
+            change = 0;
+        }
+
+
+        document.getElementById(
+            "change"
+        ).textContent =
+            "₱" +
+            change.toFixed(2);
+
+
+        const button =
+            document.getElementById(
+                "completeSaleBtn"
+            );
+
+
+        button.disabled =
+            cart.length === 0 ||
+            cash < total;
+
+    }
+
+
+
+    /* =========================================================
+       SEARCH
+    ========================================================= */
+
+    document
+        .getElementById("productSearch")
+        .addEventListener(
+            "input",
+            function () {
+
+                const search =
+                    this.value
+                        .toLowerCase()
+                        .trim();
+
+
+                const products =
+                    document.querySelectorAll(
+                        ".product-card"
+                    );
+
+
+                products.forEach(product => {
+
+                    const name =
+                        product.dataset.name || "";
+
+
+                    const category =
+                        product.dataset.category || "";
+
+
+                    const matches =
+                        name.includes(search) ||
+                        category.includes(search);
+
+
+                    product.style.display =
+                        matches
+                            ? "flex"
+                            : "none";
+
+                });
+
+            }
+        );
+
+
+
+    /* =========================================================
+       COMPLETE SALE
+    ========================================================= */
+
+    async function completeSale() {
+
+        if (cart.length === 0) {
+
+            alert(
+                "Please add at least one product."
+            );
+
+            return;
+
+        }
+
+
+        const total =
+            calculateTotal();
+
+
+        const cash =
+            Number(
+                document.getElementById(
+                    "cashReceived"
+                ).value
+            ) || 0;
+
+
+        if (cash < total) {
+
+            alert(
+                "Cash received is not enough."
+            );
+
+            return;
+
+        }
+
+
+        const selected =
+            getSelectedDiscountOption();
+
+
+        if (!selected) {
+
+            alert(
+                "Please select a discount class."
+            );
+
+            return;
+
+        }
+
+
+        const discountClassId =
+            selected.value;
+
+
+        const discountPercentage =
+            getDiscountPercentage();
+
+
+        const subtotal =
+            calculateSubtotal();
+
+
+        const discountAmount =
+            subtotal *
+            (
+                discountPercentage / 100
+            );
+
+
+        const change =
+            cash - total;
+
+
+        const form =
+            document.getElementById(
+                "saleForm"
+            );
+
+
+        /*
+         * Remove old fields.
+         */
+
+        form.querySelectorAll(
+            ".dynamic-sale-field"
+        ).forEach(
+            element => element.remove()
+        );
+
+
+        /*
+         * Helper.
+         */
+
+        function addField(name, value) {
+
+            const input =
+                document.createElement(
+                    "input"
+                );
+
+
+            input.type =
+                "hidden";
+
+
+            input.name =
+                name;
+
+
+            input.value =
+                value;
+
+
+            input.className =
+                "dynamic-sale-field";
+
+
+            form.appendChild(input);
+
+        }
+
+
+        /*
+         * SALE DATA
+         */
+
+        addField(
+            "discount_class",
+            discountClassId
+        );
+
+
+        addField(
+            "discount_percent",
+            discountPercentage.toFixed(2)
+        );
+
+
+        addField(
+            "subtotal",
+            subtotal.toFixed(2)
+        );
+
+
+        addField(
+            "discount_amount",
+            discountAmount.toFixed(2)
+        );
+
+
+        addField(
+            "total",
+            total.toFixed(2)
+        );
+
+
+        addField(
+            "payment",
+            cash.toFixed(2)
+        );
+
+
+        addField(
+            "change",
+            change.toFixed(2)
+        );
+
+
+        /*
+         * CART
+         */
+
+        cart.forEach(
+            (item, index) => {
+
+                addField(
+                    `items[${index}][product_id]`,
+                    item.id
+                );
+
+
+                addField(
+                    `items[${index}][quantity]`,
+                    item.quantity
+                );
+
+            }
+        );
+
+
+        /*
+         * BUTTON
+         */
+
+        const button =
+            document.getElementById(
+                "completeSaleBtn"
+            );
+
+
+        button.disabled =
+            true;
+
+
+        button.classList.add(
+            "processing"
+        );
+
+
+        button.textContent =
+            "PROCESSING...";
+
+
+        try {
+
+            /*
+             * Submit using fetch instead of
+             * normal browser redirect.
+             */
+
+            const formData =
+                new FormData(form);
+
+
+            const response =
+                await fetch(
+                    form.action,
+                    {
+                        method: "POST",
+
+                        body: formData,
+
+                        headers: {
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        },
+
+                        credentials: "same-origin"
+                    }
+                );
+
+
+            /*
+             * Backend should return JSON.
+             */
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.message ||
+                    "Unable to complete sale."
+                );
+
+            }
+
+
+            /*
+             * SHOW RECEIPT
+             */
+
+            showReceipt(
+                data
+            );
+
+
+            /*
+             * CLEAR CART
+             */
+
+            cart = [];
+
+
+            document.getElementById(
+                "cashReceived"
+            ).value = "";
+
+
+            document.getElementById(
+                "openDiscount"
+            ).value = "";
+
+
+            renderCart();
+
+
+            updateDiscount();
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            alert(
+                error.message ||
+                "An error occurred while completing the sale."
+            );
+
+
+        } finally {
+
+            button.disabled =
+                true;
+
+            button.classList.remove(
+                "processing"
+            );
+
+            button.textContent =
+                "COMPLETE SALE";
+
+
+            calculateChange();
+
+        }
+
+    }
+
+
+
+    /* =========================================================
+       SHOW RECEIPT
+    ========================================================= */
+
+    function showReceipt(data) {
+
+        const receipt =
+            document.getElementById(
+                "receiptPaper"
+            );
+
+
+        const sale =
+            data.sale || data;
+
+
+        let items =
+            sale.items || [];
+
+
+        /*
+         * If backend returns the items
+         * in a different property.
+         */
+
+        if (
+            !Array.isArray(items) &&
+            Array.isArray(data.items)
+        ) {
+
+            items =
+                data.items;
+
+        }
+
+
+        let itemsHtml =
+            "";
+
+
+        items.forEach(item => {
+
+            const name =
+                item.product_name ||
+                item.name ||
+                "Product";
+
+
+            const quantity =
+                Number(
+                    item.quantity || 0
+                );
+
+
+            const price =
+                Number(
+                    item.price || 0
+                );
+
+
+            const itemSubtotal =
+                Number(
+                    item.subtotal ||
+                    (
+                        quantity *
+                        price
+                    )
+                );
+
+
+            itemsHtml += `
+
+                <div class="receipt-row">
+
+                    <div class="receipt-item-name">
+
+                        ${quantity} x
+                        ${escapeHtml(name)}
+
+                    </div>
+
+                    <div class="receipt-item-price">
+
+                        ₱${itemSubtotal.toFixed(2)}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        });
+
+
+        const saleId =
+            sale.id ||
+            data.sale_id ||
+            "—";
+
+
+        const subtotal =
+            Number(
+                sale.subtotal ||
+                data.subtotal ||
+                0
+            );
+
+
+        const discountPercent =
+            Number(
+                sale.discount_percent ||
+                data.discount_percent ||
+                0
+            );
+
+
+        const discountAmount =
+            Number(
+                sale.discount_amount ||
+                data.discount_amount ||
+                0
+            );
+
+
+        const total =
+            Number(
+                sale.total ||
+                data.total ||
+                0
+            );
+
+
+        const payment =
+            Number(
+                sale.payment ||
+                data.payment ||
+                0
+            );
+
+
+        const change =
+            Number(
+                sale.change ||
+                data.change ||
+                0
+            );
+
+
+        const discountName =
+            sale.discount_class_name ||
+            data.discount_class_name ||
+            "No Discount";
+
+
+        const staff =
+            sale.staff_name ||
+            data.staff_name ||
+            "{{ request.user.username|escapejs }}";
+
+
+        const date =
+            sale.created_at ||
+            data.created_at ||
+            new Date().toLocaleString();
+
+
+        receipt.innerHTML = `
+
+            <div class="receipt-center">
+
+                <img
+                    src="{% static 'images/logo.png' %}"
+                    class="receipt-logo"
+                    alt="BentaPOS"
+                >
+
+                <div class="receipt-business">
+                    BentaPOS
+                </div>
+
+                <div class="receipt-subtitle">
+                    POINT OF SALE
+                </div>
+
+            </div>
+
+
+            <div class="receipt-line"></div>
+
+
+            <div class="receipt-info">
+
+                <div>
+                    Receipt #: ${saleId}
+                </div>
+
+                <div>
+                    Date: ${escapeHtml(String(date))}
+                </div>
+
+                <div>
+                    Staff: ${escapeHtml(String(staff))}
+                </div>
+
+            </div>
+
+
+            <div class="receipt-line"></div>
+
+
+            ${itemsHtml}
+
+
+            <div class="receipt-line"></div>
+
+
+            <div class="receipt-row">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <span>
+                    ₱${subtotal.toFixed(2)}
+                </span>
+
+            </div>
+
+
+            <div class="receipt-row">
+
+                <span>
+                    Discount
+                </span>
+
+                <span>
+                    -₱${discountAmount.toFixed(2)}
+                </span>
+
+            </div>
+
+
+            <div class="receipt-row">
+
+                <span>
+                    ${escapeHtml(String(discountName))}
+                </span>
+
+                <span>
+                    ${discountPercent.toFixed(2)}%
+                </span>
+
+            </div>
+
+
+            <div class="receipt-row receipt-total">
+
+                <span>
+                    TOTAL
+                </span>
+
+                <span>
+                    ₱${total.toFixed(2)}
+                </span>
+
+            </div>
+
+
+            <div class="receipt-line"></div>
+
+
+            <div class="receipt-row">
+
+                <span>
+                    Cash
+                </span>
+
+                <span>
+                    ₱${payment.toFixed(2)}
+                </span>
+
+            </div>
+
+
+            <div class="receipt-row">
+
+                <span>
+                    Change
+                </span>
+
+                <span>
+                    ₱${change.toFixed(2)}
+                </span>
+
+            </div>
+
+
+            <div class="receipt-footer">
+
+                Thank you for your purchase!<br>
+
+                Please come again.<br><br>
+
+                BentaPOS
+
+            </div>
+
+        `;
+
+
+        document
+            .getElementById(
+                "receiptOverlay"
+            )
+            .classList.add("show");
+
+    }
+
+
+
+    /* =========================================================
+       CLOSE RECEIPT
+    ========================================================= */
+
+    function closeReceipt() {
+
+        document
+            .getElementById(
+                "receiptOverlay"
+            )
+            .classList.remove("show");
+
+    }
+
+
+
+    /* =========================================================
+       PRINT RECEIPT
+    ========================================================= */
+
+    function printReceipt() {
+
+        const receipt =
+            document.getElementById(
+                "receiptPaper"
+            ).innerHTML;
+
+
+        const printWindow =
+            window.open(
+                "",
+                "_blank",
+                "width=450,height=700"
+            );
+
+
+        if (!printWindow) {
+
+            alert(
+                "Please allow popups to print the receipt."
+            );
+
+            return;
+
+        }
+
+
+        printWindow.document.write(`
+
+            <!DOCTYPE html>
+
+            <html>
+
+            <head>
+
+                <title>
+                    BentaPOS Receipt
+                </title>
+
+                <style>
+
+                    * {
+                        box-sizing: border-box;
+                    }
+
+                    body {
+
+                        margin: 0;
+
+                        background: #fff;
+
+                        color: #000;
+
+                        font-family:
+                            "Courier New",
+                            monospace;
+
+                    }
+
+                    .receipt-paper {
+
+                        width: 80mm;
+
+                        margin: 0 auto;
+
+                        padding: 5mm;
+
+                        font-size: 11px;
+
+                    }
+
+                    .receipt-center {
+                        text-align: center;
+                    }
+
+                    .receipt-logo {
+
+                        width: 45px;
+
+                        height: 45px;
+
+                        object-fit: contain;
+
+                    }
+
+                    .receipt-business {
+
+                        font-size: 17px;
+
+                        font-weight: bold;
+
+                    }
+
+                    .receipt-subtitle {
+
+                        font-size: 9px;
+
+                    }
+
+                    .receipt-line {
+
+                        border-top:
+                            1px dashed #000;
+
+                        margin: 10px 0;
+
+                    }
+
+                    .receipt-info {
+
+                        line-height: 1.6;
+
+                    }
+
+                    .receipt-row {
+
+                        display: flex;
+
+                        justify-content:
+                            space-between;
+
+                        gap: 5px;
+
+                        margin-bottom: 4px;
+
+                    }
+
+                    .receipt-item-name {
+
+                        flex: 1;
+
+                    }
+
+                    .receipt-item-price {
+
+                        white-space: nowrap;
+
+                    }
+
+                    .receipt-total {
+
+                        font-size: 14px;
+
+                        font-weight: bold;
+
+                    }
+
+                    .receipt-footer {
+
+                        text-align: center;
+
+                        margin-top: 12px;
+
+                        font-size: 9px;
+
+                        line-height: 1.5;
+
+                    }
+
+                    @media print {
+
+                        @page {
+
+                            size: 80mm auto;
+
+                            margin: 0;
+
+                        }
+
+                        body {
+
+                            width: 80mm;
+
+                        }
+
+                    }
+
+                </style>
+
+            </head>
+
+            <body>
+
+                <div class="receipt-paper">
+
+                    ${receipt}
+
+                </div>
+
+            </body>
+
+            </html>
+
+        `);
+
+
+        printWindow.document.close();
+
+
+        printWindow.focus();
+
+
+        setTimeout(
+            function () {
+
+                printWindow.print();
+
+            },
+            300
+        );
+
+    }
+
+
+
+    /* =========================================================
+       ESCAPE HTML
+    ========================================================= */
+
+    function escapeHtml(text) {
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.textContent =
+            text;
+
+
+        return div.innerHTML;
+
+    }
+
+
+
+    /* =========================================================
+       CLOSE POPUP WHEN CLICKING OUTSIDE
+    ========================================================= */
+
+    document
+        .getElementById(
+            "receiptOverlay"
+        )
+        .addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target === this
+                ) {
+
+                    closeReceipt();
+
+                }
+
+            }
+        );
+
+
+
+    /* =========================================================
+       ESC KEY
+    ========================================================= */
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeReceipt();
+
+            }
+
+        }
+    );
+
+
+
+    /* =========================================================
+       INITIALIZE
+    ========================================================= */
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function() {
+
+            updateDiscount();
+
+            renderCart();
+
+        }
+    );
+
+</script>
+
+{% endblock %}

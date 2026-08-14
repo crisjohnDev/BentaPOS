@@ -1,0 +1,446 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Receipt #{{ sale.id }} - BentaPOS
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            padding: 30px;
+
+            background: #050505;
+
+            color: #000;
+
+            font-family:
+                "Courier New",
+                Courier,
+                monospace;
+        }
+
+        .receipt {
+
+            width: 80mm;
+
+            max-width: 100%;
+
+            margin: auto;
+
+            background: #fff;
+
+            padding: 18px;
+        }
+
+        .logo {
+
+            display: block;
+
+            width: 55px;
+
+            height: 55px;
+
+            object-fit: contain;
+
+            margin: 0 auto 8px;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .store-name {
+
+            font-size: 18px;
+
+            font-weight: bold;
+        }
+
+        .store-subtitle {
+
+            font-size: 11px;
+
+            margin-top: 3px;
+        }
+
+        .line {
+
+            border-top: 1px dashed #000;
+
+            margin: 10px 0;
+        }
+
+        .receipt-info {
+
+            font-size: 11px;
+
+            line-height: 1.6;
+        }
+
+        .item {
+
+            margin-bottom: 7px;
+        }
+
+        .item-name {
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            word-break: break-word;
+        }
+
+        .item-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 11px;
+        }
+
+        .summary-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 11px;
+
+            margin-bottom: 5px;
+        }
+
+        .total-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            margin-top: 8px;
+        }
+
+        .footer {
+
+            text-align: center;
+
+            font-size: 10px;
+
+            margin-top: 18px;
+
+            line-height: 1.6;
+        }
+
+        .actions {
+
+            width: 80mm;
+
+            max-width: 100%;
+
+            margin: 15px auto 0;
+
+            display: flex;
+
+            gap: 8px;
+        }
+
+        .actions button,
+        .actions a {
+
+            flex: 1;
+
+            height: 40px;
+
+            border: 1px solid #333;
+
+            background: #111;
+
+            color: #fff;
+
+            text-decoration: none;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            cursor: pointer;
+
+            font-size: 11px;
+        }
+
+        .actions button:hover,
+        .actions a:hover {
+
+            background: #333;
+        }
+
+        @media print {
+
+            body {
+
+                background: #fff;
+
+                padding: 0;
+            }
+
+            .receipt {
+
+                width: 80mm;
+
+                margin: 0;
+
+                padding: 5mm;
+            }
+
+            .actions {
+
+                display: none;
+            }
+
+            @page {
+
+                size: 80mm auto;
+
+                margin: 0;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+<div class="receipt">
+
+    <!-- LOGO -->
+
+    <img
+        src="{% static 'images/logo.png' %}"
+        class="logo"
+        alt="BentaPOS"
+    >
+
+
+    <!-- STORE -->
+
+    <div class="center">
+
+        <div class="store-name">
+            BentaPOS
+        </div>
+
+        <div class="store-subtitle">
+            Point of Sale
+        </div>
+
+    </div>
+
+
+    <div class="line"></div>
+
+
+    <!-- RECEIPT INFO -->
+
+    <div class="receipt-info">
+
+        <div>
+            Receipt:
+            #{{ sale.id }}
+        </div>
+
+        <div>
+            Date:
+            {{ sale.created_at|date:"M d, Y h:i A" }}
+        </div>
+
+        <div>
+            Staff:
+            {{ sale.staff.get_full_name|default:sale.staff.username }}
+        </div>
+
+    </div>
+
+
+    <div class="line"></div>
+
+
+    <!-- ITEMS -->
+
+    {% for item in sale.items.all %}
+
+        <div class="item">
+
+            <div class="item-name">
+
+                {{ item.product.product_model }}
+
+            </div>
+
+            <div class="item-row">
+
+                <span>
+                    {{ item.quantity }}
+                    ×
+                    ₱{{ item.price|floatformat:2 }}
+                </span>
+
+                <span>
+                    ₱{{ item.subtotal|floatformat:2 }}
+                </span>
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+
+    <div class="line"></div>
+
+
+    <!-- SUMMARY -->
+
+    <div class="summary-row">
+
+        <span>
+            Subtotal
+        </span>
+
+        <span>
+            ₱{{ sale.subtotal|floatformat:2 }}
+        </span>
+
+    </div>
+
+
+    <div class="summary-row">
+
+        <span>
+            Discount
+            {% if sale.discount_percent %}
+                ({{ sale.discount_percent|floatformat:2 }}%)
+            {% endif %}
+        </span>
+
+        <span>
+            -₱{{ sale.discount_amount|floatformat:2 }}
+        </span>
+
+    </div>
+
+
+    <div class="total-row">
+
+        <span>
+            TOTAL
+        </span>
+
+        <span>
+            ₱{{ sale.total|floatformat:2 }}
+        </span>
+
+    </div>
+
+
+    <div class="line"></div>
+
+
+    <div class="summary-row">
+
+        <span>
+            Cash
+        </span>
+
+        <span>
+            ₱{{ sale.payment|floatformat:2 }}
+        </span>
+
+    </div>
+
+
+    <div class="summary-row">
+
+        <span>
+            Change
+        </span>
+
+        <span>
+            ₱{{ sale.change|floatformat:2 }}
+        </span>
+
+    </div>
+
+
+    <div class="line"></div>
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        Thank you for your purchase!
+
+        <br>
+
+        Please come again.
+
+        <br><br>
+
+        BentaPOS
+
+    </div>
+
+</div>
+
+
+<!-- ACTIONS -->
+
+<div class="actions">
+
+    <button
+        type="button"
+        onclick="window.print()"
+    >
+        PRINT RECEIPT
+    </button>
+
+    <a
+        href="{% url 'staff-dashboard' %}"
+    >
+        NEW SALE
+    </a>
+
+</div>
+
+
+</body>
+
+</html>

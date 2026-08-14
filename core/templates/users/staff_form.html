@@ -1,0 +1,751 @@
+{% extends 'base.html' %}
+
+{% block title %}
+
+    {% if is_edit %}
+        BentaPOS - Edit Staff
+    {% else %}
+        BentaPOS - Add Staff
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_title %}
+
+    {% if is_edit %}
+        Edit Staff
+    {% else %}
+        Add New Staff
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_subtitle %}
+
+    {% if is_edit %}
+        Update staff account information and permissions
+    {% else %}
+        Create a new system user or staff account
+    {% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       CONTAINER
+    ========================================================= */
+
+    .form-container {
+
+        max-width: 640px;
+
+        margin: 0 auto;
+
+    }
+
+
+    /* =========================================================
+       FORM CARD
+    ========================================================= */
+
+    .form-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 28px;
+
+        box-shadow:
+            0 1px 3px rgba(0, 0, 0, 0.02);
+
+    }
+
+
+    /* =========================================================
+       FORM LAYOUT
+    ========================================================= */
+
+    .form-grid {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 20px;
+
+    }
+
+
+    .form-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 6px;
+
+    }
+
+
+    .form-row {
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 16px;
+
+    }
+
+
+    /* =========================================================
+       LABELS
+    ========================================================= */
+
+    .form-label {
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        color: #222;
+
+    }
+
+
+    /* =========================================================
+       INPUTS
+    ========================================================= */
+
+    .form-input {
+
+        width: 100%;
+
+        height: 42px;
+
+        padding: 0 14px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        color: #111;
+
+        background: #fff;
+
+        outline: none;
+
+        transition:
+            border-color 0.18s ease,
+            box-shadow 0.18s ease;
+
+        box-sizing: border-box;
+
+    }
+
+
+    .form-input:focus {
+
+        border-color: #000;
+
+        box-shadow:
+            0 0 0 3px rgba(0, 0, 0, 0.05);
+
+    }
+
+
+    .form-input::placeholder {
+
+        color: #aaa;
+
+    }
+
+
+    /* =========================================================
+       HELP TEXT
+    ========================================================= */
+
+    .form-help {
+
+        font-size: 11px;
+
+        color: #777;
+
+        line-height: 1.4;
+
+    }
+
+
+    /* =========================================================
+       CHECKBOX
+    ========================================================= */
+
+    .checkbox-group {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 10px 12px;
+
+        background: #fafafa;
+
+        border: 1px solid #eaeaea;
+
+        border-radius: 8px;
+
+        cursor: pointer;
+
+    }
+
+
+    .checkbox-group input[type="checkbox"] {
+
+        width: 16px;
+
+        height: 16px;
+
+        accent-color: #000;
+
+        cursor: pointer;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .checkbox-label {
+
+        font-size: 13px;
+
+        font-weight: 500;
+
+        color: #333;
+
+        cursor: pointer;
+
+        user-select: none;
+
+    }
+
+
+    /* =========================================================
+       ERROR / MESSAGE
+    ========================================================= */
+
+    .error-list {
+
+        background: #fdf2f2;
+
+        border: 1px solid #f8b4b4;
+
+        color: #9b1c1c;
+
+        padding: 12px 16px;
+
+        border-radius: 8px;
+
+        font-size: 13px;
+
+        margin-bottom: 20px;
+
+        line-height: 1.5;
+
+    }
+
+
+    /* =========================================================
+       FORM ACTIONS
+    ========================================================= */
+
+    .form-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: flex-end;
+
+        gap: 12px;
+
+        margin-top: 10px;
+
+        padding-top: 20px;
+
+        border-top: 1px solid #f0f0f0;
+
+    }
+
+
+    /* =========================================================
+       SECONDARY BUTTON
+    ========================================================= */
+
+    .btn-secondary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #333;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+        transition:
+            background 0.18s ease,
+            color 0.18s ease;
+
+    }
+
+
+    .btn-secondary:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+    }
+
+
+    /* =========================================================
+       PRIMARY BUTTON
+    ========================================================= */
+
+    .btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 20px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+        transition:
+            background 0.18s ease,
+            transform 0.1s ease;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background: #222;
+
+    }
+
+
+    .btn-primary:active {
+
+        transform: scale(0.98);
+
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 550px) {
+
+        .form-container {
+
+            width: 100%;
+
+        }
+
+
+        .form-card {
+
+            padding: 20px;
+
+        }
+
+
+        .form-row {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .form-actions {
+
+            flex-direction: column-reverse;
+
+            align-items: stretch;
+
+        }
+
+
+        .btn-primary,
+        .btn-secondary {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="form-container">
+
+    <div class="form-card">
+
+
+        <!-- =====================================================
+             MESSAGES / ERRORS
+        ====================================================== -->
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="error-list">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+
+        <!-- =====================================================
+             FORM
+        ====================================================== -->
+
+        <form
+            method="POST"
+            class="form-grid"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 NAME
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_name"
+                    class="form-label"
+                >
+                    Name *
+                </label>
+
+
+                <input
+                    type="text"
+                    name="name"
+                    id="id_name"
+                    class="form-input"
+                    required
+
+                    {% if is_edit %}
+
+                        value="{{ user.first_name }}"
+
+                    {% else %}
+
+                        value="{{ request.POST.name|default:'' }}"
+
+                    {% endif %}
+
+                    placeholder="e.g. Juan Dela Cruz"
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 USERNAME
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_username"
+                    class="form-label"
+                >
+                    Username *
+                </label>
+
+
+                <input
+                    type="text"
+                    name="username"
+                    id="id_username"
+                    class="form-input"
+                    required
+
+                    {% if is_edit %}
+
+                        value="{{ user.username }}"
+
+                    {% else %}
+
+                        value="{{ request.POST.username|default:'' }}"
+
+                    {% endif %}
+
+                    placeholder="e.g. juandela"
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 PASSWORD
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_password1"
+                    class="form-label"
+                >
+
+                    {% if is_edit %}
+
+                        New Password
+
+                    {% else %}
+
+                        Password *
+
+                    {% endif %}
+
+                </label>
+
+
+                <input
+                    type="password"
+                    name="password1"
+                    id="id_password1"
+                    class="form-input"
+
+                    {% if not is_edit %}
+                        required
+                    {% endif %}
+
+                    {% if is_edit %}
+
+                        placeholder="Leave blank to keep current password"
+
+                    {% else %}
+
+                        placeholder="Enter password"
+
+                    {% endif %}
+
+                >
+
+
+                {% if is_edit %}
+
+                    <span class="form-help">
+
+                        Leave blank if you don't want to
+                        change the current password.
+
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- =================================================
+                 RE-ENTER PASSWORD
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_password2"
+                    class="form-label"
+                >
+
+                    {% if is_edit %}
+
+                        Re-enter New Password
+
+                    {% else %}
+
+                        Re-enter Password *
+
+                    {% endif %}
+
+                </label>
+
+
+                <input
+                    type="password"
+                    name="password2"
+                    id="id_password2"
+                    class="form-input"
+
+                    {% if not is_edit %}
+                        required
+                    {% endif %}
+
+                    {% if is_edit %}
+
+                        placeholder="Re-enter new password"
+
+                    {% else %}
+
+                        placeholder="Re-enter password"
+
+                    {% endif %}
+
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 PERMISSIONS
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label class="form-label">
+
+                    Permissions & Access
+
+                </label>
+
+
+                <label class="checkbox-group">
+
+                    <input
+                        type="checkbox"
+                        name="is_staff"
+                        id="id_is_staff"
+
+                        {% if is_edit %}
+
+                            {% if user.is_staff %}
+                                checked
+                            {% endif %}
+
+                        {% else %}
+
+                            checked
+
+                        {% endif %}
+
+                    >
+
+
+                    <span class="checkbox-label">
+
+                        Grant Staff Access
+
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+
+            <div class="form-actions">
+
+
+                <!-- CANCEL -->
+
+                <a
+                    href="{% url 'staff_list' %}"
+                    class="btn-secondary"
+                >
+
+                    Cancel
+
+                </a>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    {% if is_edit %}
+
+                        Save Changes
+
+                    {% else %}
+
+                        Create Staff Account
+
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

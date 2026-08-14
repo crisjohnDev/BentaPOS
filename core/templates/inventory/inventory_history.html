@@ -1,0 +1,1334 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+BentaPOS - Inventory History
+{% endblock %}
+
+
+{% block page_title %}
+Inventory History
+{% endblock %}
+
+
+{% block page_subtitle %}
+Track all stock movements and inventory changes
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================= */
+
+    .history-page {
+
+        width: 100%;
+
+    }
+
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+
+    .page-header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        margin-bottom: 24px;
+
+    }
+
+
+    .header-actions {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+    }
+
+
+    .btn-secondary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #333;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+    }
+
+
+    .btn-secondary:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+    }
+
+
+    .btn-primary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+    }
+
+
+    .btn-primary:hover {
+
+        background: #222;
+
+        color: #fff;
+
+    }
+
+
+    /* =========================================================
+       SUMMARY
+    ========================================================= */
+
+    .summary-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 16px;
+
+        margin-bottom: 24px;
+
+    }
+
+
+    .summary-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 20px;
+
+        min-height: 105px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content: space-between;
+
+    }
+
+
+    .summary-label {
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        color: #777;
+
+        text-transform: uppercase;
+
+        letter-spacing: .7px;
+
+    }
+
+
+    .summary-value {
+
+        font-size: 27px;
+
+        font-weight: 700;
+
+        color: #111;
+
+        line-height: 1;
+
+    }
+
+
+    .summary-description {
+
+        font-size: 11px;
+
+        color: #999;
+
+    }
+
+
+    /* =========================================================
+       FILTER
+    ========================================================= */
+
+    .filter-card {
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        padding: 16px;
+
+        margin-bottom: 18px;
+
+    }
+
+
+    .filter-form {
+
+        display: grid;
+
+        grid-template-columns:
+            1fr 190px 190px auto;
+
+        gap: 10px;
+
+        align-items: center;
+
+    }
+
+
+    .filter-input,
+    .filter-select {
+
+        height: 40px;
+
+        width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 0 12px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #222;
+
+        font-size: 13px;
+
+        outline: none;
+
+    }
+
+
+    .filter-input:focus,
+    .filter-select:focus {
+
+        border-color: #000;
+
+        box-shadow:
+            0 0 0 3px rgba(0,0,0,.05);
+
+    }
+
+
+    .filter-button {
+
+        height: 40px;
+
+        padding: 0 18px;
+
+        border: none;
+
+        border-radius: 8px;
+
+        background: #000;
+
+        color: #fff;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        cursor: pointer;
+
+    }
+
+
+    .filter-button:hover {
+
+        background: #222;
+
+    }
+
+
+    .clear-filter {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        height: 40px;
+
+        padding: 0 14px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #444;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+    }
+
+
+    .clear-filter:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .table-card {
+
+        width: 100%;
+
+        background: #fff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+    }
+
+
+    .data-table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        text-align: left;
+
+        font-size: 13px;
+
+    }
+
+
+    .data-table th {
+
+        background: #fafafa;
+
+        padding: 14px 18px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        color: #555;
+
+        text-transform: uppercase;
+
+        letter-spacing: .7px;
+
+        border-bottom: 1px solid #eaeaea;
+
+        white-space: nowrap;
+
+    }
+
+
+    .data-table td {
+
+        padding: 15px 18px;
+
+        border-bottom: 1px solid #f0f0f0;
+
+        color: #222;
+
+        vertical-align: middle;
+
+    }
+
+
+    .data-table tbody tr:last-child td {
+
+        border-bottom: none;
+
+    }
+
+
+    .data-table tbody tr:hover {
+
+        background: #fcfcfc;
+
+    }
+
+
+    /* =========================================================
+       PRODUCT
+    ========================================================= */
+
+    .product-cell {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+    }
+
+
+    .product-avatar {
+
+        width: 34px;
+
+        height: 34px;
+
+        border-radius: 8px;
+
+        background: #111;
+
+        color: #fff;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        font-size: 11px;
+
+        font-weight: 700;
+
+        flex-shrink: 0;
+
+    }
+
+
+    .product-name {
+
+        font-weight: 600;
+
+        color: #111;
+
+    }
+
+
+    .product-id {
+
+        margin-top: 2px;
+
+        font-size: 10px;
+
+        color: #999;
+
+    }
+
+
+    /* =========================================================
+       TRANSACTION BADGES
+    ========================================================= */
+
+    .transaction-badge {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 5px 10px;
+
+        border-radius: 20px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+
+    }
+
+
+    .transaction-in {
+
+        background: #e6f4ea;
+
+        color: #137333;
+
+    }
+
+
+    .transaction-out {
+
+        background: #fce8e6;
+
+        color: #c5221f;
+
+    }
+
+
+    .transaction-adjustment {
+
+        background: #fef7e0;
+
+        color: #b06000;
+
+    }
+
+
+    /* =========================================================
+       QUANTITY
+    ========================================================= */
+
+    .quantity-in {
+
+        color: #137333;
+
+        font-weight: 700;
+
+    }
+
+
+    .quantity-out {
+
+        color: #c5221f;
+
+        font-weight: 700;
+
+    }
+
+
+    .quantity-adjustment {
+
+        color: #b06000;
+
+        font-weight: 700;
+
+    }
+
+
+    .balance {
+
+        font-weight: 700;
+
+        color: #111;
+
+    }
+
+
+    /* =========================================================
+       REFERENCE
+    ========================================================= */
+
+    .reference {
+
+        font-size: 12px;
+
+        color: #555;
+
+    }
+
+
+    .no-reference {
+
+        color: #aaa;
+
+        font-size: 12px;
+
+    }
+
+
+    /* =========================================================
+       USER
+    ========================================================= */
+
+    .user-name {
+
+        font-size: 12px;
+
+        font-weight: 500;
+
+        color: #444;
+
+    }
+
+
+    /* =========================================================
+       DATE
+    ========================================================= */
+
+    .date {
+
+        white-space: nowrap;
+
+        font-size: 12px;
+
+        color: #666;
+
+    }
+
+
+    /* =========================================================
+       EMPTY
+    ========================================================= */
+
+    .empty-state {
+
+        text-align: center;
+
+        color: #888;
+
+        padding: 45px 20px !important;
+
+    }
+
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 1200px) {
+
+        .summary-grid {
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+        }
+
+    }
+
+
+    @media (max-width: 1000px) {
+
+        .filter-form {
+
+            grid-template-columns:
+                1fr 1fr;
+
+        }
+
+
+        .table-card {
+
+            overflow-x: auto;
+
+        }
+
+
+        .data-table {
+
+            min-width: 1100px;
+
+        }
+
+    }
+
+
+    @media (max-width: 700px) {
+
+        .page-header-actions {
+
+            align-items: stretch;
+
+            flex-direction: column;
+
+        }
+
+
+        .header-actions {
+
+            width: 100%;
+
+            flex-direction: column;
+
+        }
+
+
+        .btn-primary,
+        .btn-secondary {
+
+            width: 100%;
+
+        }
+
+
+        .summary-grid {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .filter-form {
+
+            grid-template-columns: 1fr;
+
+        }
+
+
+        .filter-button,
+        .clear-filter {
+
+            width: 100%;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="history-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="page-header-actions">
+
+        <div></div>
+
+
+        <div class="header-actions">
+
+            <a
+                href="{% url 'inventory' %}"
+                class="btn-secondary"
+            >
+
+                Back to Inventory
+
+            </a>
+
+
+            <a
+                href="{% url 'stock-in' %}"
+                class="btn-primary"
+            >
+
+                + Stock In
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Total Transactions
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ total_transactions }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Inventory movements
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Stock In
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ stock_in_count }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Incoming stock records
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Stock Out
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ stock_out_count }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Outgoing stock records
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="summary-label">
+
+                Adjustments
+
+            </div>
+
+
+            <div class="summary-value">
+
+                {{ adjustment_count }}
+
+            </div>
+
+
+            <div class="summary-description">
+
+                Manual adjustments
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <div class="filter-card">
+
+        <form
+            method="GET"
+            class="filter-form"
+        >
+
+
+            <!-- SEARCH -->
+
+            <input
+                type="text"
+                name="search"
+                class="filter-input"
+                placeholder="Search product, reference, or user..."
+                value="{{ search }}"
+            >
+
+
+            <!-- PRODUCT -->
+
+            <select
+                name="product"
+                class="filter-select"
+            >
+
+                <option value="">
+
+                    All Products
+
+                </option>
+
+
+                {% for product in products %}
+
+                    <option
+                        value="{{ product.id }}"
+                        {% if selected_product|stringformat:"s" == product.id|stringformat:"s" %}
+                            selected
+                        {% endif %}
+                    >
+
+                        {{ product.product_model }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <!-- TRANSACTION TYPE -->
+
+            <select
+                name="transaction_type"
+                class="filter-select"
+            >
+
+                <option value="">
+
+                    All Transactions
+
+                </option>
+
+
+                <option
+                    value="IN"
+                    {% if transaction_type == "IN" %}
+                        selected
+                    {% endif %}
+                >
+
+                    Stock In
+
+                </option>
+
+
+                <option
+                    value="OUT"
+                    {% if transaction_type == "OUT" %}
+                        selected
+                    {% endif %}
+                >
+
+                    Stock Out
+
+                </option>
+
+
+                <option
+                    value="ADJUSTMENT"
+                    {% if transaction_type == "ADJUSTMENT" %}
+                        selected
+                    {% endif %}
+                >
+
+                    Adjustment
+
+                </option>
+
+            </select>
+
+
+            <!-- FILTER -->
+
+            <button
+                type="submit"
+                class="filter-button"
+            >
+
+                Filter
+
+            </button>
+
+        </form>
+
+
+        {% if search or transaction_type or selected_product %}
+
+            <div style="margin-top:10px;">
+
+                <a
+                    href="{% url 'inventory-history' %}"
+                    class="clear-filter"
+                >
+
+                    Clear Filters
+
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         HISTORY TABLE
+    ====================================================== -->
+
+    <div class="table-card">
+
+        <table class="data-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Product
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Quantity
+                    </th>
+
+                    <th>
+                        Previous
+                    </th>
+
+                    <th>
+                        New Qty
+                    </th>
+
+                    <th>
+                        Reference
+                    </th>
+
+                    <th>
+                        Performed By
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                {% for transaction in transactions %}
+
+                <tr>
+
+
+                    <!-- DATE -->
+
+                    <td>
+
+                        <div class="date">
+
+                            {{ transaction.created_at|date:"M d, Y" }}
+
+                            <br>
+
+                            {{ transaction.created_at|date:"h:i A" }}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- PRODUCT -->
+
+                    <td>
+
+                        <div class="product-cell">
+
+                            <div class="product-avatar">
+
+                                {{ transaction.product.product_model|first|upper }}
+
+                            </div>
+
+
+                            <div>
+
+                                <div class="product-name">
+
+                                    {{ transaction.product.product_model }}
+
+                                </div>
+
+
+                                <div class="product-id">
+
+                                    Product #{{ transaction.product.id }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- TYPE -->
+
+                    <td>
+
+
+                        {% if transaction.transaction_type == "IN" %}
+
+                            <span
+                                class="transaction-badge transaction-in"
+                            >
+
+                                Stock In
+
+                            </span>
+
+
+                        {% elif transaction.transaction_type == "OUT" %}
+
+                            <span
+                                class="transaction-badge transaction-out"
+                            >
+
+                                Stock Out
+
+                            </span>
+
+
+                        {% else %}
+
+                            <span
+                                class="transaction-badge transaction-adjustment"
+                            >
+
+                                Adjustment
+
+                            </span>
+
+                        {% endif %}
+
+
+                    </td>
+
+
+                    <!-- QUANTITY -->
+
+                    <td>
+
+
+                        {% if transaction.transaction_type == "IN" %}
+
+                            <span class="quantity-in">
+
+                                +{{ transaction.quantity }}
+
+                            </span>
+
+
+                        {% elif transaction.transaction_type == "OUT" %}
+
+                            <span class="quantity-out">
+
+                                -{{ transaction.quantity }}
+
+                            </span>
+
+
+                        {% else %}
+
+                            <span class="quantity-adjustment">
+
+                                {{ transaction.quantity }}
+
+                            </span>
+
+                        {% endif %}
+
+
+                    </td>
+
+
+                    <!-- PREVIOUS -->
+
+                    <td>
+
+                        <span class="balance">
+
+                            {{ transaction.previous_qty }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- NEW -->
+
+                    <td>
+
+                        <span class="balance">
+
+                            {{ transaction.new_qty }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- REFERENCE -->
+
+                    <td>
+
+                        {% if transaction.reference %}
+
+                            <span class="reference">
+
+                                {{ transaction.reference }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="no-reference">
+
+                                —
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- USER -->
+
+                    <td>
+
+                        {% if transaction.created_by %}
+
+                            <span class="user-name">
+
+                                {{ transaction.created_by.username }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="no-reference">
+
+                                System
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        class="empty-state"
+                    >
+
+                        No inventory transactions found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+</div>
+
+{% endblock %}
