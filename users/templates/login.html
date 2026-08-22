@@ -1,3 +1,4 @@
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -13,6 +14,11 @@
     >
 
     <title>BentaPOS - Login</title>
+
+
+    <!-- =========================================================
+         FAVICON
+    ========================================================== -->
 
     <link
         rel="icon"
@@ -68,7 +74,7 @@
 
 
         /* =========================================================
-           MAIN
+           MAIN LOGIN PAGE
         ========================================================= */
 
         .login-page {
@@ -181,7 +187,7 @@
 
 
         /* =========================================================
-           LOGIN
+           LOGIN SECTION
         ========================================================= */
 
         .login-section {
@@ -225,7 +231,7 @@
 
 
         /* =========================================================
-           ERROR
+           ERROR MESSAGE
         ========================================================= */
 
         .error {
@@ -243,6 +249,8 @@
             color: #ff7070;
 
             font-size: 13px;
+
+            line-height: 1.4;
         }
 
 
@@ -340,7 +348,7 @@
 
 
         /* =========================================================
-           SHOW / HIDE PASSWORD BUTTON
+           PASSWORD TOGGLE
         ========================================================= */
 
         .password-toggle {
@@ -421,6 +429,8 @@
 
             margin-top: 7px;
 
+            padding: 0;
+
             border: 0;
 
             border-radius: 9px;
@@ -437,7 +447,8 @@
 
             transition:
                 background 0.2s ease,
-                transform 0.2s ease;
+                transform 0.2s ease,
+                opacity 0.2s ease;
         }
 
 
@@ -454,6 +465,113 @@
 
 
         /* =========================================================
+           LOGIN BUTTON LOADING STATE
+        ========================================================= */
+
+        .login-button.loading {
+
+            cursor: wait;
+
+            background: #fff;
+
+            color: #000;
+
+            opacity: 0.75;
+
+            transform: none;
+
+        }
+
+
+        .login-button:disabled {
+
+            cursor: wait;
+        }
+
+
+        /* =========================================================
+           BUTTON CONTENT
+        ========================================================= */
+
+        .button-content {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 9px;
+        }
+
+
+        /* =========================================================
+           SPINNER
+        ========================================================= */
+
+        .button-spinner {
+
+            display: none;
+
+            width: 17px;
+
+            height: 17px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            border: 2px solid
+                rgba(0, 0, 0, 0.20);
+
+            border-top-color: #000;
+
+            animation:
+                bentapos-spinner
+                0.65s
+                linear
+                infinite;
+        }
+
+
+        /*
+         * IMPORTANT:
+         * Spinner becomes visible only when
+         * the button has the .loading class.
+         */
+
+        .login-button.loading .button-spinner {
+
+            display: block;
+        }
+
+
+        /* =========================================================
+           SPINNER ANIMATION
+        ========================================================= */
+
+        @keyframes bentapos-spinner {
+
+            0% {
+
+                transform: rotate(0deg);
+
+            }
+
+            100% {
+
+                transform: rotate(360deg);
+
+            }
+
+        }
+
+
+        /* =========================================================
            FOOTER
         ========================================================= */
 
@@ -466,6 +584,8 @@
             color: #555;
 
             font-size: 12px;
+
+            line-height: 1.5;
         }
 
 
@@ -586,6 +706,10 @@
 <body>
 
 
+    <!-- =========================================================
+         LOGIN PAGE
+    ========================================================== -->
+
     <main class="login-page">
 
 
@@ -635,6 +759,10 @@
             <section class="login-section">
 
 
+                <!-- =================================================
+                     LOGIN HEADER
+                ================================================== -->
+
                 <div class="login-header">
 
                     <h1>
@@ -674,7 +802,11 @@
                      LOGIN FORM
                 ================================================== -->
 
-                <form method="POST">
+                <form
+                    method="POST"
+                    id="loginForm"
+                    novalidate
+                >
 
                     {% csrf_token %}
 
@@ -736,7 +868,9 @@
                             >
 
 
-                            <!-- SHOW / HIDE BUTTON -->
+                            <!-- =========================================
+                                 SHOW / HIDE PASSWORD
+                            ========================================== -->
 
                             <button
                                 type="button"
@@ -745,9 +879,6 @@
                                 aria-label="Show password"
                                 title="Show password"
                             >
-
-
-                                <!-- EYE ICON -->
 
                                 <svg
                                     id="eyeIcon"
@@ -773,7 +904,6 @@
 
                                 </svg>
 
-
                             </button>
 
 
@@ -790,9 +920,29 @@
                     <button
                         type="submit"
                         class="login-button"
+                        id="loginButton"
                     >
 
-                        Sign In
+                        <span class="button-content">
+
+                            <!-- Spinner -->
+
+                            <span
+                                class="button-spinner"
+                                id="buttonSpinner"
+                                aria-hidden="true"
+                            ></span>
+
+
+                            <!-- Button Text -->
+
+                            <span id="buttonText">
+
+                                Sign In
+
+                            </span>
+
+                        </span>
 
                     </button>
 
@@ -818,15 +968,33 @@
 
         </div>
 
+
     </main>
 
 
 
     <!-- =========================================================
-         SHOW / HIDE PASSWORD JAVASCRIPT
-    ========================================================= -->
+         JAVASCRIPT
+    ========================================================== -->
 
     <script>
+
+
+        /* =========================================================
+           ELEMENTS
+        ========================================================= */
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const loginButton =
+            document.getElementById("loginButton");
+
+        const buttonText =
+            document.getElementById("buttonText");
+
+        const buttonSpinner =
+            document.getElementById("buttonSpinner");
 
         const passwordInput =
             document.getElementById("password");
@@ -838,31 +1006,24 @@
             document.getElementById("eyeIcon");
 
 
+
+        /* =========================================================
+           PASSWORD SHOW / HIDE
+        ========================================================== */
+
         passwordToggle.addEventListener(
             "click",
             function () {
 
-                /*
-                 * Check current password type
-                 */
-
                 const isPassword =
                     passwordInput.type === "password";
 
-
-                /*
-                 * Change input type
-                 */
 
                 passwordInput.type =
                     isPassword
                         ? "text"
                         : "password";
 
-
-                /*
-                 * Update button accessibility
-                 */
 
                 passwordToggle.setAttribute(
                     "aria-label",
@@ -872,10 +1033,6 @@
                 );
 
 
-                /*
-                 * Update tooltip
-                 */
-
                 passwordToggle.setAttribute(
                     "title",
                     isPassword
@@ -884,9 +1041,9 @@
                 );
 
 
-                /*
-                 * Change eye icon
-                 */
+                /* =============================================
+                   HIDDEN EYE
+                ============================================== */
 
                 if (isPassword) {
 
@@ -917,6 +1074,11 @@
 
                     `;
 
+
+                /* =============================================
+                   NORMAL EYE
+                ============================================== */
+
                 } else {
 
                     eyeIcon.innerHTML = `
@@ -939,6 +1101,113 @@
 
             }
         );
+
+
+
+        /* =========================================================
+           LOGIN SUBMIT / LOADING
+        ========================================================== */
+
+        let loginSubmitting = false;
+
+
+        loginForm.addEventListener(
+            "submit",
+            function (event) {
+
+
+                /* =============================================
+                   PREVENT DOUBLE CLICK
+                ============================================== */
+
+                if (loginSubmitting) {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /* =============================================
+                   MANUAL VALIDATION
+                ============================================== */
+
+                const username =
+                    document.getElementById("username");
+
+                const password =
+                    document.getElementById("password");
+
+
+                if (
+                    username.value.trim() === "" ||
+                    password.value.trim() === ""
+                ) {
+
+                    /*
+                     * Do NOT show loading if
+                     * fields are empty.
+                     */
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /* =============================================
+                   STOP NORMAL SUBMIT TEMPORARILY
+                ============================================== */
+
+                event.preventDefault();
+
+
+                /* =============================================
+                   SET LOADING STATE
+                ============================================== */
+
+                loginSubmitting = true;
+
+
+                loginButton.disabled = true;
+
+
+                loginButton.classList.add(
+                    "loading"
+                );
+
+
+                buttonText.textContent =
+                    "Signing in...";
+
+
+                /*
+                 * Force the browser to render the
+                 * spinner BEFORE Django navigation.
+                 */
+
+                requestAnimationFrame(function () {
+
+                    requestAnimationFrame(function () {
+
+                        /*
+                         * Submit the form normally.
+                         *
+                         * This sends the POST request
+                         * to Django.
+                         */
+
+                        loginForm.submit();
+
+                    });
+
+                });
+
+            }
+        );
+
 
     </script>
 
