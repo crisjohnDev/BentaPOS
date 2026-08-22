@@ -12,478 +12,768 @@
     Overview of your sales and inventory
 {% endblock %}
 
+
 {% block extra_css %}
 
 <style>
 
-    /* =========================================================
-       DASHBOARD
-    ========================================================= */
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
-    .dashboard-page {
-        width: 100%;
-    }
+.dashboard-page {
+    width: 100%;
+}
 
 
-    /* =========================================================
-       STAT CARDS
-    ========================================================= */
+/* =========================================================
+   MAIN STATISTICS
+========================================================= */
+
+.dashboard-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+}
+
+
+.dashboard-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    min-height: 135px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.dashboard-card:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 24px
+        rgba(0,0,0,.06);
+}
+
+
+.dashboard-card-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.dashboard-card-label {
+
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+}
+
+
+.dashboard-card-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    border-radius: 9px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+.dashboard-card-icon svg {
+
+    width: 19px;
+
+    height: 19px;
+}
+
+
+.icon-green {
+
+    background: #e9f8ef;
+
+    color: #16803c;
+}
+
+
+.icon-blue {
+
+    background: #eaf3ff;
+
+    color: #1769aa;
+}
+
+
+.icon-purple {
+
+    background: #f2ecff;
+
+    color: #6d3dcc;
+}
+
+
+.icon-orange {
+
+    background: #fff3e6;
+
+    color: #c56a00;
+}
+
+
+.icon-red {
+
+    background: #ffeded;
+
+    color: #d93025;
+}
+
+
+.icon-gray {
+
+    background: #f1f1f1;
+
+    color: #555;
+}
+
+
+.dashboard-card-value {
+
+    margin-top: 14px;
+
+    color: #111;
+
+    font-size: 26px;
+
+    font-weight: 700;
+}
+
+
+.dashboard-card-description {
+
+    margin-top: 7px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   SECONDARY STATISTICS
+========================================================= */
+
+.dashboard-secondary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+}
+
+
+.secondary-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 18px;
+
+    min-height: 115px;
+}
+
+
+.secondary-title {
+
+    color: #777;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.secondary-value {
+
+    margin-top: 11px;
+
+    color: #111;
+
+    font-size: 22px;
+
+    font-weight: 700;
+}
+
+
+.secondary-description {
+
+    margin-top: 5px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   SALES DIAGRAM
+========================================================= */
+
+.sales-chart-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+.sales-chart-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+
+.sales-chart-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.sales-chart-subtitle {
+
+    margin-top: 4px;
+
+    font-size: 10px;
+
+    color: #999;
+}
+
+
+.chart-container {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 330px;
+}
+
+
+/* =========================================================
+   SALES COMPARISON
+========================================================= */
+
+.comparison-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+.comparison-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.comparison-subtitle {
+
+    margin-top: 4px;
+
+    font-size: 10px;
+
+    color: #999;
+}
+
+
+.comparison-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-top: 17px;
+}
+
+
+.comparison-item {
+
+    background: #f8f8f8;
+
+    border-radius: 9px;
+
+    padding: 16px;
+}
+
+
+.comparison-item-label {
+
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+
+.comparison-item-value {
+
+    margin-top: 7px;
+
+    color: #111;
+
+    font-size: 19px;
+
+    font-weight: 700;
+}
+
+
+.comparison-change {
+
+    margin-top: 5px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+.change-positive {
+
+    color: #16803c;
+}
+
+
+.change-negative {
+
+    color: #d93025;
+}
+
+
+.change-neutral {
+
+    color: #888;
+}
+
+
+/* =========================================================
+   RECENT SALES
+========================================================= */
+
+.recent-sales-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    margin-bottom: 20px;
+}
+
+
+.recent-sales-header {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.recent-sales-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+
+.recent-sales-subtitle {
+
+    margin-top: 3px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+.recent-sales-link {
+
+    color: #111;
+
+    font-size: 11px;
+
+    font-weight: 600;
+}
+
+
+.table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.sales-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 700px;
+}
+
+
+.sales-table th {
+
+    padding: 12px 18px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #eee;
+
+    color: #777;
+
+    font-size: 10px;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+}
+
+
+.sales-table td {
+
+    padding: 13px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    color: #333;
+
+    font-size: 12px;
+}
+
+
+.sales-table tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+.sale-id {
+
+    color: #111;
+
+    font-weight: 700;
+}
+
+
+.sale-total {
+
+    color: #16803c;
+
+    font-weight: 700;
+}
+
+
+.sale-staff {
+
+    color: #666;
+}
+
+
+.empty-sales {
+
+    padding: 40px;
+
+    text-align: center;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.quick-actions-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 20px;
+}
+
+
+.quick-actions-title {
+
+    color: #111;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+
+.quick-actions-subtitle {
+
+    margin-top: 4px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+.quick-actions {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+
+    margin-top: 17px;
+}
+
+
+.quick-action {
+
+    min-height: 70px;
+
+    padding: 13px;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 9px;
+
+    background: #fff;
+
+    color: #222;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    transition: .18s ease;
+}
+
+
+.quick-action:hover {
+
+    background: #f8f8f8;
+
+    border-color: #d5d5d5;
+
+    transform: translateY(-1px);
+}
+
+
+.quick-action-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 8px;
+
+    background: #f1f1f1;
+
+    color: #111;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-shrink: 0;
+}
+
+
+.quick-action-icon svg {
+
+    width: 17px;
+
+    height: 17px;
+}
+
+
+.quick-action-title {
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+.quick-action-description {
+
+    margin-top: 3px;
+
+    color: #999;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
 
     .dashboard-stats {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        margin-bottom: 22px;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
-
-
-    .dashboard-card {
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 12px;
-        padding: 20px;
-        min-height: 135px;
-
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-
-        transition:
-            transform 0.18s ease,
-            box-shadow 0.18s ease;
-    }
-
-
-    .dashboard-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    }
-
-
-    /* =========================================================
-       CARD TOP
-    ========================================================= */
-
-    .dashboard-card-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-
-    .dashboard-card-label {
-        color: #888;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-    }
-
-
-    .dashboard-card-icon {
-        width: 38px;
-        height: 38px;
-
-        border-radius: 9px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        flex-shrink: 0;
-    }
-
-
-    .dashboard-card-icon svg {
-        width: 19px;
-        height: 19px;
-    }
-
-
-    /* =========================================================
-       ICON COLORS
-    ========================================================= */
-
-    .icon-green {
-        background: #e9f8ef;
-        color: #16803c;
-    }
-
-
-    .icon-blue {
-        background: #eaf3ff;
-        color: #1769aa;
-    }
-
-
-    .icon-purple {
-        background: #f2ecff;
-        color: #6d3dcc;
-    }
-
-
-    .icon-orange {
-        background: #fff3e6;
-        color: #c56a00;
-    }
-
-
-    .icon-red {
-        background: #ffeded;
-        color: #d93025;
-    }
-
-
-    .icon-gray {
-        background: #f1f1f1;
-        color: #555;
-    }
-
-
-    /* =========================================================
-       CARD VALUE
-    ========================================================= */
-
-    .dashboard-card-value {
-        margin-top: 15px;
-
-        color: #111;
-
-        font-size: 27px;
-        line-height: 1;
-
-        font-weight: 700;
-    }
-
-
-    .dashboard-card-description {
-        margin-top: 8px;
-
-        color: #999;
-
-        font-size: 10px;
-    }
-
-
-    /* =========================================================
-       SECONDARY CARDS
-    ========================================================= */
 
     .dashboard-secondary {
-        display: grid;
 
         grid-template-columns:
-            repeat(4, minmax(0, 1fr));
-
-        gap: 16px;
-
-        margin-bottom: 22px;
+            repeat(2, minmax(0, 1fr));
     }
-
-
-    .secondary-card {
-        background: #fff;
-
-        border: 1px solid #e5e5e5;
-
-        border-radius: 12px;
-
-        padding: 18px;
-
-        min-height: 120px;
-    }
-
-
-    .secondary-title {
-        color: #777;
-
-        font-size: 10px;
-
-        font-weight: 700;
-
-        text-transform: uppercase;
-
-        letter-spacing: 0.4px;
-    }
-
-
-    .secondary-value {
-        margin-top: 12px;
-
-        color: #111;
-
-        font-size: 23px;
-
-        font-weight: 700;
-    }
-
-
-    .secondary-description {
-        margin-top: 5px;
-
-        color: #999;
-
-        font-size: 10px;
-    }
-
-
-    /* =========================================================
-       SALES COMPARISON CARD
-    ========================================================= */
-
-    .comparison-card {
-        background: #fff;
-
-        border: 1px solid #e5e5e5;
-
-        border-radius: 12px;
-
-        padding: 20px;
-
-        margin-bottom: 22px;
-    }
-
-
-    .comparison-header {
-        display: flex;
-
-        align-items: center;
-
-        justify-content: space-between;
-
-        gap: 15px;
-    }
-
-
-    .comparison-title {
-        color: #111;
-
-        font-size: 14px;
-
-        font-weight: 700;
-    }
-
-
-    .comparison-subtitle {
-        margin-top: 4px;
-
-        color: #999;
-
-        font-size: 10px;
-    }
-
-
-    .comparison-grid {
-        display: grid;
-
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
-
-        gap: 14px;
-
-        margin-top: 18px;
-    }
-
-
-    .comparison-item {
-        padding: 16px;
-
-        border-radius: 9px;
-
-        background: #f8f8f8;
-    }
-
-
-    .comparison-item-label {
-        color: #888;
-
-        font-size: 10px;
-
-        font-weight: 600;
-    }
-
-
-    .comparison-item-value {
-        margin-top: 7px;
-
-        color: #111;
-
-        font-size: 18px;
-
-        font-weight: 700;
-    }
-
-
-    /* =========================================================
-       QUICK ACTIONS
-    ========================================================= */
-
-    .quick-actions-card {
-        background: #fff;
-
-        border: 1px solid #e5e5e5;
-
-        border-radius: 12px;
-
-        padding: 20px;
-    }
-
-
-    .quick-actions-title {
-        color: #111;
-
-        font-size: 14px;
-
-        font-weight: 700;
-    }
-
-
-    .quick-actions-subtitle {
-        margin-top: 4px;
-
-        color: #999;
-
-        font-size: 10px;
-    }
-
 
     .quick-actions {
-        display: grid;
 
         grid-template-columns:
-            repeat(4, minmax(0, 1fr));
-
-        gap: 12px;
-
-        margin-top: 17px;
+            repeat(2, minmax(0, 1fr));
     }
 
+}
 
-    .quick-action {
-        min-height: 72px;
 
-        padding: 14px;
+@media (max-width: 700px) {
 
-        border: 1px solid #e5e5e5;
+    .dashboard-stats {
 
-        border-radius: 9px;
-
-        background: #fff;
-
-        color: #222;
-
-        display: flex;
-
-        align-items: center;
-
-        gap: 11px;
-
-        transition: 0.18s ease;
+        grid-template-columns: 1fr;
     }
 
+    .dashboard-secondary {
 
-    .quick-action:hover {
-        background: #f8f8f8;
-
-        border-color: #d5d5d5;
-
-        transform: translateY(-1px);
+        grid-template-columns: 1fr;
     }
 
+    .comparison-grid {
 
-    .quick-action-icon {
-        width: 34px;
-
-        height: 34px;
-
-        border-radius: 8px;
-
-        background: #f1f1f1;
-
-        color: #111;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        flex-shrink: 0;
+        grid-template-columns: 1fr;
     }
 
+    .quick-actions {
 
-    .quick-action-icon svg {
-        width: 17px;
-
-        height: 17px;
+        grid-template-columns: 1fr;
     }
 
+    .sales-chart-header {
 
-    .quick-action-text {
-        min-width: 0;
+        align-items: flex-start;
+
+        flex-direction: column;
     }
 
+    .chart-container {
 
-    .quick-action-title {
-        font-size: 11px;
-
-        font-weight: 700;
+        height: 280px;
     }
 
-
-    .quick-action-description {
-        margin-top: 3px;
-
-        color: #999;
-
-        font-size: 9px;
-    }
-
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-
-    @media (max-width: 1200px) {
-
-        .dashboard-stats {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-        }
-
-        .dashboard-secondary {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-        }
-
-        .quick-actions {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-        }
-
-    }
-
-
-    @media (max-width: 700px) {
-
-        .dashboard-stats {
-            grid-template-columns: 1fr;
-        }
-
-        .dashboard-secondary {
-            grid-template-columns: 1fr;
-        }
-
-        .comparison-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .quick-actions {
-            grid-template-columns: 1fr;
-        }
-
-    }
+}
 
 </style>
 
@@ -496,13 +786,13 @@
 
 
     <!-- =====================================================
-         MAIN SALES CARDS
+         MAIN STATISTICS
     ====================================================== -->
 
     <div class="dashboard-stats">
 
 
-        <!-- TODAY'S SALES -->
+        <!-- TODAY SALES -->
 
         <div class="dashboard-card">
 
@@ -531,11 +821,15 @@
             </div>
 
             <div class="dashboard-card-value">
+
                 ₱{{ total_sales|default:0|floatformat:2 }}
+
             </div>
 
             <div class="dashboard-card-description">
+
                 Total sales recorded today
+
             </div>
 
         </div>
@@ -558,13 +852,19 @@
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
                     >
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="16"
+                            rx="2"
+                        />
+
                         <path d="M7 8h10"/>
                         <path d="M7 12h4"/>
                         <path d="M7 16h7"/>
+
                     </svg>
 
                 </div>
@@ -572,17 +872,21 @@
             </div>
 
             <div class="dashboard-card-value">
+
                 {{ total_transactions|default:0 }}
+
             </div>
 
             <div class="dashboard-card-description">
+
                 Completed transactions today
+
             </div>
 
         </div>
 
 
-        <!-- ITEMS SOLD -->
+        <!-- ITEMS -->
 
         <div class="dashboard-card">
 
@@ -599,8 +903,6 @@
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
                     >
                         <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
                         <path d="M3 8v8l9 5 9-5V8"/>
@@ -612,11 +914,15 @@
             </div>
 
             <div class="dashboard-card-value">
+
                 {{ total_items|default:0 }}
+
             </div>
 
             <div class="dashboard-card-description">
+
                 Total products sold today
+
             </div>
 
         </div>
@@ -639,8 +945,6 @@
                         fill="none"
                         stroke="currentColor"
                         stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
                     >
                         <path d="M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h8"/>
                         <path d="M16 3h5v5"/>
@@ -652,11 +956,15 @@
             </div>
 
             <div class="dashboard-card-value">
+
                 ₱{{ total_discount|default:0|floatformat:2 }}
+
             </div>
 
             <div class="dashboard-card-description">
+
                 Discounts given today
+
             </div>
 
         </div>
@@ -666,13 +974,11 @@
 
 
     <!-- =====================================================
-         INVENTORY CARDS
+         INVENTORY
     ====================================================== -->
 
     <div class="dashboard-secondary">
 
-
-        <!-- PRODUCTS -->
 
         <div class="secondary-card">
 
@@ -691,8 +997,6 @@
         </div>
 
 
-        <!-- LOW STOCK -->
-
         <div class="secondary-card">
 
             <div class="secondary-title">
@@ -704,13 +1008,11 @@
             </div>
 
             <div class="secondary-description">
-                Products that need restocking
+                Products needing restocking
             </div>
 
         </div>
 
-
-        <!-- OUT OF STOCK -->
 
         <div class="secondary-card">
 
@@ -729,8 +1031,6 @@
         </div>
 
 
-        <!-- MONTHLY SALES -->
-
         <div class="secondary-card">
 
             <div class="secondary-title">
@@ -738,15 +1038,57 @@
             </div>
 
             <div class="secondary-value">
+
                 ₱{{ monthly_sales|default:0|floatformat:2 }}
+
             </div>
 
             <div class="secondary-description">
-                Total sales this month
+
+                {{ monthly_transactions }}
+                transactions this month
+
             </div>
 
         </div>
 
+
+    </div>
+
+
+    <!-- =====================================================
+         SALES DIAGRAM
+    ====================================================== -->
+
+    <div class="sales-chart-card">
+
+        <div class="sales-chart-header">
+
+            <div>
+
+                <div class="sales-chart-title">
+
+                    Sales Performance
+
+                </div>
+
+                <div class="sales-chart-subtitle">
+
+                    Sales revenue and transaction volume
+                    for the last 7 days
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas id="dashboardSalesChart"></canvas>
+
+        </div>
 
     </div>
 
@@ -757,19 +1099,15 @@
 
     <div class="comparison-card">
 
-        <div class="comparison-header">
+        <div class="comparison-title">
 
-            <div>
+            Sales Overview
 
-                <div class="comparison-title">
-                    Sales Overview
-                </div>
+        </div>
 
-                <div class="comparison-subtitle">
-                    Quick sales performance summary
-                </div>
+        <div class="comparison-subtitle">
 
-            </div>
+            Quick sales performance summary
 
         </div>
 
@@ -782,11 +1120,15 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
+
                     TODAY
+
                 </div>
 
                 <div class="comparison-item-value">
+
                     ₱{{ total_sales|default:0|floatformat:2 }}
+
                 </div>
 
             </div>
@@ -797,11 +1139,15 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
+
                     YESTERDAY
+
                 </div>
 
                 <div class="comparison-item-value">
+
                     ₱{{ yesterday_sales|default:0|floatformat:2 }}
+
                 </div>
 
             </div>
@@ -812,15 +1158,192 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
+
                     THIS MONTH
+
                 </div>
 
                 <div class="comparison-item-value">
+
                     ₱{{ monthly_sales|default:0|floatformat:2 }}
+
                 </div>
 
             </div>
 
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT SALES
+    ====================================================== -->
+
+    <div class="recent-sales-card">
+
+        <div class="recent-sales-header">
+
+            <div>
+
+                <div class="recent-sales-title">
+
+                    Recent Sales
+
+                </div>
+
+                <div class="recent-sales-subtitle">
+
+                    Latest completed transactions
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{% url 'sales' %}"
+                class="recent-sales-link"
+            >
+
+                View All →
+
+            </a>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Sale #
+                        </th>
+
+                        <th>
+                            Staff
+                        </th>
+
+                        <th>
+                            Items
+                        </th>
+
+                        <th>
+                            Discount
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in recent_sales %}
+
+                    <tr>
+
+                        <td class="sale-id">
+
+                            #{{ sale.id }}
+
+                        </td>
+
+
+                        <td class="sale-staff">
+
+                            {% if sale.staff %}
+
+                                {% if sale.staff.get_full_name %}
+
+                                    {{ sale.staff.get_full_name }}
+
+                                {% else %}
+
+                                    {{ sale.staff.username }}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.items.all|length }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if sale.discount_amount %}
+
+                                ₱{{ sale.discount_amount|floatformat:2 }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-total">
+
+                            ₱{{ sale.total|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="empty-sales"
+                        >
+
+                            No sales recorded yet.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
 
         </div>
 
@@ -834,11 +1357,15 @@
     <div class="quick-actions-card">
 
         <div class="quick-actions-title">
+
             Quick Actions
+
         </div>
 
         <div class="quick-actions-subtitle">
+
             Frequently used management functions
+
         </div>
 
 
@@ -847,7 +1374,10 @@
 
             <!-- POS -->
 
-            <a href="{% url 'admin-pos' %}" class="quick-action">
+            <a
+                href="{% url 'admin-pos' %}"
+                class="quick-action"
+            >
 
                 <div class="quick-action-icon">
 
@@ -857,23 +1387,37 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
-                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="16"
+                            rx="2"
+                        />
+
                         <path d="M7 8h10"/>
                         <path d="M7 12h2"/>
                         <path d="M11 12h2"/>
                         <path d="M15 12h2"/>
+
                     </svg>
 
                 </div>
 
-                <div class="quick-action-text">
+
+                <div>
 
                     <div class="quick-action-title">
+
                         Point of Sale
+
                     </div>
 
                     <div class="quick-action-description">
-                        View transactions
+
+                        Open POS
+
                     </div>
 
                 </div>
@@ -883,7 +1427,10 @@
 
             <!-- PRODUCTS -->
 
-            <a href="{% url 'product_list' %}" class="quick-action">
+            <a
+                href="{% url 'product_list' %}"
+                class="quick-action"
+            >
 
                 <div class="quick-action-icon">
 
@@ -893,20 +1440,27 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
                         <path d="M3 8v8l9 5 9-5V8"/>
+
                     </svg>
 
                 </div>
 
-                <div class="quick-action-text">
+
+                <div>
 
                     <div class="quick-action-title">
+
                         Products
+
                     </div>
 
                     <div class="quick-action-description">
+
                         Manage products
+
                     </div>
 
                 </div>
@@ -916,7 +1470,10 @@
 
             <!-- INVENTORY -->
 
-            <a href="{% url 'inventory' %}" class="quick-action">
+            <a
+                href="{% url 'inventory' %}"
+                class="quick-action"
+            >
 
                 <div class="quick-action-icon">
 
@@ -926,21 +1483,28 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <path d="M3 7h18"/>
                         <path d="M5 7l1-4h12l1 4"/>
                         <path d="M5 7v13h14V7"/>
+
                     </svg>
 
                 </div>
 
-                <div class="quick-action-text">
+
+                <div>
 
                     <div class="quick-action-title">
+
                         Inventory
+
                     </div>
 
                     <div class="quick-action-description">
-                        Check stock levels
+
+                        Check stock
+
                     </div>
 
                 </div>
@@ -950,7 +1514,10 @@
 
             <!-- REPORTS -->
 
-            <a href="{% url 'reports' %}" class="quick-action">
+            <a
+                href="{% url 'reports' %}"
+                class="quick-action"
+            >
 
                 <div class="quick-action-icon">
 
@@ -960,23 +1527,48 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <path d="M4 19V5"/>
                         <path d="M4 19h16"/>
-                        <rect x="7" y="11" width="3" height="5"/>
-                        <rect x="12" y="8" width="3" height="8"/>
-                        <rect x="17" y="5" width="3" height="11"/>
+
+                        <rect
+                            x="7"
+                            y="11"
+                            width="3"
+                            height="5"
+                        />
+
+                        <rect
+                            x="12"
+                            y="8"
+                            width="3"
+                            height="8"
+                        />
+
+                        <rect
+                            x="17"
+                            y="5"
+                            width="3"
+                            height="11"
+                        />
+
                     </svg>
 
                 </div>
 
-                <div class="quick-action-text">
+
+                <div>
 
                     <div class="quick-action-title">
+
                         Reports
+
                     </div>
 
                     <div class="quick-action-description">
-                        View sales reports
+
+                        View reports
+
                     </div>
 
                 </div>
@@ -990,5 +1582,398 @@
 
 
 </div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        /* =====================================================
+           DATA FROM DJANGO
+        ===================================================== */
+
+        const labels =
+            {{ chart_labels|safe }};
+
+        const sales =
+            {{ chart_sales|safe }};
+
+        const transactions =
+            {{ chart_transactions|safe }};
+
+
+        /* =====================================================
+           CANVAS
+        ===================================================== */
+
+        const canvas =
+            document.getElementById(
+                "dashboardSalesChart"
+            );
+
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        /* =====================================================
+           GRADIENT
+        ===================================================== */
+
+        const gradient =
+            ctx.createLinearGradient(
+                0,
+                0,
+                0,
+                330
+            );
+
+
+        gradient.addColorStop(
+            0,
+            "rgba(59,130,246,.30)"
+        );
+
+
+        gradient.addColorStop(
+            1,
+            "rgba(59,130,246,.02)"
+        );
+
+
+        /* =====================================================
+           CHART
+        ===================================================== */
+
+        new Chart(
+            ctx,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Sales",
+
+                            data:
+                                sales,
+
+                            borderColor:
+                                "#3b82f6",
+
+                            backgroundColor:
+                                gradient,
+
+                            borderWidth:
+                                3,
+
+                            pointBackgroundColor:
+                                "#fff",
+
+                            pointBorderColor:
+                                "#3b82f6",
+
+                            pointBorderWidth:
+                                2,
+
+                            pointRadius:
+                                4,
+
+                            pointHoverRadius:
+                                6,
+
+                            tension:
+                                .4,
+
+                            fill:
+                                true
+
+                        },
+
+
+                        {
+
+                            label:
+                                "Transactions",
+
+                            data:
+                                transactions,
+
+                            borderColor:
+                                "#8b5cf6",
+
+                            backgroundColor:
+                                "transparent",
+
+                            borderWidth:
+                                2,
+
+                            pointBackgroundColor:
+                                "#fff",
+
+                            pointBorderColor:
+                                "#8b5cf6",
+
+                            pointBorderWidth:
+                                2,
+
+                            pointRadius:
+                                3,
+
+                            pointHoverRadius:
+                                5,
+
+                            tension:
+                                .4,
+
+                            yAxisID:
+                                "transactionsAxis"
+
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+
+                    interaction: {
+
+                        intersect:
+                            false,
+
+                        mode:
+                            "index"
+
+                    },
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                true,
+
+                            position:
+                                "top",
+
+                            align:
+                                "end",
+
+                            labels: {
+
+                                usePointStyle:
+                                    true,
+
+                                padding:
+                                    18,
+
+                                font: {
+
+                                    size:
+                                        11
+
+                                }
+
+                            }
+
+                        },
+
+
+                        tooltip: {
+
+                            backgroundColor:
+                                "#111",
+
+                            titleColor:
+                                "#fff",
+
+                            bodyColor:
+                                "#fff",
+
+                            padding:
+                                12,
+
+                            callbacks: {
+
+                                label:
+                                    function(
+                                        context
+                                    ) {
+
+                                        if (
+                                            context.dataset.label
+                                            === "Sales"
+                                        ) {
+
+                                            return (
+                                                " Sales: ₱" +
+                                                Number(
+                                                    context.raw
+                                                ).toLocaleString(
+                                                    "en-PH",
+                                                    {
+                                                        minimumFractionDigits:
+                                                            2,
+
+                                                        maximumFractionDigits:
+                                                            2
+                                                    }
+                                                )
+                                            );
+
+                                        }
+
+
+                                        return (
+                                            " Transactions: " +
+                                            context.raw
+                                        );
+
+                                    }
+
+                            }
+
+                        }
+
+                    },
+
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            grid: {
+
+                                color:
+                                    "rgba(0,0,0,.06)"
+
+                            },
+
+                            ticks: {
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                },
+
+                                callback:
+                                    function(value) {
+
+                                        return (
+                                            "₱" +
+                                            Number(
+                                                value
+                                            ).toLocaleString(
+                                                "en-PH"
+                                            )
+                                        );
+
+                                    }
+
+                            }
+
+                        },
+
+
+                        transactionsAxis: {
+
+                            position:
+                                "right",
+
+                            beginAtZero:
+                                true,
+
+                            grid: {
+
+                                drawOnChartArea:
+                                    false
+
+                            },
+
+                            ticks: {
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                }
+
+                            }
+
+                        },
+
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+
+                            },
+
+                            ticks: {
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    }
+
+);
+
+</script>
 
 {% endblock %}

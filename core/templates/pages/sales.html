@@ -4,277 +4,678 @@
     BentaPOS - Sales
 {% endblock %}
 
+
 {% block page_title %}
     Sales
 {% endblock %}
+
 
 {% block page_subtitle %}
     View and manage completed sales transactions
 {% endblock %}
 
+
 {% block extra_css %}
 
 <style>
 
-    .sales-page {
-        width: 100%;
+/* =========================================================
+   PAGE
+========================================================= */
+
+.sales-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.sales-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 14px;
+
+    margin-bottom: 22px;
+}
+
+
+.summary-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    padding: 18px;
+}
+
+
+.summary-label {
+
+    font-size: 11px;
+
+    color: #888;
+
+    margin-bottom: 8px;
+}
+
+
+.summary-value {
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+/* =========================================================
+   SALES CARD
+========================================================= */
+
+.sales-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+.sales-card-header {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e8e8e8;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.sales-card-title {
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.sales-card-subtitle {
+
+    margin-top: 3px;
+
+    font-size: 11px;
+
+    color: #888;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.sales-filters {
+
+    padding: 15px 20px;
+
+    border-bottom: 1px solid #eee;
+
+    background: #fafafa;
+
+    display: grid;
+
+    grid-template-columns:
+        1.5fr
+        1fr
+        1fr
+        1fr
+        auto;
+
+    gap: 9px;
+
+    align-items: center;
+}
+
+
+.filter-control {
+
+    height: 36px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 7px;
+
+    padding: 0 10px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 11px;
+
+    width: 100%;
+}
+
+
+.filter-control:focus {
+
+    border-color: #111;
+}
+
+
+.filter-button {
+
+    height: 36px;
+
+    padding: 0 14px;
+
+    border: 1px solid #111;
+
+    border-radius: 7px;
+
+    background: #111;
+
+    color: #fff;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.filter-button:hover {
+
+    background: #333;
+}
+
+
+.clear-button {
+
+    height: 36px;
+
+    padding: 0 12px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid #ddd;
+
+    border-radius: 7px;
+
+    background: #fff;
+
+    color: #555;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.clear-button:hover {
+
+    background: #f2f2f2;
+
+    color: #111;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.sales-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 1050px;
+}
+
+
+.sales-table th {
+
+    padding: 12px 18px;
+
+    text-align: left;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #e8e8e8;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: #777;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+
+    white-space: nowrap;
+}
+
+
+.sales-table td {
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+
+    color: #333;
+
+    white-space: nowrap;
+}
+
+
+.sales-table tbody tr:hover {
+
+    background: #fafafa;
+}
+
+
+.sale-id {
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.salesman-name {
+
+    font-weight: 600;
+
+    color: #222;
+}
+
+
+.sale-date {
+
+    color: #777;
+
+    font-size: 11px;
+}
+
+
+.sale-total {
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+/* =========================================================
+   SALESMAN LABEL
+========================================================= */
+
+.salesman-label {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: #999;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   DISCOUNT
+========================================================= */
+
+.discount-badge {
+
+    display: inline-flex;
+
+    padding: 4px 7px;
+
+    border-radius: 5px;
+
+    background: #f5f5f5;
+
+    border: 1px solid #e5e5e5;
+
+    font-size: 10px;
+
+    color: #555;
+}
+
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 8px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+
+.status-paid {
+
+    background: #e8f7ee;
+
+    color: #16803c;
+}
+
+
+.status-partial {
+
+    background: #fff5df;
+
+    color: #a56a00;
+}
+
+
+.status-unpaid {
+
+    background: #fdecec;
+
+    color: #c62828;
+}
+
+
+/* =========================================================
+   DUE
+========================================================= */
+
+.amount-due {
+
+    font-weight: 700;
+
+    color: #c62828;
+}
+
+
+.no-due {
+
+    color: #16803c;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   VIEW BUTTON
+========================================================= */
+
+.view-sale-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    height: 30px;
+
+    padding: 0 10px;
+
+    border-radius: 6px;
+
+    background: #000;
+
+    color: #fff;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition: .15s;
+}
+
+
+.view-sale-btn:hover {
+
+    background: #222;
+
+    color: #fff;
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-sales {
+
+    padding: 60px 20px;
+
+    text-align: center;
+
+    color: #888;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-wrapper {
+
+    padding: 15px 20px;
+
+    border-top: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+
+.pagination-info {
+
+    color: #888;
+
+    font-size: 11px;
+}
+
+
+.pagination {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+}
+
+
+.page-link {
+
+    min-width: 32px;
+
+    height: 32px;
+
+    padding: 0 8px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.page-link:hover {
+
+    background: #f5f5f5;
+
+    border-color: #bbb;
+}
+
+
+.page-link.active {
+
+    background: #111;
+
+    border-color: #111;
+
+    color: #fff;
+}
+
+
+.page-link.disabled {
+
+    opacity: .45;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .sales-filters {
+
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
-    /* =========================================
-       SUMMARY
-    ========================================= */
+}
+
+
+@media (max-width: 1000px) {
 
     .sales-summary {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 14px;
-        margin-bottom: 22px;
+
+        grid-template-columns:
+            repeat(2, 1fr);
     }
 
-    .summary-card {
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 10px;
-        padding: 18px;
+}
+
+
+@media (max-width: 600px) {
+
+    .sales-summary {
+
+        grid-template-columns: 1fr;
     }
 
-    .summary-label {
-        font-size: 11px;
-        color: #888;
-        margin-bottom: 8px;
-    }
-
-    .summary-value {
-        font-size: 22px;
-        font-weight: 700;
-        color: #111;
-    }
-
-    /* =========================================
-       SALES CARD
-    ========================================= */
-
-    .sales-card {
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 10px;
-        overflow: hidden;
-    }
 
     .sales-card-header {
-        padding: 18px 20px;
-        border-bottom: 1px solid #e8e8e8;
 
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
+        align-items: stretch;
+
+        flex-direction: column;
     }
 
-    .sales-card-title {
-        font-size: 15px;
-        font-weight: 700;
-        color: #111;
+
+    .sales-filters {
+
+        grid-template-columns: 1fr;
     }
 
-    .sales-card-subtitle {
-        margin-top: 3px;
-        font-size: 11px;
-        color: #888;
+
+    .pagination-wrapper {
+
+        align-items: flex-start;
+
+        flex-direction: column;
     }
 
-    /* =========================================
-       SEARCH
-    ========================================= */
-
-    .sales-search {
-        width: 230px;
-        height: 38px;
-
-        border: 1px solid #ddd;
-        border-radius: 7px;
-
-        padding: 0 11px;
-
-        outline: none;
-
-        font-size: 12px;
-        background: #fff;
-    }
-
-    .sales-search:focus {
-        border-color: #111;
-    }
-
-    /* =========================================
-       TABLE
-    ========================================= */
-
-    .table-wrapper {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .sales-table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 850px;
-    }
-
-    .sales-table th {
-        padding: 12px 18px;
-
-        text-align: left;
-
-        background: #fafafa;
-        border-bottom: 1px solid #e8e8e8;
-
-        font-size: 10px;
-        font-weight: 700;
-
-        color: #777;
-
-        text-transform: uppercase;
-        letter-spacing: .4px;
-    }
-
-    .sales-table td {
-        padding: 14px 18px;
-
-        border-bottom: 1px solid #f0f0f0;
-
-        font-size: 12px;
-        color: #333;
-    }
-
-    .sales-table tbody tr:hover {
-        background: #fafafa;
-    }
-
-    .sale-id {
-        font-weight: 700;
-        color: #111;
-    }
-
-    .staff-name {
-        font-weight: 600;
-        color: #222;
-    }
-
-    .sale-date {
-        color: #777;
-        font-size: 11px;
-    }
-
-    .sale-total {
-        font-weight: 700;
-        color: #111;
-    }
-
-    /* =========================================
-       DISCOUNT
-    ========================================= */
-
-    .discount-badge {
-        display: inline-flex;
-
-        padding: 4px 7px;
-
-        border-radius: 5px;
-
-        background: #f5f5f5;
-        border: 1px solid #e5e5e5;
-
-        font-size: 10px;
-        color: #555;
-    }
-
-    /* =========================================
-       VIEW BUTTON
-    ========================================= */
-
-    .view-sale-btn {
-        display: inline-flex;
-
-        align-items: center;
-        justify-content: center;
-
-        height: 30px;
-
-        padding: 0 10px;
-
-        border-radius: 6px;
-
-        background: #000;
-        color: #fff;
-
-        font-size: 10px;
-        font-weight: 600;
-
-        transition: .15s;
-    }
-
-    .view-sale-btn:hover {
-        background: #222;
-    }
-
-    /* =========================================
-       EMPTY
-    ========================================= */
-
-    .empty-sales {
-        padding: 60px 20px;
-
-        text-align: center;
-
-        color: #888;
-
-        font-size: 13px;
-    }
-
-    /* =========================================
-       RESPONSIVE
-    ========================================= */
-
-    @media (max-width: 1000px) {
-
-        .sales-summary {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-    }
-
-    @media (max-width: 600px) {
-
-        .sales-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .sales-card-header {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .sales-search {
-            width: 100%;
-        }
-
-    }
+}
 
 </style>
 
 {% endblock %}
 
 
+
 {% block content %}
 
 <div class="sales-page">
 
-    <!-- =========================================
+
+    <!-- =====================================================
          SUMMARY
-    ========================================== -->
+    ===================================================== -->
 
     <div class="sales-summary">
+
 
         <div class="summary-card">
 
@@ -282,11 +683,10 @@
                 Total Transactions
             </div>
 
-            <div
-                class="summary-value"
-                id="transactionCount"
-            >
-                {{ sales|length }}
+            <div class="summary-value">
+
+                {{ total_transactions }}
+
             </div>
 
         </div>
@@ -298,11 +698,10 @@
                 Total Sales
             </div>
 
-            <div
-                class="summary-value"
-                id="totalSales"
-            >
-                ₱0.00
+            <div class="summary-value">
+
+                ₱{{ total_sales|floatformat:2 }}
+
             </div>
 
         </div>
@@ -314,11 +713,10 @@
                 Total Discount
             </div>
 
-            <div
-                class="summary-value"
-                id="totalDiscount"
-            >
-                ₱0.00
+            <div class="summary-value">
+
+                ₱{{ total_discount|floatformat:2 }}
+
             </div>
 
         </div>
@@ -330,11 +728,10 @@
                 Average Sale
             </div>
 
-            <div
-                class="summary-value"
-                id="averageSale"
-            >
-                ₱0.00
+            <div class="summary-value">
+
+                ₱{{ average_sale|floatformat:2 }}
+
             </div>
 
         </div>
@@ -342,11 +739,13 @@
     </div>
 
 
-    <!-- =========================================
-         SALES TABLE
-    ========================================== -->
+
+    <!-- =====================================================
+         SALES CARD
+    ===================================================== -->
 
     <div class="sales-card">
+
 
         <div class="sales-card-header">
 
@@ -357,21 +756,144 @@
                 </div>
 
                 <div class="sales-card-subtitle">
-                    Complete history of completed POS transactions
+                    Complete history of POS transactions
                 </div>
 
             </div>
 
+        </div>
+
+
+
+        <!-- =================================================
+             FILTERS
+        ================================================= -->
+
+        <form
+            method="GET"
+            class="sales-filters"
+        >
+
+
+            <!-- SEARCH -->
 
             <input
                 type="text"
-                id="salesSearch"
-                class="sales-search"
-                placeholder="Search sale, staff, date..."
+                name="search"
+                value="{{ search }}"
+                class="filter-control"
+                placeholder="Search sale or salesman..."
             >
 
-        </div>
 
+            <!-- SALESMAN -->
+
+            <select
+                name="salesman"
+                class="filter-control"
+            >
+
+                <option value="">
+                    All Salesmen
+                </option>
+
+                {% for salesman in salesman_options %}
+
+                    <option
+                        value="{{ salesman }}"
+                        {% if salesman_filter == salesman %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ salesman }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <!-- PAYMENT STATUS -->
+
+            <select
+                name="payment_status"
+                class="filter-control"
+            >
+
+                <option value="">
+                    All Payment Status
+                </option>
+
+                <option
+                    value="PAID"
+                    {% if payment_status == "PAID" %}
+                        selected
+                    {% endif %}
+                >
+                    Paid
+                </option>
+
+                <option
+                    value="PARTIAL"
+                    {% if payment_status == "PARTIAL" %}
+                        selected
+                    {% endif %}
+                >
+                    Partial
+                </option>
+
+                <option
+                    value="UNPAID"
+                    {% if payment_status == "UNPAID" %}
+                        selected
+                    {% endif %}
+                >
+                    Unpaid
+                </option>
+
+            </select>
+
+
+            <!-- DATE -->
+
+            <input
+                type="date"
+                name="date"
+                value="{{ date_filter }}"
+                class="filter-control"
+            >
+
+
+            <!-- FILTER -->
+
+            <button
+                type="submit"
+                class="filter-button"
+            >
+                Filter
+            </button>
+
+
+            <!-- CLEAR -->
+
+            {% if search or salesman_filter or payment_status or date_filter %}
+
+                <a
+                    href="{% url 'sales' %}"
+                    class="clear-button"
+                >
+                    Clear
+                </a>
+
+            {% endif %}
+
+        </form>
+
+
+
+        <!-- =================================================
+             TABLE
+        ================================================= -->
 
         <div class="table-wrapper">
 
@@ -390,7 +912,7 @@
                         </th>
 
                         <th>
-                            Staff
+                            Salesman
                         </th>
 
                         <th>
@@ -410,6 +932,14 @@
                         </th>
 
                         <th>
+                            Due
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
                             Action
                         </th>
 
@@ -418,29 +948,28 @@
                 </thead>
 
 
-                <tbody id="salesTableBody">
+                <tbody>
 
                     {% for sale in sales %}
 
-                    <tr
-                        class="sale-row"
-                        data-search="
-                            {{ sale.id }}
-                            {{ sale.staff.username|default:'' }}
-                            {{ sale.created_at|date:'M d Y' }}
-                        "
-                        data-total="{{ sale.total }}"
-                        data-discount="{{ sale.discount_amount }}"
-                    >
+                    <tr>
+
+
+                        <!-- SALE ID -->
 
                         <td>
 
                             <span class="sale-id">
+
                                 #{{ sale.id }}
+
                             </span>
 
                         </td>
 
+
+
+                        <!-- DATE -->
 
                         <td>
 
@@ -457,11 +986,18 @@
                         </td>
 
 
+
+                        <!-- SALESMAN -->
+
                         <td>
 
-                            <span class="staff-name">
+                            <span class="salesman-name">
 
-                                {% if sale.staff %}
+                                {% if sale.salesman %}
+
+                                    {{ sale.salesman }}
+
+                                {% elif sale.staff %}
 
                                     {{ sale.staff.get_full_name|default:sale.staff.username }}
 
@@ -473,8 +1009,18 @@
 
                             </span>
 
+
+                            <span class="salesman-label">
+
+                                Salesman
+
+                            </span>
+
                         </td>
 
+
+
+                        <!-- ITEMS -->
 
                         <td>
 
@@ -482,6 +1028,9 @@
 
                         </td>
 
+
+
+                        <!-- DISCOUNT -->
 
                         <td>
 
@@ -493,14 +1042,16 @@
 
                                     ·
 
-                                    {{ sale.discount_percent }}%
+                                    {{ sale.discount_percent|floatformat:2 }}%
 
                                 </span>
 
                             {% else %}
 
                                 <span class="discount-badge">
+
                                     None
+
                                 </span>
 
                             {% endif %}
@@ -508,12 +1059,18 @@
                         </td>
 
 
+
+                        <!-- PAYMENT -->
+
                         <td>
 
                             ₱{{ sale.payment|floatformat:2 }}
 
                         </td>
 
+
+
+                        <!-- TOTAL -->
 
                         <td>
 
@@ -526,16 +1083,82 @@
                         </td>
 
 
+
+                        <!-- DUE -->
+
+                        <td>
+
+                            {% if sale.payment < sale.total %}
+
+                                <span class="amount-due">
+
+                                    ₱{{ sale.total|add:"-"|add:sale.payment|floatformat:2 }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="no-due">
+
+                                    ₱0.00
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+
+                        <!-- STATUS -->
+
+                        <td>
+
+                            {% if sale.payment >= sale.total %}
+
+                                <span class="payment-status status-paid">
+
+                                    PAID
+
+                                </span>
+
+                            {% elif sale.payment > 0 %}
+
+                                <span class="payment-status status-partial">
+
+                                    PARTIAL
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="payment-status status-unpaid">
+
+                                    UNPAID
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+
+                        <!-- ACTION -->
+
                         <td>
 
                             <a
                                 href="{% url 'sale-detail' sale.id %}"
                                 class="view-sale-btn"
                             >
+
                                 View
+
                             </a>
 
                         </td>
+
 
                     </tr>
 
@@ -543,10 +1166,12 @@
 
                     <tr>
 
-                        <td colspan="8">
+                        <td colspan="10">
 
                             <div class="empty-sales">
+
                                 No sales transactions found.
+
                             </div>
 
                         </td>
@@ -561,110 +1186,122 @@
 
         </div>
 
+
+
+        <!-- =================================================
+             PAGINATION
+        ================================================= -->
+
+        {% if page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination-wrapper">
+
+
+            <div class="pagination-info">
+
+                Showing
+
+                <strong>
+                    {{ page_obj.start_index }}
+                </strong>
+
+                –
+
+                <strong>
+                    {{ page_obj.end_index }}
+                </strong>
+
+                of
+
+                <strong>
+                    {{ page_obj.paginator.count }}
+                </strong>
+
+                transactions
+
+            </div>
+
+
+            <div class="pagination">
+
+
+                <!-- PREVIOUS -->
+
+                {% if page_obj.has_previous %}
+
+                    <a
+                        class="page-link"
+                        href="?{% if search %}search={{ search|urlencode }}&{% endif %}{% if salesman_filter %}salesman={{ salesman_filter|urlencode }}&{% endif %}{% if payment_status %}payment_status={{ payment_status }}&{% endif %}{% if date_filter %}date={{ date_filter }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                    >
+                        ‹
+                    </a>
+
+                {% else %}
+
+                    <span class="page-link disabled">
+                        ‹
+                    </span>
+
+                {% endif %}
+
+
+
+                <!-- PAGE NUMBERS -->
+
+                {% for num in page_obj.paginator.page_range %}
+
+                    {% if num == page_obj.number %}
+
+                        <span class="page-link active">
+
+                            {{ num }}
+
+                        </span>
+
+                    {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+
+                        <a
+                            class="page-link"
+                            href="?{% if search %}search={{ search|urlencode }}&{% endif %}{% if salesman_filter %}salesman={{ salesman_filter|urlencode }}&{% endif %}{% if payment_status %}payment_status={{ payment_status }}&{% endif %}{% if date_filter %}date={{ date_filter }}&{% endif %}page={{ num }}"
+                        >
+
+                            {{ num }}
+
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+
+                <!-- NEXT -->
+
+                {% if page_obj.has_next %}
+
+                    <a
+                        class="page-link"
+                        href="?{% if search %}search={{ search|urlencode }}&{% endif %}{% if salesman_filter %}salesman={{ salesman_filter|urlencode }}&{% endif %}{% if payment_status %}payment_status={{ payment_status }}&{% endif %}{% if date_filter %}date={{ date_filter }}&{% endif %}page={{ page_obj.next_page_number }}"
+                    >
+                        ›
+                    </a>
+
+                {% else %}
+
+                    <span class="page-link disabled">
+                        ›
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
     </div>
 
 </div>
-
-{% endblock %}
-
-
-{% block extra_js %}
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const rows = document.querySelectorAll(".sale-row");
-
-    let totalSales = 0;
-    let totalDiscount = 0;
-
-    rows.forEach(function (row) {
-
-        totalSales +=
-            Number(row.dataset.total || 0);
-
-        totalDiscount +=
-            Number(row.dataset.discount || 0);
-
-    });
-
-
-    const transactionCount = rows.length;
-
-    const averageSale =
-        transactionCount > 0
-            ? totalSales / transactionCount
-            : 0;
-
-
-    document.getElementById("totalSales").textContent =
-        "₱" + totalSales.toLocaleString(
-            "en-PH",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
-
-
-    document.getElementById("totalDiscount").textContent =
-        "₱" + totalDiscount.toLocaleString(
-            "en-PH",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
-
-
-    document.getElementById("averageSale").textContent =
-        "₱" + averageSale.toLocaleString(
-            "en-PH",
-            {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }
-        );
-
-
-    /* =========================================
-       SEARCH
-    ========================================== */
-
-    const searchInput =
-        document.getElementById("salesSearch");
-
-
-    searchInput.addEventListener(
-        "input",
-        function () {
-
-            const search =
-                this.value
-                    .toLowerCase()
-                    .trim();
-
-
-            rows.forEach(function (row) {
-
-                const text =
-                    row.dataset.search
-                        .toLowerCase();
-
-
-                row.style.display =
-                    text.includes(search)
-                        ? ""
-                        : "none";
-
-            });
-
-        }
-    );
-
-});
-
-</script>
 
 {% endblock %}

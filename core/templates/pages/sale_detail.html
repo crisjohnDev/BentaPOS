@@ -1,289 +1,579 @@
 {% extends "base.html" %}
 
+
 {% block title %}
+
     BentaPOS - Sale #{{ sale.id }}
+
 {% endblock %}
+
 
 {% block page_title %}
+
     Sale #{{ sale.id }}
+
 {% endblock %}
 
+
 {% block page_subtitle %}
+
     Transaction details
+
 {% endblock %}
+
 
 {% block extra_css %}
 
 <style>
 
-    .sale-detail {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
 
-    .back-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
+/* =========================================================
+   PAGE
+========================================================= */
 
-        margin-bottom: 18px;
+.sale-detail {
 
-        color: #555;
-        font-size: 12px;
-        font-weight: 600;
-    }
+    max-width: 1100px;
 
-    .back-button:hover {
-        color: #000;
-    }
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   BACK
+========================================================= */
+
+.back-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 18px;
+
+    color: #555;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.back-button:hover {
+
+    color: #000;
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.detail-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        330px;
+
+    gap: 18px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.detail-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.detail-header {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e8e8e8;
+}
+
+
+.detail-title {
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.detail-subtitle {
+
+    margin-top: 4px;
+
+    color: #888;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   ITEMS
+========================================================= */
+
+.items-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.items-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 650px;
+}
+
+
+.items-table th {
+
+    padding: 11px 18px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #e8e8e8;
+
+    text-align: left;
+
+    color: #777;
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+}
+
+
+.items-table td {
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+
+    color: #333;
+}
+
+
+.product-name {
+
+    font-weight: 600;
+
+    color: #222;
+}
+
+
+.item-subtotal {
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.summary {
+
+    padding: 20px;
+}
+
+
+.summary-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 12px;
+
+    font-size: 12px;
+}
+
+
+.summary-label {
+
+    color: #888;
+}
+
+
+.summary-value {
+
+    font-weight: 600;
+
+    text-align: right;
+}
+
+
+.total-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 15px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #ddd;
+}
+
+
+.total-label {
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+
+.total-value {
+
+    font-size: 21px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   INFO
+========================================================= */
+
+.info-list {
+
+    padding: 20px;
+}
+
+
+.info-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+}
+
+
+.info-row:last-child {
+
+    border-bottom: none;
+}
+
+
+.info-label {
+
+    color: #888;
+}
+
+
+.info-value {
+
+    text-align: right;
+
+    font-weight: 600;
+
+    color: #222;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.payment-status {
+
+    display: inline-flex;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+}
+
+
+.status-paid {
+
+    background: #e8f7ee;
+
+    color: #16803c;
+}
+
+
+.status-partial {
+
+    background: #fff5df;
+
+    color: #a56a00;
+}
+
+
+.status-unpaid {
+
+    background: #fdecec;
+
+    color: #c62828;
+}
+
+
+.amount-due {
+
+    color: #c62828;
+
+    font-weight: 700;
+}
+
+
+.no-due {
+
+    color: #16803c;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
 
     .detail-grid {
-        display: grid;
-        grid-template-columns: 1fr 330px;
-        gap: 18px;
-        align-items: start;
+
+        grid-template-columns: 1fr;
     }
 
-    .detail-card {
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .detail-header {
-        padding: 18px 20px;
-        border-bottom: 1px solid #e8e8e8;
-    }
-
-    .detail-title {
-        font-size: 15px;
-        font-weight: 700;
-    }
-
-    .detail-subtitle {
-        margin-top: 4px;
-        color: #888;
-        font-size: 11px;
-    }
-
-    .items-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .items-table th {
-        padding: 11px 18px;
-        background: #fafafa;
-        border-bottom: 1px solid #e8e8e8;
-
-        text-align: left;
-
-        color: #777;
-        font-size: 10px;
-        text-transform: uppercase;
-    }
-
-    .items-table td {
-        padding: 14px 18px;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 12px;
-    }
-
-    .product-name {
-        font-weight: 600;
-    }
-
-    .summary {
-        padding: 20px;
-    }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-
-        margin-bottom: 12px;
-
-        font-size: 12px;
-    }
-
-    .summary-label {
-        color: #888;
-    }
-
-    .summary-value {
-        font-weight: 600;
-    }
-
-    .total-row {
-        display: flex;
-        justify-content: space-between;
-
-        margin-top: 15px;
-        padding-top: 15px;
-
-        border-top: 1px solid #ddd;
-    }
-
-    .total-label {
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .total-value {
-        font-size: 21px;
-        font-weight: 800;
-    }
-
-    .info-list {
-        padding: 20px;
-    }
-
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
-
-        padding: 10px 0;
-
-        border-bottom: 1px solid #f0f0f0;
-
-        font-size: 12px;
-    }
-
-    .info-row:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        color: #888;
-    }
-
-    .info-value {
-        text-align: right;
-        font-weight: 600;
-    }
-
-    @media (max-width: 850px) {
-
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-
-    }
+}
 
 </style>
 
 {% endblock %}
 
 
+
 {% block content %}
 
 <div class="sale-detail">
+
+
+    <!-- =====================================================
+         BACK
+    ===================================================== -->
 
     <a
         href="{% url 'sales' %}"
         class="back-button"
     >
+
         ← Back to Sales
+
     </a>
+
 
 
     <div class="detail-grid">
 
-        <!-- =====================================
-             ITEMS
-        ====================================== -->
+
+        <!-- =================================================
+             PURCHASED PRODUCTS
+        ================================================= -->
 
         <div class="detail-card">
 
             <div class="detail-header">
 
                 <div class="detail-title">
+
                     Purchased Products
+
                 </div>
 
                 <div class="detail-subtitle">
+
                     Sale #{{ sale.id }}
+
                 </div>
 
             </div>
 
 
-            <table class="items-table">
+            <div class="items-wrapper">
 
-                <thead>
+                <table class="items-table">
 
-                    <tr>
+                    <thead>
 
-                        <th>
-                            Product
-                        </th>
+                        <tr>
 
-                        <th>
-                            Qty
-                        </th>
+                            <th>
+                                Product
+                            </th>
 
-                        <th>
-                            Price
-                        </th>
+                            <th>
+                                Qty
+                            </th>
 
-                        <th>
-                            Subtotal
-                        </th>
+                            <th>
+                                Price
+                            </th>
 
-                    </tr>
+                            <th>
+                                Discount
+                            </th>
 
-                </thead>
+                            <th>
+                                Subtotal
+                            </th>
+
+                        </tr>
+
+                    </thead>
 
 
-                <tbody>
+                    <tbody>
 
-                    {% for item in sale.items.all %}
+                        {% for item in sale.items.all %}
 
-                    <tr>
+                        <tr>
 
-                        <td>
+                            <td>
 
-                            <div class="product-name">
-                                {{ item.product.product_model }}
-                            </div>
+                                <div class="product-name">
 
-                        </td>
+                                    {{ item.product.product_model }}
 
-                        <td>
-                            {{ item.quantity }}
-                        </td>
+                                </div>
 
-                        <td>
-                            ₱{{ item.price|floatformat:2 }}
-                        </td>
+                            </td>
 
-                        <td>
-                            ₱{{ item.subtotal|floatformat:2 }}
-                        </td>
 
-                    </tr>
+                            <td>
 
-                    {% endfor %}
+                                {{ item.quantity }}
 
-                </tbody>
+                            </td>
 
-            </table>
+
+                            <td>
+
+                                ₱{{ item.price|floatformat:2 }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if item.discount_amount %}
+
+                                    -₱{{ item.discount_amount|floatformat:2 }}
+
+                                {% elif item.discount_percent %}
+
+                                    {{ item.discount_percent|floatformat:2 }}%
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="item-subtotal">
+
+                                    ₱{{ item.subtotal|floatformat:2 }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="5">
+
+                                No products recorded.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
 
         </div>
 
 
-        <!-- =====================================
-             SALE INFORMATION
-        ====================================== -->
+
+        <!-- =================================================
+             TRANSACTION SUMMARY
+        ================================================= -->
 
         <div class="detail-card">
 
             <div class="detail-header">
 
                 <div class="detail-title">
+
                     Transaction Summary
+
                 </div>
 
             </div>
@@ -291,14 +581,19 @@
 
             <div class="summary">
 
+
                 <div class="summary-row">
 
                     <span class="summary-label">
+
                         Subtotal
+
                     </span>
 
                     <span class="summary-value">
+
                         ₱{{ sale.subtotal|floatformat:2 }}
+
                     </span>
 
                 </div>
@@ -307,11 +602,15 @@
                 <div class="summary-row">
 
                     <span class="summary-label">
+
                         Discount
+
                     </span>
 
                     <span class="summary-value">
+
                         -₱{{ sale.discount_amount|floatformat:2 }}
+
                     </span>
 
                 </div>
@@ -320,11 +619,15 @@
                 <div class="summary-row">
 
                     <span class="summary-label">
+
                         Discount %
+
                     </span>
 
                     <span class="summary-value">
+
                         {{ sale.discount_percent|floatformat:2 }}%
+
                     </span>
 
                 </div>
@@ -333,11 +636,15 @@
                 <div class="total-row">
 
                     <span class="total-label">
+
                         Total
+
                     </span>
 
                     <span class="total-value">
+
                         ₱{{ sale.total|floatformat:2 }}
+
                     </span>
 
                 </div>
@@ -347,16 +654,19 @@
         </div>
 
 
-        <!-- =====================================
-             PAYMENT / STAFF
-        ====================================== -->
+
+        <!-- =================================================
+             PAYMENT INFORMATION
+        ================================================= -->
 
         <div class="detail-card">
 
             <div class="detail-header">
 
                 <div class="detail-title">
+
                     Payment Information
+
                 </div>
 
             </div>
@@ -364,44 +674,75 @@
 
             <div class="info-list">
 
+
+                <!-- PAYMENT -->
+
                 <div class="info-row">
 
                     <span class="info-label">
+
                         Payment
+
                     </span>
 
                     <span class="info-value">
+
                         ₱{{ sale.payment|floatformat:2 }}
+
                     </span>
 
                 </div>
 
 
+
+                <!-- CHANGE -->
+
                 <div class="info-row">
 
                     <span class="info-label">
+
                         Change
+
                     </span>
 
                     <span class="info-value">
+
                         ₱{{ sale.change|floatformat:2 }}
+
                     </span>
 
                 </div>
 
 
+
+                <!-- AMOUNT DUE -->
+
                 <div class="info-row">
 
                     <span class="info-label">
-                        Staff
+
+                        Amount Due
+
                     </span>
 
                     <span class="info-value">
 
-                        {% if sale.staff %}
-                            {{ sale.staff.get_full_name|default:sale.staff.username }}
+                        {% if amount_due > 0 %}
+
+                            <span class="amount-due">
+
+                                ₱{{ amount_due|floatformat:2 }}
+
+                            </span>
+
                         {% else %}
-                            Unknown
+
+                            <span class="no-due">
+
+                                ₱0.00
+
+                            </span>
+
                         {% endif %}
 
                     </span>
@@ -409,18 +750,130 @@
                 </div>
 
 
+
+                <!-- PAYMENT STATUS -->
+
                 <div class="info-row">
 
                     <span class="info-label">
+
+                        Payment Status
+
+                    </span>
+
+                    <span class="info-value">
+
+
+                        {% if payment_status == "PAID" %}
+
+                            <span class="payment-status status-paid">
+
+                                PAID
+
+                            </span>
+
+
+                        {% elif payment_status == "PARTIAL" %}
+
+                            <span class="payment-status status-partial">
+
+                                PARTIAL
+
+                            </span>
+
+
+                        {% else %}
+
+                            <span class="payment-status status-unpaid">
+
+                                UNPAID
+
+                            </span>
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- SALESMAN -->
+
+                <div class="info-row">
+
+                    <span class="info-label">
+
+                        Salesman
+
+                    </span>
+
+                    <span class="info-value">
+
+                        {% if sale.salesman %}
+
+                            {{ sale.salesman }}
+
+                        {% elif sale.staff %}
+
+                            {{ sale.staff.get_full_name|default:sale.staff.username }}
+
+                        {% else %}
+
+                            Unknown
+
+                        {% endif %}
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- STAFF FALLBACK -->
+
+                {% if sale.staff %}
+
+                <div class="info-row">
+
+                    <span class="info-label">
+
+                        Account
+
+                    </span>
+
+                    <span class="info-value">
+
+                        {{ sale.staff.get_full_name|default:sale.staff.username }}
+
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+
+
+                <!-- DISCOUNT CLASS -->
+
+                <div class="info-row">
+
+                    <span class="info-label">
+
                         Discount Class
+
                     </span>
 
                     <span class="info-value">
 
                         {% if sale.discount_class %}
+
                             {{ sale.discount_class.name }}
+
                         {% else %}
+
                             None
+
                         {% endif %}
 
                     </span>
@@ -428,10 +881,15 @@
                 </div>
 
 
+
+                <!-- DATE -->
+
                 <div class="info-row">
 
                     <span class="info-label">
+
                         Date
+
                     </span>
 
                     <span class="info-value">
@@ -443,10 +901,15 @@
                 </div>
 
 
+
+                <!-- TIME -->
+
                 <div class="info-row">
 
                     <span class="info-label">
+
                         Time
+
                     </span>
 
                     <span class="info-value">
@@ -456,6 +919,7 @@
                     </span>
 
                 </div>
+
 
             </div>
 

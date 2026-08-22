@@ -5,12 +5,13 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from .models import Product, InventoryTransaction, Sale, SaleItem
 from openpyxl import load_workbook
-from django.db.models import Sum, Count, Avg, Q, F
+from django.db.models import Sum, Count, Avg, Q, F, DecimalField, ExpressionWrapper
 from django.db.models.functions import Coalesce
 from django.db.models import Q
 from django.utils import timezone
 from datetime import datetime, time, timedelta
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from django.core.paginator import Paginator
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -18,46 +19,65 @@ def is_superuser(user):
 @login_required(login_url="login")
 def dashboard(request):
 
+    # =========================================================
+    # DATE
+    # =========================================================
+
     today = timezone.localdate()
 
-    # -----------------------------------------
+    yesterday = today - timezone.timedelta(days=1)
+
+    current_month = today.month
+    current_year = today.year
+
+
+    # =========================================================
     # TODAY'S SALES
-    # -----------------------------------------
+    # =========================================================
 
     today_sales_qs = Sale.objects.filter(
         created_at__date=today
     )
 
-    total_sales = today_sales_qs.aggregate(
-        total=Sum("total")
-    )["total"] or 0
+    total_sales = (
+        today_sales_qs.aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
 
     total_transactions = today_sales_qs.count()
 
 
-    # -----------------------------------------
+    # =========================================================
     # ITEMS SOLD TODAY
-    # -----------------------------------------
+    # =========================================================
 
-    total_items = SaleItem.objects.filter(
-        sale__created_at__date=today
-    ).aggregate(
-        total=Sum("quantity")
-    )["total"] or 0
-
-
-    # -----------------------------------------
-    # DISCOUNTS
-    # -----------------------------------------
-
-    total_discount = today_sales_qs.aggregate(
-        total=Sum("discount_amount")
-    )["total"] or 0
+    total_items = (
+        SaleItem.objects.filter(
+            sale__created_at__date=today
+        ).aggregate(
+            total=Sum("quantity")
+        )["total"]
+        or 0
+    )
 
 
-    # -----------------------------------------
+    # =========================================================
+    # DISCOUNTS TODAY
+    # =========================================================
+
+    total_discount = (
+        today_sales_qs.aggregate(
+            total=Sum("discount_amount")
+        )["total"]
+        or 0
+    )
+
+
+    # =========================================================
     # INVENTORY
-    # -----------------------------------------
+    # =========================================================
 
     total_products = Product.objects.count()
 
@@ -71,52 +91,187 @@ def dashboard(request):
     ).count()
 
 
-    # -----------------------------------------
+    # =========================================================
     # MONTHLY SALES
-    # -----------------------------------------
+    # =========================================================
 
-    current_month = today.month
-    current_year = today.year
-
-    monthly_sales = Sale.objects.filter(
+    monthly_sales_qs = Sale.objects.filter(
         created_at__year=current_year,
         created_at__month=current_month
-    ).aggregate(
-        total=Sum("total")
-    )["total"] or 0
+    )
+
+    monthly_sales = (
+        monthly_sales_qs.aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+    monthly_transactions = monthly_sales_qs.count()
 
 
-    # -----------------------------------------
-    # YESTERDAY
-    # -----------------------------------------
+    # =========================================================
+    # YESTERDAY SALES
+    # =========================================================
 
-    yesterday = today - timezone.timedelta(days=1)
+    yesterday_sales = (
+        Sale.objects.filter(
+            created_at__date=yesterday
+        ).aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
 
-    yesterday_sales = Sale.objects.filter(
-        created_at__date=yesterday
-    ).aggregate(
-        total=Sum("total")
-    )["total"] or 0
+
+    # =========================================================
+    # AVERAGE SALE TODAY
+    # =========================================================
+
+    if total_transactions > 0:
+        average_sale = total_sales / total_transactions
+    else:
+        average_sale = 0
+
+
+    # =========================================================
+    # TODAY VS YESTERDAY
+    # =========================================================
+
+    sales_change_percent = 0
+
+    if yesterday_sales:
+        sales_change_percent = (
+            (total_sales - yesterday_sales)
+            / yesterday_sales
+        ) * 100
+
+
+    # =========================================================
+    # LAST 7 DAYS SALES DIAGRAM
+    # =========================================================
+
+    chart_labels = []
+    chart_sales = []
+    chart_transactions = []
+
+    for i in range(6, -1, -1):
+
+        chart_date = today - timezone.timedelta(days=i)
+
+        day_qs = Sale.objects.filter(
+            created_at__date=chart_date
+        )
+
+        day_total = (
+            day_qs.aggregate(
+                total=Sum("total")
+            )["total"]
+            or 0
+        )
+
+        day_transactions = day_qs.count()
+
+        chart_labels.append(
+            chart_date.strftime("%b %d")
+        )
+
+        chart_sales.append(
+            float(day_total)
+        )
+
+        chart_transactions.append(
+            day_transactions
+        )
+
+
+    # =========================================================
+    # RECENT SALES
+    # =========================================================
+
+    recent_sales = (
+        Sale.objects
+        .select_related("staff", "discount_class")
+        .prefetch_related("items")
+        .order_by("-created_at")[:5]
+    )
+
+
+    # =========================================================
+    # CONTEXT
+    # =========================================================
+
+    context = {
+
+        # -----------------------------
+        # TODAY
+        # -----------------------------
+
+        "total_sales": total_sales,
+
+        "total_transactions": total_transactions,
+
+        "total_items": total_items,
+
+        "total_discount": total_discount,
+
+        "average_sale": average_sale,
+
+
+        # -----------------------------
+        # INVENTORY
+        # -----------------------------
+
+        "total_products": total_products,
+
+        "low_stock": low_stock,
+
+        "out_of_stock": out_of_stock,
+
+
+        # -----------------------------
+        # PERIOD SALES
+        # -----------------------------
+
+        "monthly_sales": monthly_sales,
+
+        "monthly_transactions": monthly_transactions,
+
+        "yesterday_sales": yesterday_sales,
+
+        "sales_change_percent": sales_change_percent,
+
+
+        # -----------------------------
+        # CHART
+        # -----------------------------
+
+        "chart_labels": chart_labels,
+
+        "chart_sales": chart_sales,
+
+        "chart_transactions": chart_transactions,
+
+
+        # -----------------------------
+        # RECENT SALES
+        # -----------------------------
+
+        "recent_sales": recent_sales,
+
+
+        # -----------------------------
+        # DATE
+        # -----------------------------
+
+        "today": today,
+    }
 
 
     return render(
         request,
         "pages/dashboard.html",
-        {
-            "total_sales": total_sales,
-            "total_transactions": total_transactions,
-            "total_items": total_items,
-            "total_discount": total_discount,
-
-            "total_products": total_products,
-            "low_stock": low_stock,
-            "out_of_stock": out_of_stock,
-
-            "monthly_sales": monthly_sales,
-            "yesterday_sales": yesterday_sales,
-
-            "today": today,
-        }
+        context
     )
 
 @login_required
@@ -1571,95 +1726,667 @@ def product_inventory_history(request, product_id):
 @login_required
 def admin_pos(request):
 
+    # =========================================================
+    # TODAY
+    # =========================================================
+
     today = timezone.localdate()
 
-    # ==========================================
-    # TODAY'S SALES
-    # ==========================================
 
-    today_sales = Sale.objects.filter(
-        created_at__date=today
+    # =========================================================
+    # ALL TODAY'S SALES
+    #
+    # We intentionally do NOT use:
+    #
+    #     values("salesman")
+    #     salesman__id
+    #     salesman__username
+    #
+    # because your salesman field does not allow that ORM join.
+    #
+    # =========================================================
+
+    all_today_sales = list(
+        Sale.objects
+        .filter(
+            created_at__date=today
+        )
+        .prefetch_related(
+            "items__product"
+        )
+        .order_by(
+            "-created_at"
+        )
     )
 
-    total_sales = today_sales.aggregate(
-        total=Sum("total")
-    )["total"] or 0
 
-    total_transactions = today_sales.count()
+    # =========================================================
+    # HELPER: GET SALESMAN NAME
+    # =========================================================
 
-    total_items = today_sales.aggregate(
-        items=Sum("items__quantity")
-    )["items"] or 0
+    def get_salesman_name(sale):
 
-    total_discount = today_sales.aggregate(
-        discount=Sum("discount_amount")
-    )["discount"] or 0
+        try:
+            salesman = sale.salesman
+        except Exception:
+            salesman = None
 
-    total_payment = today_sales.aggregate(
-        payment=Sum("payment")
-    )["payment"] or 0
 
-    average_transaction = today_sales.aggregate(
-        average=Avg("total")
-    )["average"] or 0
+        if salesman is None:
 
-    # ==========================================
-    # RECENT TRANSACTIONS
-    # ==========================================
+            return "No Salesman"
 
-    recent_sales = Sale.objects.select_related(
-        "staff",
-        "discount_class"
-    ).prefetch_related(
-        "items__product"
-    ).order_by(
-        "-created_at"
-    )[:20]
 
-    # ==========================================
-    # STAFF PERFORMANCE
-    # ==========================================
+        # -----------------------------------------------------
+        # If salesman is a User-like object
+        # -----------------------------------------------------
 
-    staff_sales = (
-        today_sales
-        .values(
-            "staff__id",
-            "staff__username",
-            "staff__first_name",
-            "staff__last_name"
+        if hasattr(
+            salesman,
+            "get_full_name"
+        ):
+
+            try:
+
+                full_name = salesman.get_full_name().strip()
+
+            except Exception:
+
+                full_name = ""
+
+
+            if full_name:
+
+                return full_name
+
+
+            if hasattr(
+                salesman,
+                "username"
+            ):
+
+                username = str(
+                    salesman.username
+                ).strip()
+
+                if username:
+
+                    return username
+
+
+        # -----------------------------------------------------
+        # Otherwise use the value directly
+        # -----------------------------------------------------
+
+        return str(
+            salesman
+        ).strip() or "No Salesman"
+
+
+    # =========================================================
+    # HELPER: GET PAYMENT STATUS
+    # =========================================================
+
+    def get_payment_status(sale):
+
+        try:
+
+            total = sale.total or 0
+            payment = sale.payment or 0
+
+        except Exception:
+
+            total = 0
+            payment = 0
+
+
+        if payment >= total:
+
+            return "PAID"
+
+        elif payment > 0:
+
+            return "PARTIAL"
+
+        return "UNPAID"
+
+
+    # =========================================================
+    # HELPER: GET SALE BALANCE
+    # =========================================================
+
+    def get_balance(sale):
+
+        try:
+
+            total = sale.total or 0
+            payment = sale.payment or 0
+
+            return max(
+                total - payment,
+                0
+            )
+
+        except Exception:
+
+            return 0
+
+
+    # =========================================================
+    # ADD DISPLAY INFORMATION TO SALES
+    # =========================================================
+
+    for sale in all_today_sales:
+
+        sale.display_salesman = get_salesman_name(
+            sale
         )
-        .annotate(
-            transactions=Count("id"),
-            total_sales=Sum("total"),
-            items_sold=Sum("items__quantity")
+
+        sale.display_payment_status = get_payment_status(
+            sale
         )
-        .order_by("-total_sales")
+
+        sale.display_balance = get_balance(
+            sale
+        )
+
+
+    # =========================================================
+    # SUMMARY
+    #
+    # These are based on ALL sales today,
+    # not filtered sales.
+    # =========================================================
+
+    total_sales = sum(
+        (sale.total or 0)
+        for sale in all_today_sales
     )
 
-    # ==========================================
+
+    total_transactions = len(
+        all_today_sales
+    )
+
+
+    total_items = 0
+
+    for sale in all_today_sales:
+
+        try:
+
+            for item in sale.items.all():
+
+                total_items += (
+                    item.quantity or 0
+                )
+
+        except Exception:
+
+            pass
+
+
+    total_discount = sum(
+        (sale.discount_amount or 0)
+        for sale in all_today_sales
+    )
+
+
+    total_payment = sum(
+        (sale.payment or 0)
+        for sale in all_today_sales
+    )
+
+
+    # =========================================================
+    # AVERAGE TRANSACTION
+    # =========================================================
+
+    if total_transactions > 0:
+
+        average_transaction = (
+            total_sales /
+            total_transactions
+        )
+
+    else:
+
+        average_transaction = 0
+
+
+    # =========================================================
+    # TOTAL AMOUNT STILL DUE
+    # =========================================================
+
+    total_due = sum(
+        sale.display_balance
+        for sale in all_today_sales
+    )
+
+
+    # =========================================================
+    # PAYMENT STATUS COUNTS
+    # =========================================================
+
+    paid_transactions = sum(
+        1
+        for sale in all_today_sales
+        if sale.display_payment_status == "PAID"
+    )
+
+
+    partial_transactions = sum(
+        1
+        for sale in all_today_sales
+        if sale.display_payment_status == "PARTIAL"
+    )
+
+
+    unpaid_transactions = sum(
+        1
+        for sale in all_today_sales
+        if sale.display_payment_status == "UNPAID"
+    )
+
+
+    # =========================================================
+    # SALESMAN OPTIONS
+    # =========================================================
+
+    salesman_options = sorted(
+        {
+            sale.display_salesman
+            for sale in all_today_sales
+            if sale.display_salesman
+        },
+        key=lambda name: name.lower()
+    )
+
+
+    # =========================================================
+    # GET FILTERS
+    # =========================================================
+
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
+
+
+    salesman_filter = request.GET.get(
+        "salesman",
+        ""
+    ).strip()
+
+
+    payment_filter = request.GET.get(
+        "payment_status",
+        ""
+    ).strip().upper()
+
+
+    # =========================================================
+    # FILTER SALES
+    #
+    # Filtering is done in Python so it works regardless of
+    # whether salesman is a CharField, FK, property, etc.
+    # =========================================================
+
+    filtered_sales = []
+
+
+    for sale in all_today_sales:
+
+        # -----------------------------------------------------
+        # SEARCH
+        # -----------------------------------------------------
+
+        if search:
+
+            search_lower = search.lower()
+
+
+            sale_id_text = str(
+                sale.id
+            ).lower()
+
+
+            salesman_text = (
+                sale.display_salesman or ""
+            ).lower()
+
+
+            if (
+                search_lower not in sale_id_text
+                and
+                search_lower not in salesman_text
+            ):
+
+                continue
+
+
+        # -----------------------------------------------------
+        # SALESMAN FILTER
+        # -----------------------------------------------------
+
+        if salesman_filter:
+
+            if (
+                sale.display_salesman
+                != salesman_filter
+            ):
+
+                continue
+
+
+        # -----------------------------------------------------
+        # PAYMENT FILTER
+        # -----------------------------------------------------
+
+        if payment_filter:
+
+            if (
+                sale.display_payment_status
+                != payment_filter
+            ):
+
+                continue
+
+
+        filtered_sales.append(
+            sale
+        )
+
+
+    # =========================================================
+    # SALES PAGINATION
+    # =========================================================
+
+    sales_paginator = Paginator(
+        filtered_sales,
+        10
+    )
+
+
+    sales_page_number = request.GET.get(
+        "page",
+        1
+    )
+
+
+    sales_page_obj = sales_paginator.get_page(
+        sales_page_number
+    )
+
+
+    # =========================================================
+    # SALESMAN PERFORMANCE
+    # =========================================================
+
+    salesman_data = {}
+
+
+    for sale in all_today_sales:
+
+        salesman_name = (
+            sale.display_salesman
+        )
+
+
+        if salesman_name not in salesman_data:
+
+            salesman_data[salesman_name] = {
+
+                "salesman":
+                    salesman_name,
+
+                "transactions":
+                    0,
+
+                "total_sales":
+                    0,
+
+                "total_paid":
+                    0,
+
+                "items_sold":
+                    0,
+
+            }
+
+
+        # -----------------------------------------------------
+        # Transactions
+        # -----------------------------------------------------
+
+        salesman_data[
+            salesman_name
+        ]["transactions"] += 1
+
+
+        # -----------------------------------------------------
+        # Sales
+        # -----------------------------------------------------
+
+        salesman_data[
+            salesman_name
+        ]["total_sales"] += (
+            sale.total or 0
+        )
+
+
+        # -----------------------------------------------------
+        # Payment
+        # -----------------------------------------------------
+
+        salesman_data[
+            salesman_name
+        ]["total_paid"] += (
+            sale.payment or 0
+        )
+
+
+        # -----------------------------------------------------
+        # Items
+        # -----------------------------------------------------
+
+        try:
+
+            for item in sale.items.all():
+
+                salesman_data[
+                    salesman_name
+                ]["items_sold"] += (
+                    item.quantity or 0
+                )
+
+        except Exception:
+
+            pass
+
+
+    # =========================================================
+    # SALESMAN LIST
+    # =========================================================
+
+    salesman_sales = list(
+        salesman_data.values()
+    )
+
+
+    salesman_sales.sort(
+        key=lambda item: item["total_sales"],
+        reverse=True
+    )
+
+
+    # =========================================================
+    # UNPAID + PARTIAL SALES
+    # =========================================================
+
+    unpaid_sales_list = [
+
+        sale
+
+        for sale in all_today_sales
+
+        if sale.display_payment_status
+        in [
+            "UNPAID",
+            "PARTIAL",
+        ]
+
+    ]
+
+
+    # =========================================================
+    # UNPAID TOTAL
+    # =========================================================
+
+    unpaid_total = sum(
+        sale.display_balance
+        for sale in unpaid_sales_list
+    )
+
+
+    # =========================================================
+    # UNPAID PAGINATION
+    # =========================================================
+
+    unpaid_paginator = Paginator(
+        unpaid_sales_list,
+        10
+    )
+
+
+    unpaid_page_number = request.GET.get(
+        "unpaid_page",
+        1
+    )
+
+
+    unpaid_page_obj = unpaid_paginator.get_page(
+        unpaid_page_number
+    )
+
+
+    # =========================================================
     # CONTEXT
-    # ==========================================
+    # =========================================================
 
     context = {
-        "today": today,
 
-        "total_sales": total_sales,
-        "total_transactions": total_transactions,
-        "total_items": total_items,
-        "total_discount": total_discount,
-        "total_payment": total_payment,
-        "average_transaction": average_transaction,
+        # -----------------------------------------------------
+        # Date
+        # -----------------------------------------------------
 
-        "recent_sales": recent_sales,
-        "staff_sales": staff_sales,
+        "today":
+            today,
+
+
+        # -----------------------------------------------------
+        # Summary
+        # -----------------------------------------------------
+
+        "total_sales":
+            total_sales,
+
+        "total_transactions":
+            total_transactions,
+
+        "total_items":
+            total_items,
+
+        "total_discount":
+            total_discount,
+
+        "total_payment":
+            total_payment,
+
+        "average_transaction":
+            average_transaction,
+
+        "total_due":
+            total_due,
+
+
+        # -----------------------------------------------------
+        # Payment status
+        # -----------------------------------------------------
+
+        "paid_transactions":
+            paid_transactions,
+
+        "unpaid_transactions":
+            unpaid_transactions,
+
+        "partial_transactions":
+            partial_transactions,
+
+
+        # -----------------------------------------------------
+        # Sales
+        # -----------------------------------------------------
+
+        "recent_sales":
+            sales_page_obj,
+
+        "sales_page_obj":
+            sales_page_obj,
+
+        "sales_paginator":
+            sales_paginator,
+
+
+        # -----------------------------------------------------
+        # Salesman
+        # -----------------------------------------------------
+
+        "salesman_sales":
+            salesman_sales,
+
+        "salesman_options":
+            salesman_options,
+
+
+        # -----------------------------------------------------
+        # Unpaid
+        # -----------------------------------------------------
+
+        "unpaid_sales":
+            unpaid_page_obj,
+
+        "unpaid_page_obj":
+            unpaid_page_obj,
+
+        "unpaid_paginator":
+            unpaid_paginator,
+
+        "unpaid_total":
+            unpaid_total,
+
+
+        # -----------------------------------------------------
+        # Filters
+        # -----------------------------------------------------
+
+        "search":
+            search,
+
+        "salesman_filter":
+            salesman_filter,
+
+        "payment_filter":
+            payment_filter,
+
     }
+
 
     return render(
         request,
         "pages/pos.html",
         context
     )
-
 
 @login_required
 def admin_pos_detail(
@@ -1690,37 +2417,287 @@ def admin_pos_detail(
 
 @login_required
 def sales(request):
-    sales = (
+
+    # =========================================================
+    # BASE SALES QUERY
+    # =========================================================
+
+    sales_queryset = (
         Sale.objects
-        .select_related("staff", "discount_class")
-        .prefetch_related("items__product")
+        .select_related(
+            "staff",
+            "discount_class",
+        )
+        .prefetch_related(
+            "items__product",
+        )
         .order_by("-created_at")
     )
+
+
+    # =========================================================
+    # SEARCH
+    # =========================================================
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+
+        search_filter = (
+            Q(salesman__icontains=search)
+            |
+            Q(created_at__icontains=search)
+        )
+
+        # Sale ID search
+        if search.isdigit():
+
+            search_filter |= Q(id=int(search))
+
+        sales_queryset = sales_queryset.filter(search_filter)
+
+
+    # =========================================================
+    # SALESMAN FILTER
+    #
+    # IMPORTANT:
+    # salesman is treated as a normal field.
+    # We DO NOT use salesman__id or salesman__username.
+    # =========================================================
+
+    salesman_filter = request.GET.get("salesman", "").strip()
+
+    if salesman_filter:
+
+        sales_queryset = sales_queryset.filter(
+            salesman=salesman_filter
+        )
+
+
+    # =========================================================
+    # PAYMENT STATUS FILTER
+    # =========================================================
+
+    payment_status = request.GET.get(
+        "payment_status",
+        ""
+    ).strip().upper()
+
+    if payment_status in [
+        "PAID",
+        "PARTIAL",
+        "UNPAID",
+    ]:
+
+        sales_queryset = sales_queryset.filter(
+            payment_status=payment_status
+        )
+
+
+    # =========================================================
+    # DATE FILTER
+    # =========================================================
+
+    date_filter = request.GET.get(
+        "date",
+        ""
+    ).strip()
+
+    if date_filter:
+
+        sales_queryset = sales_queryset.filter(
+            created_at__date=date_filter
+        )
+
+
+    # =========================================================
+    # SALESMAN OPTIONS
+    #
+    # Since salesman is not a ForeignKey,
+    # get unique values directly.
+    # =========================================================
+
+    salesman_options = (
+        Sale.objects
+        .exclude(
+            salesman__isnull=True
+        )
+        .exclude(
+            salesman=""
+        )
+        .values_list(
+            "salesman",
+            flat=True
+        )
+        .distinct()
+        .order_by("salesman")
+    )
+
+
+    # =========================================================
+    # SUMMARY
+    # =========================================================
+
+    summary = sales_queryset.aggregate(
+
+        total_sales=Sum("total"),
+
+        total_discount=Sum(
+            "discount_amount"
+        ),
+
+        average_sale=Avg(
+            "total"
+        ),
+
+        total_payment=Sum(
+            "payment"
+        ),
+    )
+
+
+    total_transactions = sales_queryset.count()
+
+
+    total_sales = (
+        summary["total_sales"]
+        or 0
+    )
+
+
+    total_discount = (
+        summary["total_discount"]
+        or 0
+    )
+
+
+    average_sale = (
+        summary["average_sale"]
+        or 0
+    )
+
+
+    total_payment = (
+        summary["total_payment"]
+        or 0
+    )
+
+
+    # =========================================================
+    # PAGINATION
+    # =========================================================
+
+    paginator = Paginator(
+        sales_queryset,
+        15
+    )
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+
+    # =========================================================
+    # CONTEXT
+    # =========================================================
+
+    context = {
+
+        "sales": page_obj,
+
+        "page_obj": page_obj,
+
+        "paginator": paginator,
+
+        # Summary
+        "total_transactions": total_transactions,
+        "total_sales": total_sales,
+        "total_discount": total_discount,
+        "average_sale": average_sale,
+        "total_payment": total_payment,
+
+        # Filters
+        "search": search,
+        "salesman_filter": salesman_filter,
+        "payment_status": payment_status,
+        "date_filter": date_filter,
+
+        # Options
+        "salesman_options": salesman_options,
+    }
+
 
     return render(
         request,
         "pages/sales.html",
-        {
-            "sales": sales,
-        }
+        context
     )
 
 
 @login_required
 def sale_detail(request, sale_id):
+
     sale = get_object_or_404(
+
         Sale.objects
-        .select_related("staff", "discount_class")
-        .prefetch_related("items__product"),
+        .select_related(
+            "staff",
+            "discount_class",
+        )
+        .prefetch_related(
+            "items__product",
+        ),
+
         id=sale_id
     )
+
+
+    # =========================================================
+    # AMOUNT DUE
+    # =========================================================
+
+    amount_due = max(
+        sale.total - sale.payment,
+        0
+    )
+
+
+    # =========================================================
+    # PAYMENT STATUS
+    # =========================================================
+
+    if sale.payment >= sale.total:
+
+        payment_status = "PAID"
+
+    elif sale.payment > 0:
+
+        payment_status = "PARTIAL"
+
+    else:
+
+        payment_status = "UNPAID"
+
+
+    context = {
+
+        "sale": sale,
+
+        "amount_due": amount_due,
+
+        "payment_status": payment_status,
+
+    }
+
 
     return render(
         request,
         "pages/sale_detail.html",
-        {
-            "sale": sale,
-        }
+        context
     )
 
 @login_required

@@ -1,16 +1,21 @@
 {% extends "base.html" %}
 {% load static %}
+
+
 {% block title %}
     BentaPOS - Point of Sale
 {% endblock %}
+
 
 {% block page_title %}
     Point of Sale
 {% endblock %}
 
+
 {% block page_subtitle %}
     Sales overview and transaction monitoring
 {% endblock %}
+
 
 
 {% block extra_css %}
@@ -54,6 +59,7 @@
     min-height: 110px;
 
     display: flex;
+
     flex-direction: column;
 
     justify-content: space-between;
@@ -128,7 +134,7 @@
 
     display: flex;
 
-    align-items: center;
+    align-items: flex-start;
 
     justify-content: space-between;
 
@@ -237,6 +243,111 @@
 
 
 /* =========================================================
+   FILTER
+========================================================= */
+
+.pos-filter-form {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 12px;
+}
+
+
+.pos-filter-input,
+.pos-filter-select {
+    height: 32px;
+
+    padding: 0 9px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 10px;
+
+    outline: none;
+}
+
+
+.pos-filter-input {
+    min-width: 190px;
+}
+
+
+.pos-filter-select {
+    min-width: 125px;
+}
+
+
+.pos-filter-input:focus,
+.pos-filter-select:focus {
+    border-color: #999;
+}
+
+
+.filter-button,
+.clear-filter-button {
+    height: 32px;
+
+    padding: 0 11px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    text-decoration: none;
+}
+
+
+.filter-button {
+    border: 1px solid #111;
+
+    background: #111;
+
+    color: #fff;
+}
+
+
+.filter-button:hover {
+    background: #333;
+}
+
+
+.clear-filter-button {
+    border: 1px solid #ddd;
+
+    background: #fff;
+
+    color: #555;
+}
+
+
+.clear-filter-button:hover {
+    background: #f5f5f5;
+}
+
+
+/* =========================================================
    TRANSACTION TABLE
 ========================================================= */
 
@@ -252,7 +363,7 @@
 
     border-collapse: collapse;
 
-    min-width: 850px;
+    min-width: 1100px;
 }
 
 
@@ -285,6 +396,8 @@
     font-size: 11px;
 
     white-space: nowrap;
+
+    vertical-align: middle;
 }
 
 
@@ -297,13 +410,6 @@
     font-weight: 700;
 
     color: #111;
-}
-
-
-.staff-name {
-    font-weight: 600;
-
-    color: #222;
 }
 
 
@@ -325,36 +431,212 @@
 
 
 /* =========================================================
-   TRANSACTION COUNT
+   SALESMAN
 ========================================================= */
 
-.item-count {
+.salesman-name {
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #222;
+}
+
+
+.salesman-label {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 9px;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   VIEW ITEMS BUTTON
+========================================================= */
+
+.view-items-button {
     display: inline-flex;
 
     align-items: center;
 
     justify-content: center;
 
-    min-width: 28px;
+    gap: 5px;
 
-    height: 24px;
+    padding: 6px 9px;
 
-    padding: 0 7px;
+    border: 1px solid #ddd;
 
     border-radius: 6px;
 
-    background: #f2f2f2;
+    background: #fff;
 
-    color: #555;
+    color: #333;
 
     font-size: 10px;
 
     font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+.view-items-button:hover {
+    background: #f5f5f5;
+
+    border-color: #bbb;
+}
+
+
+.view-items-button svg {
+    width: 12px;
+
+    height: 12px;
 }
 
 
 /* =========================================================
-   STAFF PERFORMANCE
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.status-paid {
+    background: #e8f7ee;
+
+    color: #16803c;
+}
+
+
+.status-unpaid {
+    background: #fdecec;
+
+    color: #c62828;
+}
+
+
+.status-partial {
+    background: #fff5df;
+
+    color: #a56a00;
+}
+
+
+/* =========================================================
+   ITEMS DROPDOWN
+========================================================= */
+
+.items-row {
+    display: none;
+
+    background: #fafafa;
+}
+
+
+.items-row.show {
+    display: table-row;
+}
+
+
+.items-container {
+    padding: 15px 18px;
+
+    border-bottom: 1px solid #e5e5e5;
+}
+
+
+.items-title {
+    margin-bottom: 10px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #222;
+}
+
+
+.items-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 650px;
+}
+
+
+.items-table th {
+    padding: 8px;
+
+    background: #f1f1f1;
+
+    border: 1px solid #ddd;
+
+    font-size: 9px;
+
+    color: #555;
+
+    text-align: left;
+}
+
+
+.items-table td {
+    padding: 8px;
+
+    background: #fff;
+
+    border: 1px solid #ddd;
+
+    font-size: 10px;
+
+    color: #333;
+}
+
+
+.item-product-name {
+    font-weight: 700;
+
+    color: #222;
+}
+
+
+.item-price {
+    font-weight: 600;
+}
+
+
+.item-subtotal {
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   STAFF / SALESMAN PERFORMANCE
 ========================================================= */
 
 .staff-list {
@@ -467,6 +749,86 @@
 
 
 /* =========================================================
+   UNPAID
+========================================================= */
+
+.unpaid-panel {
+    margin-top: 20px;
+}
+
+
+.unpaid-balance {
+    color: #c62828;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pos-pagination {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 14px 18px;
+
+    border-top: 1px solid #eee;
+
+    background: #fff;
+}
+
+
+.pagination-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    height: 30px;
+
+    padding: 0 10px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 6px;
+
+    background: #fff;
+
+    color: #333;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.pagination-button:hover {
+    background: #f5f5f5;
+
+    border-color: #bbb;
+}
+
+
+.pagination-info {
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
    EMPTY STATE
 ========================================================= */
 
@@ -483,7 +845,6 @@
 
 /* =========================================================
    PRINT REPORT
-   Hidden during normal page view
 ========================================================= */
 
 #print-report {
@@ -502,6 +863,7 @@
             repeat(2, minmax(0, 1fr));
     }
 
+
     .pos-grid {
         grid-template-columns: 1fr;
     }
@@ -515,16 +877,35 @@
         grid-template-columns: 1fr;
     }
 
+
     .pos-panel-header {
         align-items: flex-start;
 
         flex-direction: column;
     }
 
+
     .pos-header-actions {
         width: 100%;
 
         justify-content: space-between;
+    }
+
+
+    .pos-filter-form {
+        width: 100%;
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .pos-filter-input,
+    .pos-filter-select,
+    .filter-button,
+    .clear-filter-button {
+        width: 100%;
     }
 
 }
@@ -552,18 +933,10 @@
     }
 
 
-    /*
-       Hide EVERYTHING from the normal dashboard
-    */
-
     body * {
         visibility: hidden;
     }
 
-
-    /*
-       Show only print report
-    */
 
     #print-report,
     #print-report * {
@@ -593,10 +966,6 @@
             sans-serif;
     }
 
-
-    /* =====================================================
-       PRINT HEADER
-    ===================================================== */
 
     .print-header {
 
@@ -637,10 +1006,6 @@
         font-size: 11px;
     }
 
-
-    /* =====================================================
-       PRINT SUMMARY
-    ===================================================== */
 
     .print-summary {
 
@@ -693,10 +1058,6 @@
     }
 
 
-    /* =====================================================
-       PRINT SECTION TITLE
-    ===================================================== */
-
     .print-section-title {
 
         margin: 20px 0 8px;
@@ -710,10 +1071,6 @@
         font-weight: 700;
     }
 
-
-    /* =====================================================
-       PRINT TABLE
-    ===================================================== */
 
     .print-table {
 
@@ -735,7 +1092,7 @@
 
         color: #000;
 
-        font-size: 10px;
+        font-size: 9px;
 
         font-weight: 700;
 
@@ -751,7 +1108,7 @@
 
         color: #000;
 
-        font-size: 10px;
+        font-size: 9px;
     }
 
 
@@ -761,9 +1118,36 @@
     }
 
 
-    /* =====================================================
-       PRINT FOOTER
-    ===================================================== */
+    .print-items-table {
+
+        width: 100%;
+
+        border-collapse: collapse;
+
+        margin-bottom: 18px;
+    }
+
+
+    .print-items-table th,
+    .print-items-table td {
+
+        border: 1px solid #000;
+
+        padding: 5px;
+
+        font-size: 8px;
+
+        color: #000;
+    }
+
+
+    .print-items-table th {
+
+        background: #eee;
+
+        font-weight: 700;
+    }
+
 
     .print-footer {
 
@@ -797,12 +1181,10 @@
 
     <!-- =====================================================
          SUMMARY CARDS
-    ===================================================== -->
+    ====================================================== -->
 
     <div class="pos-stats">
 
-
-        <!-- TOTAL SALES -->
 
         <div class="pos-stat-card">
 
@@ -815,13 +1197,11 @@
             </div>
 
             <div class="pos-stat-subtitle">
-                Total completed sales
+                Total sales recorded today
             </div>
 
         </div>
 
-
-        <!-- TRANSACTIONS -->
 
         <div class="pos-stat-card">
 
@@ -834,13 +1214,11 @@
             </div>
 
             <div class="pos-stat-subtitle">
-                Completed transactions
+                Sales transactions today
             </div>
 
         </div>
 
-
-        <!-- ITEMS SOLD -->
 
         <div class="pos-stat-card">
 
@@ -859,8 +1237,6 @@
         </div>
 
 
-        <!-- DISCOUNTS -->
-
         <div class="pos-stat-card">
 
             <div class="pos-stat-label">
@@ -877,51 +1253,147 @@
 
         </div>
 
-
     </div>
 
 
 
     <!-- =====================================================
          MAIN GRID
-    ===================================================== -->
+    ====================================================== -->
 
     <div class="pos-grid">
 
 
         <!-- =================================================
-             RECENT TRANSACTIONS
+             RECENT SALES
         ================================================= -->
 
         <section class="pos-panel">
+
 
             <div class="pos-panel-header">
 
                 <div>
 
                     <div class="pos-panel-title">
-                        Recent Transactions
+                        Recent Sales
                     </div>
 
                     <div class="pos-panel-subtitle">
-                        Latest sales processed by staff
+                        Salesman, purchased products and payment status
                     </div>
+
+
+                    <!-- =====================================
+                         FILTER
+                    ====================================== -->
+
+                    <form
+                        method="GET"
+                        class="pos-filter-form"
+                    >
+
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            placeholder="Search sale or salesman..."
+                            class="pos-filter-input"
+                        >
+
+
+                        <select
+                            name="salesman"
+                            class="pos-filter-select"
+                        >
+
+                            <option value="">
+                                All Salesmen
+                            </option>
+
+
+                            {% for salesman in salesman_options %}
+
+                            <option
+                                value="{{ salesman }}"
+                                {% if salesman_filter == salesman %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ salesman }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+
+                        <select
+                            name="payment_status"
+                            class="pos-filter-select"
+                        >
+
+                            <option value="">
+                                All Payments
+                            </option>
+
+                            <option
+                                value="PAID"
+                                {% if payment_filter == "PAID" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Paid
+                            </option>
+
+                            <option
+                                value="PARTIAL"
+                                {% if payment_filter == "PARTIAL" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Partial
+                            </option>
+
+                            <option
+                                value="UNPAID"
+                                {% if payment_filter == "UNPAID" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Unpaid
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            type="submit"
+                            class="filter-button"
+                        >
+                            Filter
+                        </button>
+
+
+                        <a
+                            href="{% url 'admin-pos' %}"
+                            class="clear-filter-button"
+                        >
+                            Clear
+                        </a>
+
+                    </form>
 
                 </div>
 
 
-                <!-- HEADER ACTIONS -->
-
                 <div class="pos-header-actions">
 
                     <div class="date-badge">
-
                         {{ today|date:"M d, Y" }}
-
                     </div>
 
-
-                    <!-- PRINT BUTTON -->
 
                     <button
                         type="button"
@@ -940,9 +1412,16 @@
 
                             <polyline points="6 9 6 2 18 2 18 9"/>
 
-                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <path
+                                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
+                            />
 
-                            <rect x="6" y="14" width="12" height="8"/>
+                            <rect
+                                x="6"
+                                y="14"
+                                width="12"
+                                height="8"
+                            />
 
                         </svg>
 
@@ -957,7 +1436,7 @@
 
 
             <!-- =================================================
-                 TRANSACTION TABLE
+                 SALES TABLE
             ================================================= -->
 
             <div class="table-wrapper">
@@ -973,7 +1452,7 @@
                             </th>
 
                             <th>
-                                STAFF
+                                SALESMAN
                             </th>
 
                             <th>
@@ -997,6 +1476,10 @@
                             </th>
 
                             <th>
+                                STATUS
+                            </th>
+
+                            <th>
                                 CHANGE
                             </th>
 
@@ -1013,7 +1496,13 @@
 
                         {% for sale in recent_sales %}
 
+
+                        <!-- =====================================
+                             SALE
+                        ====================================== -->
+
                         <tr>
+
 
                             <td>
 
@@ -1024,39 +1513,59 @@
                             </td>
 
 
+                            <!-- SALESMAN -->
+
                             <td>
 
-                                <span class="staff-name">
+                                <div class="salesman-name">
 
-                                    {% if sale.staff.get_full_name %}
+                                    {{ sale.display_salesman }}
 
-                                        {{ sale.staff.get_full_name }}
+                                </div>
 
-                                    {% elif sale.staff %}
-
-                                        {{ sale.staff.username }}
-
-                                    {% else %}
-
-                                        —
-
-                                    {% endif %}
-
+                                <span class="salesman-label">
+                                    Salesman
                                 </span>
 
                             </td>
 
 
+                            <!-- ITEMS -->
+
                             <td>
 
-                                <span class="item-count">
+                                <button
+                                    type="button"
+                                    class="view-items-button"
+                                    onclick="toggleItems(
+                                        'items-{{ sale.id }}',
+                                        this
+                                    )"
+                                >
+
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+
+                                        <path d="M6 9l6 6 6-6"/>
+
+                                    </svg>
 
                                     {{ sale.items.all|length }}
 
-                                </span>
+                                    item{{ sale.items.all|length|pluralize }}
+
+                                </button>
 
                             </td>
 
+
+                            <!-- SUBTOTAL -->
 
                             <td>
 
@@ -1065,16 +1574,34 @@
                             </td>
 
 
+                            <!-- DISCOUNT -->
+
                             <td>
 
                                 <span class="discount-amount">
 
-                                    -₱{{ sale.discount_amount|floatformat:2 }}
+                                    {% if sale.discount_amount > 0 %}
+
+                                        -₱{{ sale.discount_amount|floatformat:2 }}
+
+                                        {% if sale.discount_percent %}
+
+                                            ({{ sale.discount_percent|floatformat:2 }}%)
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        ₱0.00
+
+                                    {% endif %}
 
                                 </span>
 
                             </td>
 
+
+                            <!-- TOTAL -->
 
                             <td>
 
@@ -1087,6 +1614,8 @@
                             </td>
 
 
+                            <!-- PAYMENT -->
+
                             <td>
 
                                 ₱{{ sale.payment|floatformat:2 }}
@@ -1094,12 +1623,49 @@
                             </td>
 
 
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if sale.display_payment_status == "PAID" %}
+
+                                    <span
+                                        class="payment-status status-paid"
+                                    >
+                                        PAID
+                                    </span>
+
+                                {% elif sale.display_payment_status == "PARTIAL" %}
+
+                                    <span
+                                        class="payment-status status-partial"
+                                    >
+                                        PARTIAL
+                                    </span>
+
+                                {% else %}
+
+                                    <span
+                                        class="payment-status status-unpaid"
+                                    >
+                                        UNPAID
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- CHANGE -->
+
                             <td>
 
                                 ₱{{ sale.change|floatformat:2 }}
 
                             </td>
 
+
+                            <!-- DATE -->
 
                             <td>
 
@@ -1110,15 +1676,175 @@
                         </tr>
 
 
+
+                        <!-- =====================================
+                             PURCHASED ITEMS
+                        ====================================== -->
+
+                        <tr
+                            id="items-{{ sale.id }}"
+                            class="items-row"
+                        >
+
+                            <td colspan="10">
+
+                                <div class="items-container">
+
+                                    <div class="items-title">
+
+                                        Purchased Items —
+                                        Sale #{{ sale.id }}
+
+                                    </div>
+
+
+                                    <table class="items-table">
+
+                                        <thead>
+
+                                            <tr>
+
+                                                <th>
+                                                    PRODUCT
+                                                </th>
+
+                                                <th>
+                                                    CATEGORY
+                                                </th>
+
+                                                <th>
+                                                    QUANTITY
+                                                </th>
+
+                                                <th>
+                                                    UNIT PRICE
+                                                </th>
+
+                                                <th>
+                                                    DISCOUNT
+                                                </th>
+
+                                                <th>
+                                                    SUBTOTAL
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
+
+
+                                        <tbody>
+
+                                            {% for item in sale.items.all %}
+
+                                            <tr>
+
+                                                <td>
+
+                                                    <span
+                                                        class="item-product-name"
+                                                    >
+
+                                                        {{ item.product.product_model }}
+
+                                                    </span>
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    {{ item.product.category }}
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    {{ item.quantity }}
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    <span class="item-price">
+
+                                                        ₱{{ item.price|floatformat:2 }}
+
+                                                    </span>
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    {% if item.discount_amount %}
+
+                                                        -₱{{ item.discount_amount|floatformat:2 }}
+
+                                                    {% elif item.discount_percent %}
+
+                                                        {{ item.discount_percent|floatformat:2 }}%
+
+                                                    {% else %}
+
+                                                        —
+
+                                                    {% endif %}
+
+                                                </td>
+
+
+                                                <td>
+
+                                                    <span
+                                                        class="item-subtotal"
+                                                    >
+
+                                                        ₱{{ item.subtotal|floatformat:2 }}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+
+                                            {% empty %}
+
+                                            <tr>
+
+                                                <td colspan="6">
+
+                                                    No item details recorded.
+
+                                                </td>
+
+                                            </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+
                         {% empty %}
 
                         <tr>
 
-                            <td colspan="9">
+                            <td colspan="10">
 
                                 <div class="empty-state">
 
-                                    No transactions have been recorded yet.
+                                    No transactions found.
 
                                 </div>
 
@@ -1134,26 +1860,75 @@
 
             </div>
 
+
+
+            <!-- =================================================
+                 SALES PAGINATION
+            ================================================== -->
+
+            {% if sales_page_obj.paginator.num_pages > 1 %}
+
+            <div class="pos-pagination">
+
+
+                {% if sales_page_obj.has_previous %}
+
+                    <a
+                        href="?search={{ search|urlencode }}&salesman={{ salesman_filter|urlencode }}&payment_status={{ payment_filter|urlencode }}&page={{ sales_page_obj.previous_page_number }}"
+                        class="pagination-button"
+                    >
+                        Previous
+                    </a>
+
+                {% endif %}
+
+
+                <span class="pagination-info">
+
+                    Page
+                    {{ sales_page_obj.number }}
+                    of
+                    {{ sales_page_obj.paginator.num_pages }}
+
+                </span>
+
+
+                {% if sales_page_obj.has_next %}
+
+                    <a
+                        href="?search={{ search|urlencode }}&salesman={{ salesman_filter|urlencode }}&payment_status={{ payment_filter|urlencode }}&page={{ sales_page_obj.next_page_number }}"
+                        class="pagination-button"
+                    >
+                        Next
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
         </section>
 
 
 
         <!-- =================================================
-             STAFF PERFORMANCE
+             SALESMAN PERFORMANCE
         ================================================= -->
 
         <section class="pos-panel">
+
 
             <div class="pos-panel-header">
 
                 <div>
 
                     <div class="pos-panel-title">
-                        Staff Performance
+                        Salesman Performance
                     </div>
 
                     <div class="pos-panel-subtitle">
-                        Today's sales by staff
+                        Today's sales processed by salesman
                     </div>
 
                 </div>
@@ -1163,24 +1938,17 @@
 
             <div class="staff-list">
 
-                {% for staff in staff_sales %}
+                {% for salesman in salesman_sales %}
 
                 <div class="staff-row">
 
 
                     <div class="staff-left">
 
+
                         <div class="staff-avatar">
 
-                            {% if staff.staff__username %}
-
-                                {{ staff.staff__username|first|upper }}
-
-                            {% else %}
-
-                                ?
-
-                            {% endif %}
+                            {{ salesman.salesman|first|upper }}
 
                         </div>
 
@@ -1189,15 +1957,16 @@
 
                             <div class="staff-username">
 
-                                {{ staff.staff__username }}
+                                {{ salesman.salesman }}
 
                             </div>
 
 
                             <div class="staff-transactions">
 
-                                {{ staff.transactions }}
-                                transaction{{ staff.transactions|pluralize }}
+                                {{ salesman.transactions }}
+
+                                transaction{{ salesman.transactions|pluralize }}
 
                             </div>
 
@@ -1210,14 +1979,14 @@
 
                         <div class="staff-sales-value">
 
-                            ₱{{ staff.total_sales|floatformat:2 }}
+                            ₱{{ salesman.total_sales|floatformat:2 }}
 
                         </div>
 
 
                         <div class="staff-items">
 
-                            {{ staff.items_sold|default:0 }}
+                            {{ salesman.items_sold|default:0 }}
 
                             items sold
 
@@ -1225,14 +1994,13 @@
 
                     </div>
 
-
                 </div>
 
                 {% empty %}
 
                 <div class="empty-state">
 
-                    No staff sales today.
+                    No salesman sales today.
 
                 </div>
 
@@ -1245,21 +2013,257 @@
 
     </div>
 
+
+
+    <!-- =====================================================
+         UNPAID / PARTIAL SALES
+    ====================================================== -->
+
+    <section class="pos-panel unpaid-panel">
+
+
+        <div class="pos-panel-header">
+
+            <div>
+
+                <div class="pos-panel-title">
+                    Unpaid & Partial Sales
+                </div>
+
+                <div class="pos-panel-subtitle">
+                    Transactions with remaining balances
+                </div>
+
+            </div>
+
+
+            <div class="date-badge">
+
+                Total Due:
+                ₱{{ unpaid_total|floatformat:2 }}
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="pos-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            SALE
+                        </th>
+
+                        <th>
+                            SALESMAN
+                        </th>
+
+                        <th>
+                            TOTAL
+                        </th>
+
+                        <th>
+                            PAYMENT
+                        </th>
+
+                        <th>
+                            BALANCE
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                        <th>
+                            DATE
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in unpaid_sales %}
+
+                    <tr>
+
+                        <td>
+
+                            <span class="sale-id">
+
+                                #{{ sale.id }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="salesman-name">
+
+                                {{ sale.display_salesman }}
+
+                            </div>
+
+                            <span class="salesman-label">
+                                Salesman
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="total-amount">
+
+                                ₱{{ sale.total|floatformat:2 }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.payment|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="unpaid-balance">
+
+                                ₱{{ sale.display_balance|floatformat:2 }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if sale.display_payment_status == "PARTIAL" %}
+
+                                <span
+                                    class="payment-status status-partial"
+                                >
+                                    PARTIAL
+                                </span>
+
+                            {% else %}
+
+                                <span
+                                    class="payment-status status-unpaid"
+                                >
+                                    UNPAID
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.created_at|date:"M d, Y H:i" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="empty-state">
+
+                                No unpaid or partial sales today.
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+        <!-- =================================================
+             UNPAID PAGINATION
+        ================================================== -->
+
+        {% if unpaid_page_obj.paginator.num_pages > 1 %}
+
+        <div class="pos-pagination">
+
+
+            {% if unpaid_page_obj.has_previous %}
+
+                <a
+                    href="?search={{ search|urlencode }}&salesman={{ salesman_filter|urlencode }}&payment_status={{ payment_filter|urlencode }}&unpaid_page={{ unpaid_page_obj.previous_page_number }}"
+                    class="pagination-button"
+                >
+                    Previous
+                </a>
+
+            {% endif %}
+
+
+            <span class="pagination-info">
+
+                Page
+                {{ unpaid_page_obj.number }}
+                of
+                {{ unpaid_page_obj.paginator.num_pages }}
+
+            </span>
+
+
+            {% if unpaid_page_obj.has_next %}
+
+                <a
+                    href="?search={{ search|urlencode }}&salesman={{ salesman_filter|urlencode }}&payment_status={{ payment_filter|urlencode }}&unpaid_page={{ unpaid_page_obj.next_page_number }}"
+                    class="pagination-button"
+                >
+                    Next
+                </a>
+
+            {% endif %}
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
 </div>
 
 
 
 <!-- =========================================================
      PRINT-ONLY REPORT
-
-     This is NOT visible on the normal POS page.
-     It appears only when printing.
 ========================================================= -->
 
 <div id="print-report">
 
-
-    <!-- PRINT HEADER -->
 
     <div class="print-header">
 
@@ -1334,18 +2338,15 @@
 
         </div>
 
-
     </div>
 
 
 
-    <!-- =====================================================
-         TRANSACTIONS
-    ===================================================== -->
+    <!-- PRINT SALES -->
 
     <div class="print-section-title">
 
-        Recent Transactions
+        Sales Transactions
 
     </div>
 
@@ -1361,7 +2362,7 @@
                 </th>
 
                 <th>
-                    Staff
+                    Salesman
                 </th>
 
                 <th>
@@ -1382,6 +2383,10 @@
 
                 <th>
                     Payment
+                </th>
+
+                <th>
+                    Status
                 </th>
 
                 <th>
@@ -1409,21 +2414,7 @@
 
 
                 <td>
-
-                    {% if sale.staff.get_full_name %}
-
-                        {{ sale.staff.get_full_name }}
-
-                    {% elif sale.staff %}
-
-                        {{ sale.staff.username }}
-
-                    {% else %}
-
-                        —
-
-                    {% endif %}
-
+                    {{ sale.display_salesman }}
                 </td>
 
 
@@ -1453,6 +2444,11 @@
 
 
                 <td>
+                    {{ sale.display_payment_status }}
+                </td>
+
+
+                <td>
                     ₱{{ sale.change|floatformat:2 }}
                 </td>
 
@@ -1464,14 +2460,113 @@
             </tr>
 
 
+            <tr>
+
+                <td colspan="10">
+
+                    <strong>
+                        Purchased Items:
+                    </strong>
+
+
+                    <table class="print-items-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Product
+                                </th>
+
+                                <th>
+                                    Category
+                                </th>
+
+                                <th>
+                                    Qty
+                                </th>
+
+                                <th>
+                                    Unit Price
+                                </th>
+
+                                <th>
+                                    Discount
+                                </th>
+
+                                <th>
+                                    Subtotal
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in sale.items.all %}
+
+                            <tr>
+
+                                <td>
+                                    {{ item.product.product_model }}
+                                </td>
+
+                                <td>
+                                    {{ item.product.category }}
+                                </td>
+
+                                <td>
+                                    {{ item.quantity }}
+                                </td>
+
+                                <td>
+                                    ₱{{ item.price|floatformat:2 }}
+                                </td>
+
+                                <td>
+
+                                    {% if item.discount_amount %}
+
+                                        ₱{{ item.discount_amount|floatformat:2 }}
+
+                                    {% elif item.discount_percent %}
+
+                                        {{ item.discount_percent|floatformat:2 }}%
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td>
+                                    ₱{{ item.subtotal|floatformat:2 }}
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </td>
+
+            </tr>
+
+
             {% empty %}
 
             <tr>
 
-                <td colspan="9">
-
+                <td colspan="10">
                     No transactions recorded.
-
                 </td>
 
             </tr>
@@ -1484,13 +2579,11 @@
 
 
 
-    <!-- =====================================================
-         STAFF PERFORMANCE
-    ===================================================== -->
+    <!-- PRINT SALESMAN -->
 
     <div class="print-section-title">
 
-        Staff Performance
+        Salesman Performance
 
     </div>
 
@@ -1502,7 +2595,7 @@
             <tr>
 
                 <th>
-                    Staff
+                    Salesman
                 </th>
 
                 <th>
@@ -1524,24 +2617,24 @@
 
         <tbody>
 
-            {% for staff in staff_sales %}
+            {% for salesman in salesman_sales %}
 
             <tr>
 
                 <td>
-                    {{ staff.staff__username }}
+                    {{ salesman.salesman }}
                 </td>
 
                 <td>
-                    {{ staff.transactions }}
+                    {{ salesman.transactions }}
                 </td>
 
                 <td>
-                    {{ staff.items_sold|default:0 }}
+                    {{ salesman.items_sold|default:0 }}
                 </td>
 
                 <td>
-                    ₱{{ staff.total_sales|floatformat:2 }}
+                    ₱{{ salesman.total_sales|floatformat:2 }}
                 </td>
 
             </tr>
@@ -1552,9 +2645,7 @@
             <tr>
 
                 <td colspan="4">
-
-                    No staff sales recorded.
-
+                    No salesman sales recorded.
                 </td>
 
             </tr>
@@ -1567,9 +2658,101 @@
 
 
 
-    <!-- =====================================================
-         PRINT FOOTER
-    ===================================================== -->
+    <!-- PRINT UNPAID -->
+
+    <div class="print-section-title">
+
+        Unpaid & Partial Sales
+
+    </div>
+
+
+    <table class="print-table">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Sale
+                </th>
+
+                <th>
+                    Salesman
+                </th>
+
+                <th>
+                    Total
+                </th>
+
+                <th>
+                    Payment
+                </th>
+
+                <th>
+                    Balance
+                </th>
+
+                <th>
+                    Status
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for sale in unpaid_sales %}
+
+            <tr>
+
+                <td>
+                    #{{ sale.id }}
+                </td>
+
+                <td>
+                    {{ sale.display_salesman }}
+                </td>
+
+                <td>
+                    ₱{{ sale.total|floatformat:2 }}
+                </td>
+
+                <td>
+                    ₱{{ sale.payment|floatformat:2 }}
+                </td>
+
+                <td>
+                    ₱{{ sale.display_balance|floatformat:2 }}
+                </td>
+
+                <td>
+                    {{ sale.display_payment_status }}
+                </td>
+
+            </tr>
+
+            {% empty %}
+
+            <tr>
+
+                <td colspan="6">
+                    No unpaid or partial sales.
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+
+
+    <!-- PRINT FOOTER -->
 
     <div class="print-footer">
 
@@ -1585,7 +2768,6 @@
 
 </div>
 
-
 {% endblock %}
 
 
@@ -1593,6 +2775,78 @@
 {% block extra_js %}
 
 <script>
+
+/* =========================================================
+   TOGGLE PURCHASED ITEMS
+========================================================= */
+
+function toggleItems(rowId, button) {
+
+    const row = document.getElementById(
+        rowId
+    );
+
+
+    if (!row) {
+        return;
+    }
+
+
+    row.classList.toggle(
+        "show"
+    );
+
+
+    if (
+        row.classList.contains(
+            "show"
+        )
+    ) {
+
+        button.innerHTML = `
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+
+                <path d="M18 15l-6-6-6 6"/>
+
+            </svg>
+
+            Hide items
+
+        `;
+
+    } else {
+
+        button.innerHTML = `
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+
+                <path d="M6 9l6 6 6-6"/>
+
+            </svg>
+
+            Show items
+
+        `;
+
+    }
+
+}
+
 
 /* =========================================================
    PRINT SALES REPORT

@@ -14,424 +14,625 @@ Sales Reports
 Sales performance and transaction analytics
 {% endblock %}
 
+
 {% block extra_css %}
 
 <style>
 
-    /* =========================================================
-       REPORT HEADER
-    ========================================================= */
+/* =========================================================
+   REPORT PAGE
+========================================================= */
 
-    .report-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 25px;
+.report-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   PRINT TITLE
+========================================================= */
+
+.print-report-title {
+    display: none;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.print-report-title h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.print-report-title p {
+    margin-top: 5px;
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   REPORT HEADER
+========================================================= */
+
+.report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+}
+
+.report-header-info h2 {
+    margin: 0;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    color: #111;
+}
+
+.report-header-info p {
+    margin: 6px 0 0;
+
+    color: #888;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.report-actions {
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+}
+
+
+/* =========================================================
+   PERIOD BUTTONS
+========================================================= */
+
+.period-buttons {
+    display: flex;
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 9px;
+
+    padding: 4px;
+}
+
+.period-buttons a {
+    padding: 8px 14px;
+
+    border-radius: 6px;
+
+    color: #777;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition: 0.2s;
+}
+
+.period-buttons a:hover {
+    background: #f3f3f3;
+
+    color: #111;
+}
+
+.period-buttons a.active {
+    background: #111;
+
+    color: #fff;
+}
+
+
+/* =========================================================
+   PRINT BUTTON
+========================================================= */
+
+.print-button {
+    border: none;
+
+    background: #111;
+
+    color: #fff;
+
+    padding: 10px 15px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    transition: 0.2s;
+}
+
+.print-button:hover {
+    background: #333;
+}
+
+.print-button svg {
+    width: 15px;
+    height: 15px;
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.report-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.report-stat-card {
+    background: #fff;
+
+    border: 1px solid #e8e8e8;
+
+    border-radius: 12px;
+
+    padding: 20px;
+}
+
+.stat-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.stat-label {
+    font-size: 11px;
+
+    color: #888;
+
+    font-weight: 600;
+}
+
+.stat-icon {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+.stat-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+
+/* =========================================================
+   STAT ICONS
+========================================================= */
+
+.sales-icon {
+    background: #e8f5ff;
+    color: #1683d8;
+}
+
+.transaction-icon {
+    background: #f0eaff;
+    color: #7950d6;
+}
+
+.items-icon {
+    background: #e9f9ef;
+    color: #159447;
+}
+
+.average-icon {
+    background: #fff4df;
+    color: #d88900;
+}
+
+
+/* =========================================================
+   STAT VALUE
+========================================================= */
+
+.stat-value {
+    margin-top: 15px;
+
+    font-size: 25px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+/* =========================================================
+   CHART CARD
+========================================================= */
+
+.chart-card {
+    background: #fff;
+
+    border: 1px solid #e8e8e8;
+
+    border-radius: 12px;
+
+    padding: 22px;
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================================================
+   CHART HEADER
+========================================================= */
+
+.chart-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+}
+
+.chart-title h3 {
+    margin: 0;
+
+    font-size: 15px;
+
+    color: #111;
+}
+
+.chart-title span {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 11px;
+
+    color: #999;
+}
+
+
+/* =========================================================
+   CHART PERIOD LABEL
+========================================================= */
+
+.chart-period-label {
+    padding: 7px 11px;
+
+    background: #f5f5f5;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 6px;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: #555;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   CHART CONTAINER
+========================================================= */
+
+.chart-container {
+    width: 100%;
+
+    height: 380px;
+
+    position: relative;
+}
+
+
+/* =========================================================
+   RECENT SALES
+========================================================= */
+
+.recent-card {
+    background: #fff;
+
+    border: 1px solid #e8e8e8;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+}
+
+.recent-header {
+    padding: 20px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.recent-header h3 {
+    margin: 0;
+
+    font-size: 15px;
+}
+
+.recent-header span {
+    color: #999;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+.sales-table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+.sales-table th {
+    padding: 13px 20px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #eee;
+
+    color: #777;
+
+    font-size: 10px;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.sales-table td {
+    padding: 14px 20px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+
+    color: #333;
+}
+
+.sales-table tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   TABLE DATA
+========================================================= */
+
+.sale-id {
+    font-weight: 700;
+
+    color: #111;
+}
+
+.sale-total {
+    font-weight: 700;
+
+    color: #159447;
+}
+
+.sale-staff {
+    color: #666;
+}
+
+.sale-discount {
+    color: #d88900;
+}
+
+
+/* =========================================================
+   EMPTY SALES
+========================================================= */
+
+.empty-sales {
+    padding: 45px;
+
+    text-align: center;
+
+    color: #999;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+
+    body {
+        background: #fff !important;
     }
 
-    .report-header-info h2 {
-        margin: 0;
-        font-size: 20px;
-        color: #111;
-    }
-
-    .report-header-info p {
-        margin: 6px 0 0;
-        color: #888;
-        font-size: 12px;
-    }
-
-
-    /* =========================================================
-       ACTIONS
-    ========================================================= */
-
-    .report-actions {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .period-buttons {
-        display: flex;
-        background: #fff;
-        border: 1px solid #e5e5e5;
-        border-radius: 9px;
-        padding: 4px;
-    }
-
-    .period-buttons a {
-        padding: 8px 14px;
-        border-radius: 6px;
-        color: #777;
-        font-size: 12px;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-
-    .period-buttons a:hover {
-        background: #f3f3f3;
-        color: #111;
-    }
-
-    .period-buttons a.active {
-        background: #111;
-        color: #fff;
-    }
-
-    .print-button {
-        border: none;
-        background: #111;
-        color: #fff;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-
-        display: flex;
-        align-items: center;
-        gap: 7px;
-
-        transition: 0.2s;
-    }
-
-    .print-button:hover {
-        background: #333;
-    }
-
-    .print-button svg {
-        width: 15px;
-        height: 15px;
-    }
-
-
-    /* =========================================================
-       STAT CARDS
-    ========================================================= */
-
-    .report-stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-
-    .report-stat-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 12px;
-        padding: 20px;
-    }
-
-    .stat-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .stat-label {
-        font-size: 11px;
-        color: #888;
-        font-weight: 600;
-    }
-
-    .stat-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .stat-icon svg {
-        width: 17px;
-        height: 17px;
-    }
-
-    .sales-icon {
-        background: #e8f5ff;
-        color: #1683d8;
-    }
-
-    .transaction-icon {
-        background: #f0eaff;
-        color: #7950d6;
-    }
-
-    .items-icon {
-        background: #e9f9ef;
-        color: #159447;
-    }
-
-    .average-icon {
-        background: #fff4df;
-        color: #d88900;
-    }
-
-    .stat-value {
-        margin-top: 15px;
-        font-size: 25px;
-        font-weight: 700;
-        color: #111;
-    }
-
-
-    /* =========================================================
-       CHART CARD
-    ========================================================= */
-
-    .chart-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 12px;
-        padding: 22px;
-        margin-bottom: 20px;
-    }
-
-    .chart-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-
-    .chart-title h3 {
-        margin: 0;
-        font-size: 15px;
-        color: #111;
-    }
-
-    .chart-title span {
-        display: block;
-        margin-top: 4px;
-        font-size: 11px;
-        color: #999;
-    }
-
-    .chart-container {
-        width: 100%;
-        height: 350px;
-        position: relative;
-    }
-
-
-    /* =========================================================
-       RECENT SALES
-    ========================================================= */
-
-    .recent-card {
-        background: #fff;
-        border: 1px solid #e8e8e8;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .recent-header {
-        padding: 20px;
-        border-bottom: 1px solid #eee;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .recent-header h3 {
-        margin: 0;
-        font-size: 15px;
-    }
-
+    .sidebar,
+    .topbar,
+    .report-actions,
     .recent-header span {
-        color: #999;
-        font-size: 11px;
+        display: none !important;
     }
 
-    .table-wrapper {
-        width: 100%;
-        overflow-x: auto;
+    .main {
+        width: 100% !important;
+
+        margin: 0 !important;
     }
 
-    .sales-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .sales-table th {
-        padding: 13px 20px;
-        background: #fafafa;
-        border-bottom: 1px solid #eee;
-
-        color: #777;
-        font-size: 10px;
-        text-align: left;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .sales-table td {
-        padding: 14px 20px;
-        border-bottom: 1px solid #f0f0f0;
-
-        font-size: 12px;
-        color: #333;
-    }
-
-    .sales-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .sale-id {
-        font-weight: 700;
-        color: #111;
-    }
-
-    .sale-total {
-        font-weight: 700;
-        color: #159447;
-    }
-
-    .sale-staff {
-        color: #666;
-    }
-
-    .empty-sales {
-        padding: 45px;
-        text-align: center;
-        color: #999;
-        font-size: 13px;
-    }
-
-
-    /* =========================================================
-       PRINT
-    ========================================================= */
-
-    @media print {
-
-        body {
-            background: #fff !important;
-        }
-
-        .sidebar,
-        .topbar,
-        .report-actions,
-        .recent-header span {
-            display: none !important;
-        }
-
-        .main {
-            width: 100% !important;
-            margin: 0 !important;
-        }
-
-        .content {
-            padding: 0 !important;
-        }
-
-        .report-header {
-            margin-bottom: 20px;
-        }
-
-        .report-stats {
-            grid-template-columns: repeat(4, 1fr);
-        }
-
-        .chart-card,
-        .recent-card,
-        .report-stat-card {
-            border: 1px solid #ddd;
-            box-shadow: none;
-        }
-
-        .chart-container {
-            height: 350px;
-        }
-
-        .sales-table th,
-        .sales-table td {
-            padding: 8px;
-        }
-
-        .print-report-title {
-            display: block !important;
-        }
+    .content {
+        padding: 0 !important;
     }
 
     .print-report-title {
-        display: none;
+        display: block !important;
+    }
+
+    .report-header {
+        margin-bottom: 20px;
+    }
+
+    .report-stats {
+        grid-template-columns:
+            repeat(4, 1fr);
+    }
+
+    .chart-card,
+    .recent-card,
+    .report-stat-card {
+        border: 1px solid #ddd;
+
+        box-shadow: none;
+    }
+
+    .chart-container {
+        height: 350px;
+    }
+
+    .sales-table th,
+    .sales-table td {
+        padding: 8px;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .report-stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .report-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .report-actions {
+        width: 100%;
+
+        flex-wrap: wrap;
+    }
+
+    .period-buttons {
+        flex: 1;
+    }
+
+    .period-buttons a {
+        flex: 1;
+
         text-align: center;
-        margin-bottom: 25px;
     }
 
-    .print-report-title h1 {
-        margin: 0;
-        font-size: 24px;
+    .print-button {
+        width: 100%;
     }
 
-    .print-report-title p {
-        margin-top: 5px;
-        color: #777;
-        font-size: 12px;
+    .report-stats {
+        grid-template-columns: 1fr;
     }
 
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-
-    @media (max-width: 1100px) {
-
-        .report-stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
+    .chart-container {
+        height: 300px;
     }
 
-    @media (max-width: 700px) {
-
-        .report-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .report-actions {
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .period-buttons {
-            flex: 1;
-        }
-
-        .period-buttons a {
-            flex: 1;
-            text-align: center;
-        }
-
-        .print-button {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .report-stats {
-            grid-template-columns: 1fr;
-        }
-
-        .chart-container {
-            height: 280px;
-        }
-
+    .chart-period-label {
+        display: none;
     }
+
+    .recent-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 5px;
+    }
+
+}
 
 </style>
 
 {% endblock %}
 
 
+
 {% block content %}
+
+<div class="report-page">
+
 
 <!-- =========================================================
      PRINT TITLE
@@ -439,7 +640,9 @@ Sales performance and transaction analytics
 
 <div class="print-report-title">
 
-    <h1>BentaPOS</h1>
+    <h1>
+        BentaPOS
+    </h1>
 
     <p>
         Sales Report —
@@ -449,15 +652,18 @@ Sales performance and transaction analytics
 </div>
 
 
+
 <!-- =========================================================
-     HEADER
+     REPORT HEADER
 ========================================================= -->
 
 <div class="report-header">
 
     <div class="report-header-info">
 
-        <h2>Sales Overview</h2>
+        <h2>
+            Sales Overview
+        </h2>
 
         <p>
             Analyze your sales performance
@@ -469,26 +675,34 @@ Sales performance and transaction analytics
 
     <div class="report-actions">
 
+
         <!-- PERIOD -->
 
         <div class="period-buttons">
 
-            <a href="?period=daily"
-               class="{% if period == 'daily' %}active{% endif %}">
+            <a
+                href="?period=daily"
+                class="{% if period == 'daily' %}active{% endif %}"
+            >
                 Daily
             </a>
 
-            <a href="?period=weekly"
-               class="{% if period == 'weekly' %}active{% endif %}">
+            <a
+                href="?period=weekly"
+                class="{% if period == 'weekly' %}active{% endif %}"
+            >
                 Weekly
             </a>
 
-            <a href="?period=monthly"
-               class="{% if period == 'monthly' %}active{% endif %}">
+            <a
+                href="?period=monthly"
+                class="{% if period == 'monthly' %}active{% endif %}"
+            >
                 Monthly
             </a>
 
         </div>
+
 
 
         <!-- PRINT -->
@@ -496,7 +710,8 @@ Sales performance and transaction analytics
         <button
             type="button"
             class="print-button"
-            onclick="window.print()">
+            onclick="window.print()"
+        >
 
             <svg
                 viewBox="0 0 24 24"
@@ -504,11 +719,23 @@ Sales performance and transaction analytics
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round">
+                stroke-linejoin="round"
+            >
 
-                <polyline points="6 9 6 2 18 2 18 9"/>
-                <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-                <rect x="6" y="14" width="12" height="8"/>
+                <polyline
+                    points="6 9 6 2 18 2 18 9"
+                />
+
+                <path
+                    d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"
+                />
+
+                <rect
+                    x="6"
+                    y="14"
+                    width="12"
+                    height="8"
+                />
 
             </svg>
 
@@ -521,11 +748,13 @@ Sales performance and transaction analytics
 </div>
 
 
+
 <!-- =========================================================
      STATISTICS
 ========================================================= -->
 
 <div class="report-stats">
+
 
     <!-- TOTAL SALES -->
 
@@ -545,10 +774,14 @@ Sales performance and transaction analytics
                     stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
-                    stroke-linejoin="round">
+                    stroke-linejoin="round"
+                >
 
                     <path d="M12 1v22"/>
-                    <path d="M17 5H9.5a3.5 3.5 0 000 7H14.5a3.5 3.5 0 010 7H6"/>
+
+                    <path
+                        d="M17 5H9.5a3.5 3.5 0 000 7H14.5a3.5 3.5 0 010 7H6"
+                    />
 
                 </svg>
 
@@ -556,11 +789,15 @@ Sales performance and transaction analytics
 
         </div>
 
+
         <div class="stat-value">
+
             ₱{{ total_sales|floatformat:2 }}
+
         </div>
 
     </div>
+
 
 
     <!-- TRANSACTIONS -->
@@ -579,11 +816,21 @@ Sales performance and transaction analytics
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2">
+                    stroke-width="2"
+                >
 
-                    <rect x="3" y="4" width="18" height="16" rx="2"/>
+                    <rect
+                        x="3"
+                        y="4"
+                        width="18"
+                        height="16"
+                        rx="2"
+                    />
+
                     <path d="M7 8h10"/>
+
                     <path d="M7 12h10"/>
+
                     <path d="M7 16h6"/>
 
                 </svg>
@@ -592,11 +839,15 @@ Sales performance and transaction analytics
 
         </div>
 
+
         <div class="stat-value">
+
             {{ total_transactions }}
+
         </div>
 
     </div>
+
 
 
     <!-- ITEMS -->
@@ -615,10 +866,17 @@ Sales performance and transaction analytics
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2">
+                    stroke-width="2"
+                >
 
-                    <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
-                    <path d="M3 8v8l9 5 9-5V8"/>
+                    <path
+                        d="M21 8l-9-5-9 5 9 5 9-5z"
+                    />
+
+                    <path
+                        d="M3 8v8l9 5 9-5V8"
+                    />
+
                     <path d="M12 13v8"/>
 
                 </svg>
@@ -627,11 +885,15 @@ Sales performance and transaction analytics
 
         </div>
 
+
         <div class="stat-value">
+
             {{ total_items }}
+
         </div>
 
     </div>
+
 
 
     <!-- AVERAGE -->
@@ -650,10 +912,16 @@ Sales performance and transaction analytics
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    stroke-width="2">
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
 
                     <path d="M12 1v22"/>
-                    <path d="M17 5H9.5a3.5 3.5 0 000 7H14.5a3.5 3.5 0 010 7H6"/>
+
+                    <path
+                        d="M17 5H9.5a3.5 3.5 0 000 7H14.5a3.5 3.5 0 010 7H6"
+                    />
 
                 </svg>
 
@@ -661,8 +929,11 @@ Sales performance and transaction analytics
 
         </div>
 
+
         <div class="stat-value">
+
             ₱{{ average_sale|floatformat:2 }}
+
         </div>
 
     </div>
@@ -670,23 +941,32 @@ Sales performance and transaction analytics
 </div>
 
 
+
 <!-- =========================================================
-     SALES CHART
+     SALES PERFORMANCE DIAGRAM
 ========================================================= -->
 
 <div class="chart-card">
+
 
     <div class="chart-header">
 
         <div class="chart-title">
 
             <h3>
-                {{ period|title }} Sales
+                {{ period|title }} Sales Performance
             </h3>
 
             <span>
-                Sales revenue and transaction volume
+                Revenue and transaction volume
             </span>
+
+        </div>
+
+
+        <div class="chart-period-label">
+
+            {{ period|title }}
 
         </div>
 
@@ -695,11 +975,14 @@ Sales performance and transaction analytics
 
     <div class="chart-container">
 
-        <canvas id="salesChart"></canvas>
+        <canvas
+            id="salesChart"
+        ></canvas>
 
     </div>
 
 </div>
+
 
 
 <!-- =========================================================
@@ -707,6 +990,7 @@ Sales performance and transaction analytics
 ========================================================= -->
 
 <div class="recent-card">
+
 
     <div class="recent-header">
 
@@ -724,6 +1008,7 @@ Sales performance and transaction analytics
     <div class="table-wrapper">
 
         <table class="sales-table">
+
 
             <thead>
 
@@ -757,25 +1042,44 @@ Sales performance and transaction analytics
 
             </thead>
 
+
             <tbody>
+
 
                 {% for sale in recent_sales %}
 
                 <tr>
 
+
+                    <!-- SALE -->
+
                     <td class="sale-id">
+
                         #{{ sale.id }}
+
                     </td>
+
+
+
+                    <!-- STAFF -->
 
                     <td class="sale-staff">
 
                         {% if sale.staff %}
+
                             {{ sale.staff.username }}
+
                         {% else %}
+
                             —
+
                         {% endif %}
 
                     </td>
+
+
+
+                    <!-- ITEMS -->
 
                     <td>
 
@@ -783,15 +1087,27 @@ Sales performance and transaction analytics
 
                     </td>
 
-                    <td>
+
+
+                    <!-- DISCOUNT -->
+
+                    <td class="sale-discount">
 
                         {% if sale.discount_amount %}
+
                             ₱{{ sale.discount_amount|floatformat:2 }}
+
                         {% else %}
+
                             —
+
                         {% endif %}
 
                     </td>
+
+
+
+                    <!-- TOTAL -->
 
                     <td class="sale-total">
 
@@ -799,13 +1115,19 @@ Sales performance and transaction analytics
 
                     </td>
 
+
+
+                    <!-- DATE -->
+
                     <td>
 
                         {{ sale.created_at|date:"M d, Y h:i A" }}
 
                     </td>
 
+
                 </tr>
+
 
                 {% empty %}
 
@@ -813,7 +1135,8 @@ Sales performance and transaction analytics
 
                     <td
                         colspan="6"
-                        class="empty-sales">
+                        class="empty-sales"
+                    >
 
                         No sales recorded yet.
 
@@ -823,6 +1146,7 @@ Sales performance and transaction analytics
 
                 {% endfor %}
 
+
             </tbody>
 
         </table>
@@ -831,290 +1155,530 @@ Sales performance and transaction analytics
 
 </div>
 
+
+</div>
+
 {% endblock %}
 
 
+
 {% block extra_js %}
+
 
 <!-- =========================================================
      CHART.JS
 ========================================================= -->
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+></script>
+
 
 
 <script>
 
-    const chartLabels = {{ chart_labels|safe }};
-    const chartSales = {{ chart_sales|safe }};
-    const chartTransactions = {{ chart_transactions|safe }};
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
 
-    const canvas = document.getElementById("salesChart");
+        /* =====================================================
+           DJANGO DATA
+        ===================================================== */
 
-    const ctx = canvas.getContext("2d");
+        const chartLabels =
+            {{ chart_labels|safe }};
 
+        const chartSales =
+            {{ chart_sales|safe }};
 
-    /* =========================================================
-       GRADIENT
-    ========================================================= */
-
-    const gradient = ctx.createLinearGradient(
-        0,
-        0,
-        0,
-        350
-    );
-
-    gradient.addColorStop(
-        0,
-        "rgba(59, 130, 246, 0.35)"
-    );
-
-    gradient.addColorStop(
-        1,
-        "rgba(59, 130, 246, 0.02)"
-    );
+        const chartTransactions =
+            {{ chart_transactions|safe }};
 
 
-    /* =========================================================
-       CHART
-    ========================================================= */
 
-    new Chart(ctx, {
+        /* =====================================================
+           CANVAS
+        ===================================================== */
 
-        type: "line",
-
-        data: {
-
-            labels: chartLabels,
-
-            datasets: [
-
-                {
-                    label: "Sales",
-
-                    data: chartSales,
-
-                    borderColor: "#3b82f6",
-
-                    backgroundColor: gradient,
-
-                    borderWidth: 3,
-
-                    pointBackgroundColor: "#ffffff",
-
-                    pointBorderColor: "#3b82f6",
-
-                    pointBorderWidth: 3,
-
-                    pointRadius: 4,
-
-                    pointHoverRadius: 6,
-
-                    tension: 0.4,
-
-                    fill: true
-                },
-
-                {
-                    label: "Transactions",
-
-                    data: chartTransactions,
-
-                    borderColor: "#8b5cf6",
-
-                    backgroundColor: "rgba(139, 92, 246, 0.08)",
-
-                    borderWidth: 2,
-
-                    pointBackgroundColor: "#ffffff",
-
-                    pointBorderColor: "#8b5cf6",
-
-                    pointBorderWidth: 2,
-
-                    pointRadius: 3,
-
-                    tension: 0.4,
-
-                    yAxisID: "transactionsAxis"
-
-                }
-
-            ]
-
-        },
+        const canvas =
+            document.getElementById(
+                "salesChart"
+            );
 
 
-        options: {
+        if (!canvas) {
 
-            responsive: true,
+            return;
 
-            maintainAspectRatio: false,
+        }
 
-            interaction: {
 
-                intersect: false,
+        const ctx =
+            canvas.getContext(
+                "2d"
+            );
 
-                mode: "index"
 
-            },
 
-            plugins: {
+        /* =====================================================
+           SALES GRADIENT
+        ===================================================== */
 
-                legend: {
+        const salesGradient =
+            ctx.createLinearGradient(
+                0,
+                0,
+                0,
+                380
+            );
 
-                    display: true,
 
-                    position: "top",
+        salesGradient.addColorStop(
+            0,
+            "rgba(59, 130, 246, 0.30)"
+        );
 
-                    align: "end",
 
-                    labels: {
+        salesGradient.addColorStop(
+            1,
+            "rgba(59, 130, 246, 0.02)"
+        );
 
-                        usePointStyle: true,
 
-                        padding: 18,
 
-                        font: {
+        /* =====================================================
+           SALES CHART
+        ===================================================== */
 
-                            size: 11
+        new Chart(
+            ctx,
+            {
+
+                type: "line",
+
+
+                data: {
+
+                    labels:
+                        chartLabels,
+
+
+                    datasets: [
+
+
+                        /* =================================
+                           SALES REVENUE
+                        ================================= */
+
+                        {
+
+                            label:
+                                "Sales Revenue",
+
+                            data:
+                                chartSales,
+
+                            borderColor:
+                                "#3b82f6",
+
+                            backgroundColor:
+                                salesGradient,
+
+                            borderWidth:
+                                3,
+
+                            fill:
+                                true,
+
+                            tension:
+                                0.4,
+
+                            pointRadius:
+                                4,
+
+                            pointHoverRadius:
+                                7,
+
+                            pointBackgroundColor:
+                                "#ffffff",
+
+                            pointBorderColor:
+                                "#3b82f6",
+
+                            pointBorderWidth:
+                                3
+
+                        },
+
+
+                        /* =================================
+                           TRANSACTIONS
+                        ================================= */
+
+                        {
+
+                            label:
+                                "Transactions",
+
+                            data:
+                                chartTransactions,
+
+                            borderColor:
+                                "#8b5cf6",
+
+                            backgroundColor:
+                                "rgba(139, 92, 246, 0.08)",
+
+                            borderWidth:
+                                2,
+
+                            fill:
+                                false,
+
+                            tension:
+                                0.4,
+
+                            pointRadius:
+                                3,
+
+                            pointHoverRadius:
+                                6,
+
+                            pointBackgroundColor:
+                                "#ffffff",
+
+                            pointBorderColor:
+                                "#8b5cf6",
+
+                            pointBorderWidth:
+                                2,
+
+                            yAxisID:
+                                "transactionsAxis"
 
                         }
 
-                    }
+                    ]
 
                 },
 
-                tooltip: {
 
-                    backgroundColor: "#111",
+                /* =================================================
+                   OPTIONS
+                ================================================= */
 
-                    titleColor: "#fff",
+                options: {
 
-                    bodyColor: "#fff",
+                    responsive:
+                        true,
 
-                    padding: 12,
+                    maintainAspectRatio:
+                        false,
 
-                    displayColors: true,
 
-                    callbacks: {
+                    interaction: {
 
-                        label: function(context) {
+                        intersect:
+                            false,
 
-                            if (
-                                context.dataset.label ===
-                                "Sales"
-                            ) {
+                        mode:
+                            "index"
 
-                                return (
-                                    " Sales: ₱" +
-                                    Number(
-                                        context.raw
-                                    ).toLocaleString(
-                                        "en-PH",
-                                        {
-                                            minimumFractionDigits: 2
-                                        }
-                                    )
-                                );
+                    },
+
+
+                    plugins: {
+
+                        legend: {
+
+                            display:
+                                true,
+
+                            position:
+                                "top",
+
+                            align:
+                                "end",
+
+                            labels: {
+
+                                usePointStyle:
+                                    true,
+
+                                pointStyle:
+                                    "circle",
+
+                                padding:
+                                    18,
+
+                                font: {
+
+                                    size:
+                                        11
+
+                                }
 
                             }
 
-                            return (
-                                " Transactions: " +
-                                context.raw
-                            );
+                        },
+
+
+                        tooltip: {
+
+                            backgroundColor:
+                                "#111",
+
+                            titleColor:
+                                "#fff",
+
+                            bodyColor:
+                                "#fff",
+
+                            borderColor:
+                                "#333",
+
+                            borderWidth:
+                                1,
+
+                            padding:
+                                12,
+
+                            displayColors:
+                                true,
+
+
+                            callbacks: {
+
+                                label:
+                                    function(context) {
+
+
+                                        /* ==================
+                                           SALES
+                                        ================== */
+
+                                        if (
+                                            context.dataset.label ===
+                                            "Sales Revenue"
+                                        ) {
+
+                                            return (
+
+                                                " Sales: ₱" +
+
+                                                Number(
+                                                    context.raw || 0
+                                                ).toLocaleString(
+                                                    "en-PH",
+                                                    {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    }
+                                                )
+
+                                            );
+
+                                        }
+
+
+                                        /* ==================
+                                           TRANSACTIONS
+                                        ================== */
+
+                                        return (
+
+                                            " Transactions: " +
+
+                                            Number(
+                                                context.raw || 0
+                                            ).toLocaleString(
+                                                "en-PH"
+                                            )
+
+                                        );
+
+                                    }
+
+                            }
 
                         }
 
-                    }
-
-                }
-
-            },
-
-
-            scales: {
-
-                y: {
-
-                    beginAtZero: true,
-
-                    grid: {
-
-                        color: "rgba(0,0,0,0.06)"
-
                     },
 
-                    ticks: {
 
-                        font: {
+                    /* =================================================
+                       AXES
+                    ================================================= */
 
-                            size: 10
+                    scales: {
+
+
+                        /* =============================================
+                           SALES AXIS
+                        ============================================= */
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            position:
+                                "left",
+
+
+                            title: {
+
+                                display:
+                                    true,
+
+                                text:
+                                    "Sales Revenue (₱)",
+
+                                font: {
+
+                                    size:
+                                        10,
+
+                                    weight:
+                                        "600"
+
+                                }
+
+                            },
+
+
+                            grid: {
+
+                                color:
+                                    "rgba(0,0,0,0.06)"
+
+                            },
+
+
+                            ticks: {
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                },
+
+
+                                callback:
+                                    function(value) {
+
+                                        return (
+
+                                            "₱" +
+
+                                            Number(
+                                                value
+                                            ).toLocaleString(
+                                                "en-PH"
+                                            )
+
+                                        );
+
+                                    }
+
+                            }
 
                         },
 
-                        callback: function(value) {
 
-                            return "₱" +
-                                Number(value)
-                                .toLocaleString(
-                                    "en-PH"
-                                );
+                        /* =============================================
+                           TRANSACTION AXIS
+                        ============================================= */
 
-                        }
+                        transactionsAxis: {
 
-                    }
+                            position:
+                                "right",
 
-                },
-
-
-                transactionsAxis: {
-
-                    position: "right",
-
-                    beginAtZero: true,
-
-                    grid: {
-
-                        drawOnChartArea: false
-
-                    },
-
-                    ticks: {
-
-                        font: {
-
-                            size: 10
-
-                        }
-
-                    }
-
-                },
+                            beginAtZero:
+                                true,
 
 
-                x: {
+                            title: {
 
-                    grid: {
+                                display:
+                                    true,
 
-                        display: false
+                                text:
+                                    "Transactions",
 
-                    },
+                                font: {
 
-                    ticks: {
+                                    size:
+                                        10,
 
-                        font: {
+                                    weight:
+                                        "600"
 
-                            size: 10
+                                }
+
+                            },
+
+
+                            grid: {
+
+                                drawOnChartArea:
+                                    false
+
+                            },
+
+
+                            ticks: {
+
+                                precision:
+                                    0,
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                }
+
+                            }
 
                         },
 
-                        maxRotation: 45,
 
-                        minRotation: 0
+                        /* =============================================
+                           X AXIS
+                        ============================================= */
+
+                        x: {
+
+                            grid: {
+
+                                display:
+                                    false
+
+                            },
+
+
+                            ticks: {
+
+                                font: {
+
+                                    size:
+                                        10
+
+                                },
+
+                                maxRotation:
+                                    45,
+
+                                minRotation:
+                                    0
+
+                            }
+
+                        }
 
                     }
 
@@ -1122,10 +1686,13 @@ Sales performance and transaction analytics
 
             }
 
-        }
+        );
 
-    });
+    }
+
+);
 
 </script>
+
 
 {% endblock %}

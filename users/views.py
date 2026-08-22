@@ -4,7 +4,10 @@ from django.shortcuts import render, redirect
 
 def login_view(request):
 
-    # Already logged in
+    # ==========================================
+    # ALREADY LOGGED IN
+    # ==========================================
+
     if request.user.is_authenticated:
 
         if request.user.is_superuser:
@@ -16,86 +19,110 @@ def login_view(request):
         else:
             return redirect("user-dashboard")
 
-
-    # Login
+    # ==========================================
+    # LOGIN
+    # ==========================================
     if request.method == "POST":
 
-        username = request.POST.get(
-            "username",
-            ""
-        ).strip()
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
 
-        password = request.POST.get(
-            "password",
-            ""
-        )
+        # Check empty fields
+        if not username or not password:
 
+            return render(
+                request,
+                "login.html",
+                {
+                    "error": "Please enter your username and password."
+                }
+            )
 
+        # Authenticate user
         user = authenticate(
             request,
             username=username,
             password=password
         )
 
+        # ==========================================
+        # INVALID LOGIN
+        # ==========================================
+        if user is None:
 
-        if user is not None:
-
-            login(
+            return render(
                 request,
-                user
+                "login.html",
+                {
+                    "error": "Invalid username or password."
+                }
             )
 
+        # ==========================================
+        # CHECK ACCOUNT ACTIVE
+        # ==========================================
 
-            # ==========================================
-            # SUPERUSER
-            # ==========================================
+        if not user.is_active:
 
-            if user.is_superuser:
+            return render(
+                request,
+                "login.html",
+                {
+                    "error": "Your account is inactive. Please contact the administrator."
+                }
+            )
 
-                return redirect(
-                    "admin-dashboard"
-                )
+        # ==========================================
+        # CHECK SYSTEM PERMISSION
+        # ==========================================
+        if not user.is_superuser and not user.is_staff:
 
+            return render(
+                request,
+                "login.html",
+                {
+                    "error": "Your account does not have permission to access this system."
+                }
+            )
 
-            # ==========================================
-            # STAFF
-            # ==========================================
+        # ==========================================
+        # LOGIN USER
+        # ==========================================
 
-            elif user.is_staff:
+        login(request, user)
 
-                return redirect(
-                    "staff-dashboard"
-                )
+        # ==========================================
+        # SUPERUSER
+        # ==========================================
+        if user.is_superuser:
 
+            return redirect("admin-dashboard")
 
-            # ==========================================
-            # REGULAR USER
-            # ==========================================
+        # ==========================================
+        # STAFF
+        # ==========================================
 
-            else:
+        if user.is_staff:
 
-                return redirect(
-                    "user-dashboard"
-                )
+            return redirect("staff-dashboard")
 
-
+        # ==========================================
+        # FALLBACK
+        # ==========================================
         return render(
             request,
             "login.html",
             {
-                "error": "Invalid username or password."
+                "error": "Your account does not have permission to access this system."
             }
         )
 
-
-    return render(
-        request,
-        "login.html"
-    )
-
+    # ==========================================
+    # GET REQUEST
+    # ==========================================
+    return render(request, "login.html")
 #logout
 def logout_view(request):
 
     logout(request)
-
     return redirect("login")

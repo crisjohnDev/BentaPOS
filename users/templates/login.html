@@ -1,21 +1,50 @@
-
 {% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>BentaPOS - Login</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/logo.png' %}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/logo.png' %}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/logo.png' %}">
+
+    <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="{% static 'images/logo.png' %}"
+    >
+
+    <link
+        rel="icon"
+        type="image/png"
+        sizes="192x192"
+        href="{% static 'images/logo.png' %}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="{% static 'images/logo.png' %}"
+    >
+
+
     <style>
+
+        /* =========================================================
+           RESET
+        ========================================================= */
 
         * {
             box-sizing: border-box;
         }
+
 
         html,
         body {
@@ -25,18 +54,25 @@
             min-height: 100%;
         }
 
+
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
             background: #000;
+
             color: #fff;
         }
 
 
-        /* ==========================================
+        /* =========================================================
            MAIN
-        ========================================== */
+        ========================================================= */
 
         .login-page {
+
             min-height: 100vh;
 
             display: flex;
@@ -52,6 +88,7 @@
 
 
         .login-container {
+
             width: 100%;
 
             max-width: 1000px;
@@ -60,7 +97,8 @@
 
             display: grid;
 
-            grid-template-columns: 0.95fr 1.05fr;
+            grid-template-columns:
+                0.95fr 1.05fr;
 
             gap: 70px;
 
@@ -68,11 +106,12 @@
         }
 
 
-        /* ==========================================
+        /* =========================================================
            BRANDING
-        ========================================== */
+        ========================================================= */
 
         .brand-section {
+
             display: flex;
 
             flex-direction: column;
@@ -88,6 +127,7 @@
 
 
         .logo-wrapper {
+
             width: 300px;
 
             height: 300px;
@@ -103,6 +143,7 @@
 
 
         .logo {
+
             width: 100%;
 
             height: 100%;
@@ -112,6 +153,7 @@
 
 
         .brand-title {
+
             margin: 0;
 
             font-size: 38px;
@@ -125,6 +167,7 @@
 
 
         .brand-description {
+
             margin: 10px 0 0;
 
             max-width: 320px;
@@ -137,11 +180,12 @@
         }
 
 
-        /* ==========================================
+        /* =========================================================
            LOGIN
-        ========================================== */
+        ========================================================= */
 
         .login-section {
+
             width: 100%;
 
             max-width: 430px;
@@ -151,11 +195,13 @@
 
 
         .login-header {
+
             margin-bottom: 30px;
         }
 
 
         .login-header h1 {
+
             margin: 0;
 
             font-size: 34px;
@@ -169,6 +215,7 @@
 
 
         .login-header p {
+
             margin: 8px 0 0;
 
             font-size: 14px;
@@ -177,11 +224,12 @@
         }
 
 
-        /* ==========================================
+        /* =========================================================
            ERROR
-        ========================================== */
+        ========================================================= */
 
         .error {
+
             margin-bottom: 20px;
 
             padding: 12px 14px;
@@ -198,16 +246,18 @@
         }
 
 
-        /* ==========================================
+        /* =========================================================
            FORM
-        ========================================== */
+        ========================================================= */
 
         .form-group {
+
             margin-bottom: 18px;
         }
 
 
         .form-group label {
+
             display: block;
 
             margin-bottom: 7px;
@@ -221,11 +271,15 @@
 
 
         .input-wrapper {
+
             position: relative;
+
+            width: 100%;
         }
 
 
         .form-group input {
+
             width: 100%;
 
             height: 50px;
@@ -252,30 +306,115 @@
 
 
         .form-group input::placeholder {
+
             color: #555;
         }
 
 
         .form-group input:hover {
+
             border-color: #3a3a3a;
         }
 
 
         .form-group input:focus {
+
             border-color: #777;
 
             background: #111;
 
             box-shadow:
-                0 0 0 3px rgba(255, 255, 255, 0.05);
+                0 0 0 3px
+                rgba(255, 255, 255, 0.05);
         }
 
 
-        /* ==========================================
+        /* =========================================================
+           PASSWORD INPUT
+        ========================================================= */
+
+        .password-input {
+
+            padding-right: 52px !important;
+        }
+
+
+        /* =========================================================
+           SHOW / HIDE PASSWORD BUTTON
+        ========================================================= */
+
+        .password-toggle {
+
+            position: absolute;
+
+            top: 50%;
+
+            right: 12px;
+
+            transform: translateY(-50%);
+
+            width: 32px;
+
+            height: 32px;
+
+            padding: 0;
+
+            border: none;
+
+            background: transparent;
+
+            color: #777;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 6px;
+
+            transition:
+                color 0.2s ease,
+                background 0.2s ease;
+        }
+
+
+        .password-toggle:hover {
+
+            color: #fff;
+
+            background: #1a1a1a;
+        }
+
+
+        .password-toggle:focus {
+
+            outline: none;
+
+            color: #fff;
+
+            background: #1a1a1a;
+        }
+
+
+        .password-toggle svg {
+
+            width: 18px;
+
+            height: 18px;
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
            LOGIN BUTTON
-        ========================================== */
+        ========================================================= */
 
         .login-button {
+
             width: 100%;
 
             height: 50px;
@@ -303,20 +442,23 @@
 
 
         .login-button:hover {
+
             background: #e7e7e7;
         }
 
 
         .login-button:active {
+
             transform: scale(0.985);
         }
 
 
-        /* ==========================================
+        /* =========================================================
            FOOTER
-        ========================================== */
+        ========================================================= */
 
         .login-footer {
+
             margin-top: 25px;
 
             text-align: center;
@@ -327,18 +469,20 @@
         }
 
 
-        /* ==========================================
+        /* =========================================================
            TABLET
-        ========================================== */
+        ========================================================= */
 
         @media (max-width: 850px) {
 
             .login-container {
+
                 gap: 35px;
             }
 
 
             .logo-wrapper {
+
                 width: 240px;
 
                 height: 240px;
@@ -346,24 +490,27 @@
 
 
             .brand-title {
+
                 font-size: 32px;
             }
 
         }
 
 
-        /* ==========================================
+        /* =========================================================
            MOBILE
-        ========================================== */
+        ========================================================= */
 
         @media (max-width: 700px) {
 
             .login-page {
+
                 padding: 25px 20px;
             }
 
 
             .login-container {
+
                 display: flex;
 
                 flex-direction: column;
@@ -375,6 +522,7 @@
 
 
             .brand-section {
+
                 padding: 0;
 
                 width: 100%;
@@ -382,6 +530,7 @@
 
 
             .logo-wrapper {
+
                 width: 170px;
 
                 height: 170px;
@@ -391,16 +540,19 @@
 
 
             .brand-title {
+
                 font-size: 28px;
             }
 
 
             .brand-description {
+
                 display: none;
             }
 
 
             .login-section {
+
                 max-width: 430px;
 
                 width: 100%;
@@ -408,16 +560,19 @@
 
 
             .login-header {
+
                 margin-bottom: 25px;
             }
 
 
             .login-header h1 {
+
                 font-size: 28px;
             }
 
 
             .login-footer {
+
                 margin-top: 20px;
             }
 
@@ -433,14 +588,16 @@
 
     <main class="login-page">
 
+
         <div class="login-container">
 
 
-            <!-- ======================================
+            <!-- =====================================================
                  BENTAPOS BRANDING
-            ======================================= -->
+            ====================================================== -->
 
             <section class="brand-section">
+
 
                 <div class="logo-wrapper">
 
@@ -454,21 +611,26 @@
 
 
                 <h2 class="brand-title">
+
                     BentaPOS
+
                 </h2>
 
 
                 <p class="brand-description">
+
                     Sales and Point of Sale Management System
+
                 </p>
+
 
             </section>
 
 
 
-            <!-- ======================================
+            <!-- =====================================================
                  LOGIN
-            ======================================= -->
+            ====================================================== -->
 
             <section class="login-section">
 
@@ -476,39 +638,59 @@
                 <div class="login-header">
 
                     <h1>
+
                         Welcome back
+
                     </h1>
 
+
                     <p>
+
                         Sign in to continue to BentaPOS
+
                     </p>
 
                 </div>
 
 
 
+                <!-- =================================================
+                     ERROR MESSAGE
+                ================================================== -->
+
                 {% if error %}
 
                     <div class="error">
+
                         {{ error }}
+
                     </div>
 
                 {% endif %}
 
 
 
+                <!-- =================================================
+                     LOGIN FORM
+                ================================================== -->
+
                 <form method="POST">
 
                     {% csrf_token %}
 
 
-                    <!-- USERNAME -->
+                    <!-- =================================================
+                         USERNAME
+                    ================================================== -->
 
                     <div class="form-group">
 
                         <label for="username">
+
                             Username
+
                         </label>
+
 
                         <div class="input-wrapper">
 
@@ -527,24 +709,73 @@
 
 
 
-                    <!-- PASSWORD -->
+                    <!-- =================================================
+                         PASSWORD
+                    ================================================== -->
 
                     <div class="form-group">
 
                         <label for="password">
+
                             Password
+
                         </label>
 
+
                         <div class="input-wrapper">
+
 
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
+                                class="password-input"
                                 placeholder="Enter your password"
                                 autocomplete="current-password"
                                 required
                             >
+
+
+                            <!-- SHOW / HIDE BUTTON -->
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Show password"
+                                title="Show password"
+                            >
+
+
+                                <!-- EYE ICON -->
+
+                                <svg
+                                    id="eyeIcon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+
+                                    <path
+                                        d="M2 12s3.5-7 10-7
+                                           10 7 10 7-3.5 7-10 7
+                                           S2 12 2 12z"
+                                    />
+
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="3"
+                                    />
+
+                                </svg>
+
+
+                            </button>
+
 
                         </div>
 
@@ -552,21 +783,33 @@
 
 
 
-                    <!-- LOGIN -->
+                    <!-- =================================================
+                         LOGIN BUTTON
+                    ================================================== -->
 
                     <button
                         type="submit"
                         class="login-button"
                     >
+
                         Sign In
+
                     </button>
 
 
                 </form>
 
 
+
+                <!-- =================================================
+                     FOOTER
+                ================================================== -->
+
                 <div class="login-footer">
-                   MR Circuits and Security Inc | BentaPOS &copy; 2026
+
+                    MR Circuits and Security Inc |
+                    BentaPOS &copy; 2026
+
                 </div>
 
 
@@ -578,5 +821,128 @@
     </main>
 
 
+
+    <!-- =========================================================
+         SHOW / HIDE PASSWORD JAVASCRIPT
+    ========================================================= -->
+
+    <script>
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordToggle =
+            document.getElementById("passwordToggle");
+
+        const eyeIcon =
+            document.getElementById("eyeIcon");
+
+
+        passwordToggle.addEventListener(
+            "click",
+            function () {
+
+                /*
+                 * Check current password type
+                 */
+
+                const isPassword =
+                    passwordInput.type === "password";
+
+
+                /*
+                 * Change input type
+                 */
+
+                passwordInput.type =
+                    isPassword
+                        ? "text"
+                        : "password";
+
+
+                /*
+                 * Update button accessibility
+                 */
+
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    isPassword
+                        ? "Hide password"
+                        : "Show password"
+                );
+
+
+                /*
+                 * Update tooltip
+                 */
+
+                passwordToggle.setAttribute(
+                    "title",
+                    isPassword
+                        ? "Hide password"
+                        : "Show password"
+                );
+
+
+                /*
+                 * Change eye icon
+                 */
+
+                if (isPassword) {
+
+                    eyeIcon.innerHTML = `
+
+                        <path
+                            d="M3 3l18 18"
+                        />
+
+                        <path
+                            d="M10.6 10.6
+                               a2 2 0 0 0 2.8 2.8"
+                        />
+
+                        <path
+                            d="M9.9 5.1
+                               A10.8 10.8 0 0 1 12 5
+                               c6.5 0 10 7 10 7
+                               a18.7 18.7 0 0 1-3.2 4.2"
+                        />
+
+                        <path
+                            d="M6.6 6.6
+                               C3.7 8.6 2 12 2 12
+                               s3.5 7 10 7
+                               c1.1 0 2.1-.2 3-.5"
+                        />
+
+                    `;
+
+                } else {
+
+                    eyeIcon.innerHTML = `
+
+                        <path
+                            d="M2 12s3.5-7 10-7
+                               10 7 10 7-3.5 7-10 7
+                               S2 12 2 12z"
+                        />
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                        />
+
+                    `;
+
+                }
+
+            }
+        );
+
+    </script>
+
+
 </body>
+
 </html>

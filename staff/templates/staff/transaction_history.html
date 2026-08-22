@@ -4,725 +4,680 @@
 
 <style>
 
-    /* =========================================================
-       TRANSACTION HISTORY
-    ========================================================= */
+/* =========================================================
+   TRANSACTION HISTORY
+========================================================= */
 
-    .history-page {
-        width: 100%;
-    }
+.history-page {
+    width: 100%;
+}
 
-    /* =========================
-       PAGE HEADER
-    ========================= */
+/* =========================================================
+   HEADER
+========================================================= */
 
-    .history-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
 
-        gap: 20px;
+.history-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+}
 
-        margin-bottom: 20px;
-    }
+.history-subtitle {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #666;
+}
 
-    .history-title {
-        font-size: 21px;
-        font-weight: 700;
-        color: #fff;
-    }
+/* =========================================================
+   STATISTICS
+========================================================= */
 
-    .history-subtitle {
-        margin-top: 4px;
+.history-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-        font-size: 11px;
-        color: #666;
-    }
+.stat-card {
+    background: #070707;
+    border: 1px solid #222;
+    border-radius: 10px;
+    padding: 16px;
+}
 
-    /* =========================
-       STAT CARDS
-    ========================= */
+.stat-label {
+    font-size: 10px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+}
+
+.stat-card.sales .stat-value {
+    color: #60a5fa;
+}
+
+.stat-card.revenue .stat-value {
+    color: #4ade80;
+}
+
+.stat-card.items .stat-value {
+    color: #facc15;
+}
+
+/* =========================================================
+   HISTORY PANEL
+========================================================= */
+
+.history-panel {
+    background: #070707;
+    border: 1px solid #222;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.history-panel-header {
+    padding: 17px 18px;
+    border-bottom: 1px solid #202020;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.panel-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.panel-heading-subtitle {
+    font-size: 10px;
+    color: #666;
+    margin-top: 3px;
+}
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.history-filters {
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #202020;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    height: 38px;
+
+    padding: 0 11px;
+
+    background: #0c0c0c;
+
+    border: 1px solid #303030;
+
+    border-radius: 7px;
+
+    color: #fff;
+
+    outline: none;
+
+    font-size: 11px;
+}
+
+.filter-input:focus {
+    border-color: #555;
+}
+
+.filter-input::placeholder {
+    color: #555;
+}
+
+.filter-search {
+    min-width: 250px;
+}
+
+.filter-date {
+    width: 145px;
+}
+
+.filter-select {
+    height: 38px;
+
+    padding: 0 30px 0 11px;
+
+    background: #0c0c0c;
+
+    border: 1px solid #303030;
+
+    border-radius: 7px;
+
+    color: #fff;
+
+    outline: none;
+
+    font-size: 11px;
+}
+
+.filter-select option {
+    background: #0c0c0c;
+    color: #fff;
+}
+
+.filter-btn {
+    height: 38px;
+
+    padding: 0 14px;
+
+    border-radius: 7px;
+
+    border: 1px solid #2563eb;
+
+    background: #08152e;
+
+    color: #60a5fa;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .15s ease;
+}
+
+.filter-btn:hover {
+    background: #2563eb;
+    color: #fff;
+}
+
+.clear-btn {
+    border-color: #333;
+
+    background: #111;
+
+    color: #888;
+
+    text-decoration: none;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+.clear-btn:hover {
+    background: #222;
+    color: #fff;
+}
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.transaction-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 1150px;
+}
+
+.transaction-table thead {
+    background: #0b0b0b;
+}
+
+.transaction-table th {
+    padding: 12px 16px;
+
+    text-align: left;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: #666;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+
+    border-bottom: 1px solid #222;
+
+    white-space: nowrap;
+}
+
+.transaction-table td {
+    padding: 14px 16px;
+
+    font-size: 11px;
+
+    color: #ddd;
+
+    border-bottom: 1px solid #171717;
+
+    vertical-align: middle;
+}
+
+.transaction-table tbody tr {
+    transition: .12s ease;
+}
+
+.transaction-table tbody tr:hover {
+    background: #0c0c0c;
+}
+
+.transaction-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* =========================================================
+   TRANSACTION ID
+========================================================= */
+
+.transaction-id {
+    color: #60a5fa;
+
+    font-weight: 700;
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.transaction-date {
+    color: #eee;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.transaction-time {
+    color: #555;
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+/* =========================================================
+   PERSON CELL
+========================================================= */
+
+.person-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-width: 150px;
+}
+
+.mini-avatar {
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    color: #000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    flex-shrink: 0;
+}
+
+.person-name {
+    font-size: 11px;
+
+    font-weight: 600;
+
+    color: #eee;
+
+    white-space: nowrap;
+}
+
+.person-role {
+    font-size: 9px;
+
+    color: #555;
+
+    margin-top: 2px;
+}
+
+/* =========================================================
+   ITEMS
+========================================================= */
+
+.items-count {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 28px;
+
+    height: 25px;
+
+    padding: 0 8px;
+
+    border-radius: 6px;
+
+    background: #151515;
+
+    border: 1px solid #292929;
+
+    color: #ccc;
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+/* =========================================================
+   TOTAL
+========================================================= */
+
+.transaction-total {
+    color: #4ade80;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 10px;
+
+    border-radius: 5px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+/* PAID */
+
+.payment-paid {
+    background: #071c10;
+
+    border: 1px solid #166534;
+
+    color: #4ade80;
+}
+
+/* UNPAID */
+
+.payment-unpaid {
+    background: #160909;
+
+    border: 1px solid #7f1d1d;
+
+    color: #f87171;
+}
+
+/* PARTIAL */
+
+.payment-partial {
+    background: #1c1707;
+
+    border: 1px solid #854d0e;
+
+    color: #facc15;
+}
+
+/* =========================================================
+   DISCOUNT
+========================================================= */
+
+.discount-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.discount-class {
+    color: #ddd;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.discount-percent {
+    color: #60a5fa;
+
+    font-size: 9px;
+}
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-history {
+    padding: 70px 20px;
+
+    text-align: center;
+}
+
+.empty-icon {
+    width: 48px;
+    height: 48px;
+
+    margin: 0 auto 14px;
+
+    border-radius: 10px;
+
+    background: #101010;
+
+    border: 1px solid #292929;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #555;
+}
+
+.empty-title {
+    font-size: 13px;
+
+    font-weight: 700;
+
+    color: #aaa;
+}
+
+.empty-text {
+    font-size: 10px;
+
+    color: #555;
+
+    margin-top: 5px;
+}
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-wrapper {
+    padding: 14px 18px;
+
+    border-top: 1px solid #202020;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.pagination-info {
+    font-size: 10px;
+
+    color: #555;
+}
+
+.pagination {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+}
+
+.page-btn {
+    min-width: 31px;
+
+    height: 31px;
+
+    padding: 0 9px;
+
+    border-radius: 6px;
+
+    border: 1px solid #292929;
+
+    background: #101010;
+
+    color: #888;
+
+    text-decoration: none;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 10px;
+
+    font-weight: 600;
+}
+
+.page-btn:hover,
+.page-btn.active {
+    background: #2563eb;
+
+    border-color: #2563eb;
+
+    color: #fff;
+}
+
+.page-btn.disabled {
+    opacity: .4;
+
+    pointer-events: none;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
 
     .history-stats {
-        display: grid;
-
         grid-template-columns:
-            repeat(4, minmax(0, 1fr));
-
-        gap: 12px;
-
-        margin-bottom: 20px;
+            repeat(2, minmax(0, 1fr));
     }
+}
 
-    .stat-card {
-        background: #070707;
+@media (max-width: 700px) {
 
-        border: 1px solid #222;
+    .history-header {
+        align-items: flex-start;
 
-        border-radius: 10px;
-
-        padding: 16px;
+        flex-direction: column;
     }
-
-    .stat-label {
-        font-size: 10px;
-
-        color: #666;
-
-        margin-bottom: 8px;
-    }
-
-    .stat-value {
-        font-size: 20px;
-
-        font-weight: 800;
-
-        color: #fff;
-    }
-
-    .stat-card.sales .stat-value {
-        color: #60a5fa;
-    }
-
-    .stat-card.revenue .stat-value {
-        color: #4ade80;
-    }
-
-    .stat-card.items .stat-value {
-        color: #facc15;
-    }
-
-    /* =========================
-       HISTORY PANEL
-    ========================= */
-
-    .history-panel {
-        background: #070707;
-
-        border: 1px solid #222;
-
-        border-radius: 12px;
-
-        overflow: hidden;
-    }
-
-    .history-panel-header {
-        padding: 17px 18px;
-
-        border-bottom: 1px solid #202020;
-
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        gap: 15px;
-    }
-
-    .panel-heading {
-        font-size: 14px;
-
-        font-weight: 700;
-
-        color: #fff;
-    }
-
-    .panel-heading-subtitle {
-        font-size: 10px;
-
-        color: #666;
-
-        margin-top: 3px;
-    }
-
-    /* =========================
-       FILTERS
-    ========================= */
 
     .history-filters {
-        padding: 14px 18px;
+        align-items: stretch;
 
-        border-bottom: 1px solid #202020;
-
-        display: flex;
-
-        align-items: center;
-
-        gap: 10px;
-
-        flex-wrap: wrap;
+        flex-direction: column;
     }
 
-    .filter-input {
-        height: 38px;
-
-        padding: 0 11px;
-
-        background: #0c0c0c;
-
-        border: 1px solid #303030;
-
-        border-radius: 7px;
-
-        color: #fff;
-
-        outline: none;
-
-        font-size: 11px;
-    }
-
-    .filter-input:focus {
-        border-color: #555;
-    }
-
-    .filter-input::placeholder {
-        color: #555;
-    }
-
-    .filter-search {
-        min-width: 250px;
-    }
-
-    .filter-date {
-        width: 145px;
-    }
-
-    .filter-select {
-        height: 38px;
-
-        padding: 0 30px 0 11px;
-
-        background: #0c0c0c;
-
-        border: 1px solid #303030;
-
-        border-radius: 7px;
-
-        color: #fff;
-
-        outline: none;
-
-        font-size: 11px;
-    }
-
-    .filter-select option {
-        background: #0c0c0c;
-
-        color: #fff;
-    }
-
-    .filter-btn {
-        height: 38px;
-
-        padding: 0 14px;
-
-        border-radius: 7px;
-
-        border: 1px solid #2563eb;
-
-        background: #08152e;
-
-        color: #60a5fa;
-
-        font-size: 11px;
-
-        font-weight: 600;
-
-        cursor: pointer;
-
-        transition: .15s ease;
-    }
-
-    .filter-btn:hover {
-        background: #2563eb;
-
-        color: #fff;
-    }
-
+    .filter-search,
+    .filter-date,
+    .filter-select,
+    .filter-btn,
     .clear-btn {
-        border-color: #333;
-
-        background: #111;
-
-        color: #888;
-
-        text-decoration: none;
-
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-    }
-
-    .clear-btn:hover {
-        background: #222;
-
-        color: #fff;
-    }
-
-    /* =========================
-       TABLE
-    ========================= */
-
-    .table-wrapper {
         width: 100%;
-
-        overflow-x: auto;
     }
-
-    .transaction-table {
-        width: 100%;
-
-        border-collapse: collapse;
-
-        min-width: 900px;
-    }
-
-    .transaction-table thead {
-        background: #0b0b0b;
-    }
-
-    .transaction-table th {
-        padding: 12px 16px;
-
-        text-align: left;
-
-        font-size: 10px;
-
-        font-weight: 700;
-
-        color: #666;
-
-        text-transform: uppercase;
-
-        letter-spacing: .4px;
-
-        border-bottom: 1px solid #222;
-
-        white-space: nowrap;
-    }
-
-    .transaction-table td {
-        padding: 14px 16px;
-
-        font-size: 11px;
-
-        color: #ddd;
-
-        border-bottom: 1px solid #171717;
-
-        vertical-align: middle;
-    }
-
-    .transaction-table tbody tr {
-        transition: .12s ease;
-    }
-
-    .transaction-table tbody tr:hover {
-        background: #0c0c0c;
-    }
-
-    .transaction-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    /* =========================
-       TRANSACTION ID
-    ========================= */
-
-    .transaction-id {
-        color: #60a5fa;
-
-        font-weight: 700;
-
-        font-size: 11px;
-    }
-
-    /* =========================
-       DATE
-    ========================= */
-
-    .transaction-date {
-        color: #eee;
-
-        font-weight: 600;
-    }
-
-    .transaction-time {
-        color: #555;
-
-        font-size: 10px;
-
-        margin-top: 3px;
-    }
-
-    /* =========================
-       STAFF
-    ========================= */
-
-    .staff-cell {
-        display: flex;
-
-        align-items: center;
-
-        gap: 8px;
-    }
-
-    .mini-avatar {
-        width: 28px;
-        height: 28px;
-
-        border-radius: 50%;
-
-        background: #fff;
-
-        color: #000;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        font-size: 9px;
-
-        font-weight: 800;
-
-        flex-shrink: 0;
-    }
-
-    .staff-cell-name {
-        font-size: 11px;
-
-        font-weight: 600;
-
-        color: #eee;
-    }
-
-    /* =========================
-       ITEMS
-    ========================= */
-
-    .items-count {
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        min-width: 28px;
-
-        height: 25px;
-
-        padding: 0 8px;
-
-        border-radius: 6px;
-
-        background: #151515;
-
-        border: 1px solid #292929;
-
-        color: #ccc;
-
-        font-size: 10px;
-
-        font-weight: 700;
-    }
-
-    /* =========================
-       TOTAL
-    ========================= */
-
-    .transaction-total {
-        color: #4ade80;
-
-        font-size: 12px;
-
-        font-weight: 800;
-    }
-
-    /* =========================
-       PAYMENT
-    ========================= */
-
-    .payment-badge {
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        padding: 5px 9px;
-
-        border-radius: 5px;
-
-        background: #071c10;
-
-        border: 1px solid #166534;
-
-        color: #4ade80;
-
-        font-size: 9px;
-
-        font-weight: 700;
-    }
-
-    /* =========================
-       STATUS
-    ========================= */
-
-    .status-badge {
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        padding: 5px 9px;
-
-        border-radius: 5px;
-
-        font-size: 9px;
-
-        font-weight: 700;
-    }
-
-    .status-completed {
-        background: #071c10;
-
-        border: 1px solid #166534;
-
-        color: #4ade80;
-    }
-
-    .status-cancelled {
-        background: #160909;
-
-        border: 1px solid #7f1d1d;
-
-        color: #f87171;
-    }
-
-    .status-pending {
-        background: #1c1707;
-
-        border: 1px solid #854d0e;
-
-        color: #facc15;
-    }
-
-    /* =========================
-       VIEW BUTTON
-    ========================= */
-
-    .view-btn {
-        height: 30px;
-
-        padding: 0 10px;
-
-        border: 1px solid #333;
-
-        border-radius: 6px;
-
-        background: #111;
-
-        color: #aaa;
-
-        text-decoration: none;
-
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        font-size: 10px;
-
-        font-weight: 600;
-
-        transition: .15s ease;
-    }
-
-    .view-btn:hover {
-        background: #2563eb;
-
-        border-color: #2563eb;
-
-        color: #fff;
-    }
-
-    /* =========================
-       EMPTY STATE
-    ========================= */
-
-    .empty-history {
-        padding: 70px 20px;
-
-        text-align: center;
-    }
-
-    .empty-icon {
-        width: 48px;
-        height: 48px;
-
-        margin: 0 auto 14px;
-
-        border-radius: 10px;
-
-        background: #101010;
-
-        border: 1px solid #292929;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        color: #555;
-    }
-
-    .empty-title {
-        font-size: 13px;
-
-        font-weight: 700;
-
-        color: #aaa;
-    }
-
-    .empty-text {
-        font-size: 10px;
-
-        color: #555;
-
-        margin-top: 5px;
-    }
-
-    /* =========================
-       PAGINATION
-    ========================= */
 
     .pagination-wrapper {
-        padding: 14px 18px;
+        align-items: flex-start;
 
-        border-top: 1px solid #202020;
-
-        display: flex;
-
-        align-items: center;
-
-        justify-content: space-between;
-
-        gap: 10px;
+        flex-direction: column;
     }
+}
 
-    .pagination-info {
-        font-size: 10px;
+@media (max-width: 500px) {
 
-        color: #555;
+    .history-stats {
+        grid-template-columns: 1fr;
     }
-
-    .pagination {
-        display: flex;
-
-        align-items: center;
-
-        gap: 5px;
-    }
-
-    .page-btn {
-        min-width: 31px;
-
-        height: 31px;
-
-        padding: 0 9px;
-
-        border-radius: 6px;
-
-        border: 1px solid #292929;
-
-        background: #101010;
-
-        color: #888;
-
-        text-decoration: none;
-
-        display: inline-flex;
-
-        align-items: center;
-
-        justify-content: center;
-
-        font-size: 10px;
-
-        font-weight: 600;
-    }
-
-    .page-btn:hover,
-    .page-btn.active {
-        background: #2563eb;
-
-        border-color: #2563eb;
-
-        color: #fff;
-    }
-
-    .page-btn.disabled {
-        opacity: .4;
-
-        pointer-events: none;
-    }
-
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 1000px) {
-
-        .history-stats {
-            grid-template-columns:
-                repeat(2, minmax(0, 1fr));
-        }
-
-    }
-
-    @media (max-width: 700px) {
-
-        .history-header {
-            align-items: flex-start;
-
-            flex-direction: column;
-        }
-
-        .history-filters {
-            align-items: stretch;
-
-            flex-direction: column;
-        }
-
-        .filter-search,
-        .filter-date,
-        .filter-select,
-        .filter-btn,
-        .clear-btn {
-            width: 100%;
-        }
-
-        .pagination-wrapper {
-            align-items: flex-start;
-
-            flex-direction: column;
-        }
-
-    }
-
-    @media (max-width: 500px) {
-
-        .history-stats {
-            grid-template-columns: 1fr;
-        }
-
-    }
+}
 
 </style>
 
@@ -742,7 +697,7 @@
             </div>
 
             <div class="history-subtitle">
-                View and manage completed sales transactions.
+                View and manage your POS sales transactions.
             </div>
 
         </div>
@@ -817,7 +772,9 @@
     <div class="history-panel">
 
 
-        <!-- PANEL HEADER -->
+        <!-- =================================================
+             PANEL HEADER
+        ================================================== -->
 
         <div class="history-panel-header">
 
@@ -845,14 +802,18 @@
             class="history-filters"
         >
 
+            <!-- SEARCH -->
+
             <input
                 type="text"
                 name="search"
                 class="filter-input filter-search"
-                placeholder="Search transaction ID or staff..."
+                placeholder="Search transaction, salesperson, staff or product..."
                 value="{{ request.GET.search|default:'' }}"
             >
 
+
+            <!-- DATE -->
 
             <input
                 type="date"
@@ -862,44 +823,48 @@
             >
 
 
+            <!-- PAYMENT STATUS -->
+
             <select
                 name="status"
                 class="filter-select"
             >
 
                 <option value="">
-                    All Status
+                    All Payment Status
                 </option>
 
                 <option
-                    value="completed"
-                    {% if request.GET.status == "completed" %}
+                    value="PAID"
+                    {% if selected_status == "PAID" %}
                         selected
                     {% endif %}
                 >
-                    Completed
+                    Paid
                 </option>
 
                 <option
-                    value="cancelled"
-                    {% if request.GET.status == "cancelled" %}
+                    value="UNPAID"
+                    {% if selected_status == "UNPAID" %}
                         selected
                     {% endif %}
                 >
-                    Cancelled
+                    Unpaid
                 </option>
 
                 <option
-                    value="pending"
-                    {% if request.GET.status == "pending" %}
+                    value="PARTIAL"
+                    {% if selected_status == "PARTIAL" %}
                         selected
                     {% endif %}
                 >
-                    Pending
+                    Partial
                 </option>
 
             </select>
 
+
+            <!-- SEARCH BUTTON -->
 
             <button
                 type="submit"
@@ -908,6 +873,8 @@
                 Search
             </button>
 
+
+            <!-- CLEAR -->
 
             <a
                 href="{% url 'transaction-history' %}"
@@ -940,6 +907,10 @@
                         </th>
 
                         <th>
+                            Salesperson
+                        </th>
+
+                        <th>
                             Staff
                         </th>
 
@@ -952,16 +923,12 @@
                         </th>
 
                         <th>
-                            Payment
+                            Discount
                         </th>
 
                         <th>
-                            Status
+                            Payment
                         </th>
-
-                        {% comment %} <th>
-                            Action
-                        </th> {% endcomment %}
 
                     </tr>
 
@@ -970,80 +937,122 @@
 
                 <tbody>
 
-
                     {% for transaction in transactions %}
 
                     <tr>
 
 
-                        <!-- TRANSACTION ID -->
+                        <!-- =================================
+                             TRANSACTION
+                        ================================== -->
 
                         <td>
 
                             <div class="transaction-id">
 
-                                {% if transaction.transaction_number %}
-
-                                    #{{ transaction.transaction_number }}
-
-                                {% else %}
-
-                                    #{{ transaction.id }}
-
-                                {% endif %}
+                                #{{ transaction.id }}
 
                             </div>
 
                         </td>
 
 
-                        <!-- DATE -->
+                        <!-- =================================
+                             DATE
+                        ================================== -->
 
                         <td>
 
-                            <div class="transaction-date">
+                            {% if transaction.created_at %}
 
-                                {% if transaction.created_at %}
-
+                                <div class="transaction-date">
                                     {{ transaction.created_at|date:"M d, Y" }}
+                                </div>
 
-                                {% elif transaction.date %}
-
-                                    {{ transaction.date|date:"M d, Y" }}
-
-                                {% else %}
-
-                                    —
-
-                                {% endif %}
-
-                            </div>
-
-
-                            <div class="transaction-time">
-
-                                {% if transaction.created_at %}
-
+                                <div class="transaction-time">
                                     {{ transaction.created_at|date:"h:i A" }}
+                                </div>
 
-                                {% endif %}
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- =================================
+                             SALESPERSON
+                        ================================== -->
+
+                        <td>
+
+                            <div class="person-cell">
+
+                                <div class="mini-avatar">
+
+                                    {% if transaction.salesman %}
+
+                                        {{ transaction.salesman|first|upper }}
+
+                                    {% else %}
+
+                                        —
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div>
+
+                                    <div class="person-name">
+
+                                        {% if transaction.salesman %}
+
+                                            {{ transaction.salesman }}
+
+                                        {% else %}
+
+                                            —
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="person-role">
+                                        Salesperson
+                                    </div>
+
+                                </div>
 
                             </div>
 
                         </td>
 
 
-                        <!-- STAFF -->
+                        <!-- =================================
+                             STAFF
+                        ================================== -->
 
                         <td>
 
-                            <div class="staff-cell">
+                            <div class="person-cell">
 
                                 <div class="mini-avatar">
 
                                     {% if transaction.staff %}
 
-                                        {{ transaction.staff.username|first|upper }}
+                                        {% if transaction.staff.get_full_name %}
+
+                                            {{ transaction.staff.get_full_name|first|upper }}
+
+                                        {% else %}
+
+                                            {{ transaction.staff.username|first|upper }}
+
+                                        {% endif %}
 
                                     {% else %}
 
@@ -1054,17 +1063,33 @@
                                 </div>
 
 
-                                <div class="staff-cell-name">
+                                <div>
 
-                                    {% if transaction.staff %}
+                                    <div class="person-name">
 
-                                        {{ transaction.staff.get_full_name|default:transaction.staff.username }}
+                                        {% if transaction.staff %}
 
-                                    {% else %}
+                                            {% if transaction.staff.get_full_name %}
 
-                                        —
+                                                {{ transaction.staff.get_full_name }}
 
-                                    {% endif %}
+                                            {% else %}
+
+                                                {{ transaction.staff.username }}
+
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            —
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="person-role">
+                                        Staff
+                                    </div>
 
                                 </div>
 
@@ -1073,32 +1098,28 @@
                         </td>
 
 
-                        <!-- ITEMS -->
+                        <!-- =================================
+                             ITEMS
+                        ================================== -->
 
                         <td>
 
                             <span class="items-count">
 
-                                {% if transaction.total_items %}
+                                {% with item_count=transaction.items.all|length %}
 
-                                    {{ transaction.total_items }}
+                                    {{ item_count }}
 
-                                {% elif transaction.items_count %}
-
-                                    {{ transaction.items_count }}
-
-                                {% else %}
-
-                                    0
-
-                                {% endif %}
+                                {% endwith %}
 
                             </span>
 
                         </td>
 
 
-                        <!-- TOTAL -->
+                        <!-- =================================
+                             TOTAL
+                        ================================== -->
 
                         <td>
 
@@ -1111,58 +1132,81 @@
                         </td>
 
 
-                        <!-- PAYMENT -->
+                        <!-- =================================
+                             DISCOUNT
+                        ================================== -->
 
                         <td>
 
-                            <span class="payment-badge">
+                            <div class="discount-info">
 
-                                Cash
+                                <div class="discount-class">
 
-                            </span>
+                                    {% if transaction.discount_class %}
+
+                                        {{ transaction.discount_class.name }}
+
+                                    {% else %}
+
+                                        No Discount
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <div class="discount-percent">
+
+                                    {{ transaction.discount_percent|default:"0"|floatformat:2 }}%
+
+                                </div>
+
+                            </div>
 
                         </td>
 
 
-                        <!-- STATUS -->
+                        <!-- =================================
+                             PAYMENT STATUS
+                        ================================== -->
 
                         <td>
 
-                            {% if transaction.status == "cancelled" %}
+                            {% if transaction.payment_status == "PAID" %}
 
-                                <span class="status-badge status-cancelled">
-                                    Cancelled
+                                <span class="payment-status payment-paid">
+
+                                    Paid
+
                                 </span>
 
-                            {% elif transaction.status == "pending" %}
+                            {% elif transaction.payment_status == "PARTIAL" %}
 
-                                <span class="status-badge status-pending">
-                                    Pending
+                                <span class="payment-status payment-partial">
+
+                                    Partial
+
+                                </span>
+
+                            {% elif transaction.payment_status == "UNPAID" %}
+
+                                <span class="payment-status payment-unpaid">
+
+                                    Unpaid
+
                                 </span>
 
                             {% else %}
 
-                                <span class="status-badge status-completed">
-                                    Completed
+                                <span class="payment-status payment-unpaid">
+
+                                    Not Yet Paid
+
                                 </span>
 
                             {% endif %}
 
                         </td>
-
-
-                        <!-- ACTION -->
-
-                        {% comment %} <td>
-
-                            <a
-                                href="#"
-                                class="view-btn"
-                            >
-                                View
-                            </a>
-
-                        </td> {% endcomment %}
 
 
                     </tr>
@@ -1221,7 +1265,6 @@
 
                     {% endfor %}
 
-
                 </tbody>
 
             </table>
@@ -1237,10 +1280,13 @@
 
         <div class="pagination-wrapper">
 
+
             <div class="pagination-info">
 
-                Page {{ transactions.number }}
-                of {{ transactions.paginator.num_pages }}
+                Page
+                {{ transactions.number }}
+                of
+                {{ transactions.paginator.num_pages }}
 
             </div>
 
@@ -1248,10 +1294,12 @@
             <div class="pagination">
 
 
+                <!-- PREVIOUS -->
+
                 {% if transactions.has_previous %}
 
                     <a
-                        href="?page={{ transactions.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                        href="?page={{ transactions.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date|urlencode }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status|urlencode }}{% endif %}"
                         class="page-btn"
                     >
                         Previous
@@ -1265,6 +1313,8 @@
 
                 {% endif %}
 
+
+                <!-- PAGE NUMBERS -->
 
                 {% for page_number in transactions.paginator.page_range %}
 
@@ -1277,7 +1327,7 @@
                     {% elif page_number >= transactions.number|add:"-2" and page_number <= transactions.number|add:"2" %}
 
                         <a
-                            href="?page={{ page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                            href="?page={{ page_number }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date|urlencode }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status|urlencode }}{% endif %}"
                             class="page-btn"
                         >
                             {{ page_number }}
@@ -1288,10 +1338,12 @@
                 {% endfor %}
 
 
+                <!-- NEXT -->
+
                 {% if transactions.has_next %}
 
                     <a
-                        href="?page={{ transactions.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                        href="?page={{ transactions.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search|urlencode }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date|urlencode }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status|urlencode }}{% endif %}"
                         class="page-btn"
                     >
                         Next
@@ -1305,13 +1357,11 @@
 
                 {% endif %}
 
-
             </div>
 
         </div>
 
         {% endif %}
-
 
     </div>
 
