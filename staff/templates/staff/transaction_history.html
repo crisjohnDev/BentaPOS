@@ -3,18 +3,9 @@
 {% block content %}
 
 <style>
-
-/* =========================================================
-   TRANSACTION HISTORY
-========================================================= */
-
 .history-page {
     width: 100%;
 }
-
-/* =========================================================
-   HEADER
-========================================================= */
 
 .history-header {
     display: flex;
@@ -35,10 +26,6 @@
     font-size: 11px;
     color: #666;
 }
-
-/* =========================================================
-   STATISTICS
-========================================================= */
 
 .history-stats {
     display: grid;
@@ -78,10 +65,6 @@
     color: #facc15;
 }
 
-/* =========================================================
-   HISTORY PANEL
-========================================================= */
-
 .history-panel {
     background: #070707;
     border: 1px solid #222;
@@ -92,11 +75,9 @@
 .history-panel-header {
     padding: 17px 18px;
     border-bottom: 1px solid #202020;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 15px;
 }
 
@@ -112,37 +93,23 @@
     margin-top: 3px;
 }
 
-/* =========================================================
-   FILTERS
-========================================================= */
-
 .history-filters {
     padding: 14px 18px;
-
     border-bottom: 1px solid #202020;
-
     display: flex;
     align-items: center;
-
     gap: 10px;
     flex-wrap: wrap;
 }
 
 .filter-input {
     height: 38px;
-
     padding: 0 11px;
-
     background: #0c0c0c;
-
     border: 1px solid #303030;
-
     border-radius: 7px;
-
     color: #fff;
-
     outline: none;
-
     font-size: 11px;
 }
 
@@ -164,19 +131,12 @@
 
 .filter-select {
     height: 38px;
-
     padding: 0 30px 0 11px;
-
     background: #0c0c0c;
-
     border: 1px solid #303030;
-
     border-radius: 7px;
-
     color: #fff;
-
     outline: none;
-
     font-size: 11px;
 }
 
@@ -187,23 +147,14 @@
 
 .filter-btn {
     height: 38px;
-
     padding: 0 14px;
-
     border-radius: 7px;
-
     border: 1px solid #2563eb;
-
     background: #08152e;
-
     color: #60a5fa;
-
     font-size: 11px;
-
     font-weight: 600;
-
     cursor: pointer;
-
     transition: .15s ease;
 }
 
@@ -214,17 +165,11 @@
 
 .clear-btn {
     border-color: #333;
-
     background: #111;
-
     color: #888;
-
     text-decoration: none;
-
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
 }
 
@@ -233,10 +178,6 @@
     color: #fff;
 }
 
-/* =========================================================
-   TABLE
-========================================================= */
-
 .table-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -244,9 +185,7 @@
 
 .transaction-table {
     width: 100%;
-
     border-collapse: collapse;
-
     min-width: 1150px;
 }
 
@@ -256,33 +195,21 @@
 
 .transaction-table th {
     padding: 12px 16px;
-
     text-align: left;
-
     font-size: 10px;
-
     font-weight: 700;
-
     color: #666;
-
     text-transform: uppercase;
-
     letter-spacing: .4px;
-
     border-bottom: 1px solid #222;
-
     white-space: nowrap;
 }
 
 .transaction-table td {
     padding: 14px 16px;
-
     font-size: 11px;
-
     color: #ddd;
-
     border-bottom: 1px solid #171717;
-
     vertical-align: middle;
 }
 
@@ -298,362 +225,219 @@
     border-bottom: none;
 }
 
-/* =========================================================
-   TRANSACTION ID
-========================================================= */
-
 .transaction-id {
     color: #60a5fa;
-
     font-weight: 700;
-
     font-size: 11px;
 }
 
-/* =========================================================
-   DATE
-========================================================= */
-
 .transaction-date {
     color: #eee;
-
     font-weight: 600;
-
     white-space: nowrap;
 }
 
 .transaction-time {
     color: #555;
-
     font-size: 10px;
-
     margin-top: 3px;
 }
 
-/* =========================================================
-   PERSON CELL
-========================================================= */
-
 .person-cell {
     display: flex;
-
     align-items: center;
-
     gap: 8px;
-
     min-width: 150px;
 }
 
 .mini-avatar {
     width: 28px;
     height: 28px;
-
     border-radius: 50%;
-
     background: #fff;
-
     color: #000;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     font-size: 9px;
-
     font-weight: 800;
-
     flex-shrink: 0;
 }
 
 .person-name {
     font-size: 11px;
-
     font-weight: 600;
-
     color: #eee;
-
     white-space: nowrap;
 }
 
 .person-role {
     font-size: 9px;
-
     color: #555;
-
     margin-top: 2px;
 }
 
-/* =========================================================
-   ITEMS
-========================================================= */
-
 .items-count {
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
-
     min-width: 28px;
-
     height: 25px;
-
     padding: 0 8px;
-
     border-radius: 6px;
-
     background: #151515;
-
     border: 1px solid #292929;
-
     color: #ccc;
-
     font-size: 10px;
-
     font-weight: 700;
 }
-
-/* =========================================================
-   TOTAL
-========================================================= */
 
 .transaction-total {
     color: #4ade80;
-
     font-size: 12px;
-
     font-weight: 800;
-
     white-space: nowrap;
 }
-
-/* =========================================================
-   PAYMENT STATUS
-========================================================= */
 
 .payment-status {
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
-
     padding: 5px 10px;
-
     border-radius: 5px;
-
     font-size: 9px;
-
     font-weight: 700;
-
     white-space: nowrap;
 }
 
-/* PAID */
-
 .payment-paid {
     background: #071c10;
-
     border: 1px solid #166534;
-
     color: #4ade80;
 }
 
-/* UNPAID */
-
 .payment-unpaid {
     background: #160909;
-
     border: 1px solid #7f1d1d;
-
     color: #f87171;
 }
 
-/* PARTIAL */
-
 .payment-partial {
     background: #1c1707;
-
     border: 1px solid #854d0e;
-
     color: #facc15;
 }
 
-/* =========================================================
-   DISCOUNT
-========================================================= */
-
 .discount-info {
     display: flex;
-
     flex-direction: column;
-
     gap: 3px;
 }
 
 .discount-class {
     color: #ddd;
-
     font-size: 10px;
-
     font-weight: 600;
-
     white-space: nowrap;
 }
 
 .discount-percent {
     color: #60a5fa;
-
     font-size: 9px;
 }
 
-/* =========================================================
-   EMPTY
-========================================================= */
-
 .empty-history {
     padding: 70px 20px;
-
     text-align: center;
 }
 
 .empty-icon {
     width: 48px;
     height: 48px;
-
     margin: 0 auto 14px;
-
     border-radius: 10px;
-
     background: #101010;
-
     border: 1px solid #292929;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     color: #555;
 }
 
 .empty-title {
     font-size: 13px;
-
     font-weight: 700;
-
     color: #aaa;
 }
 
 .empty-text {
     font-size: 10px;
-
     color: #555;
-
     margin-top: 5px;
 }
 
-/* =========================================================
-   PAGINATION
-========================================================= */
-
 .pagination-wrapper {
     padding: 14px 18px;
-
     border-top: 1px solid #202020;
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     gap: 10px;
 }
 
 .pagination-info {
     font-size: 10px;
-
     color: #555;
 }
 
 .pagination {
     display: flex;
-
     align-items: center;
-
     gap: 5px;
 }
 
 .page-btn {
     min-width: 31px;
-
     height: 31px;
-
     padding: 0 9px;
-
     border-radius: 6px;
-
     border: 1px solid #292929;
-
     background: #101010;
-
     color: #888;
-
     text-decoration: none;
-
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
-
     font-size: 10px;
-
     font-weight: 600;
 }
 
 .page-btn:hover,
 .page-btn.active {
     background: #2563eb;
-
     border-color: #2563eb;
-
     color: #fff;
 }
 
 .page-btn.disabled {
     opacity: .4;
-
     pointer-events: none;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
 @media (max-width: 1100px) {
-
     .history-stats {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 700px) {
-
     .history-header {
         align-items: flex-start;
-
         flex-direction: column;
     }
 
     .history-filters {
         align-items: stretch;
-
         flex-direction: column;
     }
 
@@ -667,31 +451,21 @@
 
     .pagination-wrapper {
         align-items: flex-start;
-
         flex-direction: column;
     }
 }
 
 @media (max-width: 500px) {
-
     .history-stats {
         grid-template-columns: 1fr;
     }
 }
-
 </style>
-
 
 <div class="history-page">
 
-    <!-- =====================================================
-         PAGE HEADER
-    ====================================================== -->
-
     <div class="history-header">
-
         <div>
-
             <div class="history-title">
                 Transaction History
             </div>
@@ -699,20 +473,13 @@
             <div class="history-subtitle">
                 View and manage your POS sales transactions.
             </div>
-
         </div>
-
     </div>
 
-
-    <!-- =====================================================
-         STATISTICS
-    ====================================================== -->
 
     <div class="history-stats">
 
         <div class="stat-card sales">
-
             <div class="stat-label">
                 TOTAL TRANSACTIONS
             </div>
@@ -720,12 +487,10 @@
             <div class="stat-value">
                 {{ total_transactions|default:"0" }}
             </div>
-
         </div>
 
 
         <div class="stat-card revenue">
-
             <div class="stat-label">
                 TOTAL SALES
             </div>
@@ -733,12 +498,10 @@
             <div class="stat-value">
                 ₱{{ total_sales|default:"0.00"|floatformat:2 }}
             </div>
-
         </div>
 
 
         <div class="stat-card items">
-
             <div class="stat-label">
                 ITEMS SOLD
             </div>
@@ -746,12 +509,10 @@
             <div class="stat-value">
                 {{ total_items|default:"0" }}
             </div>
-
         </div>
 
 
         <div class="stat-card">
-
             <div class="stat-label">
                 TODAY'S TRANSACTIONS
             </div>
@@ -759,27 +520,16 @@
             <div class="stat-value">
                 {{ today_transactions|default:"0" }}
             </div>
-
         </div>
 
     </div>
 
 
-    <!-- =====================================================
-         HISTORY PANEL
-    ====================================================== -->
-
     <div class="history-panel">
-
-
-        <!-- =================================================
-             PANEL HEADER
-        ================================================== -->
 
         <div class="history-panel-header">
 
             <div>
-
                 <div class="panel-heading">
                     Sales Transactions
                 </div>
@@ -787,22 +537,12 @@
                 <div class="panel-heading-subtitle">
                     Complete record of POS transactions
                 </div>
-
             </div>
 
         </div>
 
 
-        <!-- =================================================
-             FILTERS
-        ================================================== -->
-
-        <form
-            method="GET"
-            class="history-filters"
-        >
-
-            <!-- SEARCH -->
+        <form method="GET" class="history-filters">
 
             <input
                 type="text"
@@ -812,9 +552,6 @@
                 value="{{ request.GET.search|default:'' }}"
             >
 
-
-            <!-- DATE -->
-
             <input
                 type="date"
                 name="date"
@@ -822,14 +559,10 @@
                 value="{{ request.GET.date|default:'' }}"
             >
 
-
-            <!-- PAYMENT STATUS -->
-
             <select
                 name="status"
                 class="filter-select"
             >
-
                 <option value="">
                     All Payment Status
                 </option>
@@ -860,11 +593,7 @@
                 >
                     Partial
                 </option>
-
             </select>
-
-
-            <!-- SEARCH BUTTON -->
 
             <button
                 type="submit"
@@ -872,9 +601,6 @@
             >
                 Search
             </button>
-
-
-            <!-- CLEAR -->
 
             <a
                 href="{% url 'transaction-history' %}"
@@ -886,52 +612,21 @@
         </form>
 
 
-        <!-- =================================================
-             TABLE
-        ================================================== -->
-
         <div class="table-wrapper">
 
             <table class="transaction-table">
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Transaction
-                        </th>
-
-                        <th>
-                            Date & Time
-                        </th>
-
-                        <th>
-                            Salesperson
-                        </th>
-
-                        <th>
-                            Staff
-                        </th>
-
-                        <th>
-                            Items
-                        </th>
-
-                        <th>
-                            Total
-                        </th>
-
-                        <th>
-                            Discount
-                        </th>
-
-                        <th>
-                            Payment
-                        </th>
-
+                        <th>Transaction</th>
+                        <th>Date & Time</th>
+                        <th>Salesperson</th>
+                        <th>Staff</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Discount</th>
+                        <th>Payment</th>
                     </tr>
-
                 </thead>
 
 
@@ -941,25 +636,12 @@
 
                     <tr>
 
-
-                        <!-- =================================
-                             TRANSACTION
-                        ================================== -->
-
                         <td>
-
                             <div class="transaction-id">
-
                                 #{{ transaction.id }}
-
                             </div>
-
                         </td>
 
-
-                        <!-- =================================
-                             DATE
-                        ================================== -->
 
                         <td>
 
@@ -982,9 +664,7 @@
                         </td>
 
 
-                        <!-- =================================
-                             SALESPERSON
-                        ================================== -->
+                        <!-- SALESPERSON -->
 
                         <td>
 
@@ -992,9 +672,25 @@
 
                                 <div class="mini-avatar">
 
-                                    {% if transaction.salesman %}
+                                    {% if transaction.salesperson %}
 
-                                        {{ transaction.salesman|first|upper }}
+                                        {% if transaction.salesperson.full_name %}
+
+                                            {{ transaction.salesperson.full_name|first|upper }}
+
+                                        {% elif transaction.salesperson.name %}
+
+                                            {{ transaction.salesperson.name|first|upper }}
+
+                                        {% elif transaction.salesperson.username %}
+
+                                            {{ transaction.salesperson.username|first|upper }}
+
+                                        {% else %}
+
+                                            S
+
+                                        {% endif %}
 
                                     {% else %}
 
@@ -1009,9 +705,25 @@
 
                                     <div class="person-name">
 
-                                        {% if transaction.salesman %}
+                                        {% if transaction.salesperson %}
 
-                                            {{ transaction.salesman }}
+                                            {% if transaction.salesperson.full_name %}
+
+                                                {{ transaction.salesperson.full_name }}
+
+                                            {% elif transaction.salesperson.name %}
+
+                                                {{ transaction.salesperson.name }}
+
+                                            {% elif transaction.salesperson.username %}
+
+                                                {{ transaction.salesperson.username }}
+
+                                            {% else %}
+
+                                                Salesperson #{{ transaction.salesperson.id }}
+
+                                            {% endif %}
 
                                         {% else %}
 
@@ -1021,8 +733,19 @@
 
                                     </div>
 
+
                                     <div class="person-role">
-                                        Salesperson
+
+                                        {% if transaction.salesperson.employee_id %}
+
+                                            ID: {{ transaction.salesperson.employee_id }}
+
+                                        {% else %}
+
+                                            Salesperson
+
+                                        {% endif %}
+
                                     </div>
 
                                 </div>
@@ -1032,9 +755,7 @@
                         </td>
 
 
-                        <!-- =================================
-                             STAFF
-                        ================================== -->
+                        <!-- STAFF -->
 
                         <td>
 
@@ -1048,9 +769,13 @@
 
                                             {{ transaction.staff.get_full_name|first|upper }}
 
-                                        {% else %}
+                                        {% elif transaction.staff.username %}
 
                                             {{ transaction.staff.username|first|upper }}
+
+                                        {% else %}
+
+                                            —
 
                                         {% endif %}
 
@@ -1073,9 +798,13 @@
 
                                                 {{ transaction.staff.get_full_name }}
 
-                                            {% else %}
+                                            {% elif transaction.staff.username %}
 
                                                 {{ transaction.staff.username }}
+
+                                            {% else %}
+
+                                                —
 
                                             {% endif %}
 
@@ -1098,18 +827,14 @@
                         </td>
 
 
-                        <!-- =================================
-                             ITEMS
-                        ================================== -->
+                        <!-- ITEMS -->
 
                         <td>
 
                             <span class="items-count">
 
                                 {% with item_count=transaction.items.all|length %}
-
                                     {{ item_count }}
-
                                 {% endwith %}
 
                             </span>
@@ -1117,24 +842,18 @@
                         </td>
 
 
-                        <!-- =================================
-                             TOTAL
-                        ================================== -->
+                        <!-- TOTAL -->
 
                         <td>
 
                             <span class="transaction-total">
-
                                 ₱{{ transaction.total|default:"0.00"|floatformat:2 }}
-
                             </span>
 
                         </td>
 
 
-                        <!-- =================================
-                             DISCOUNT
-                        ================================== -->
+                        <!-- DISCOUNT -->
 
                         <td>
 
@@ -1143,22 +862,15 @@
                                 <div class="discount-class">
 
                                     {% if transaction.discount_class %}
-
                                         {{ transaction.discount_class.name }}
-
                                     {% else %}
-
                                         No Discount
-
                                     {% endif %}
 
                                 </div>
 
-
                                 <div class="discount-percent">
-
                                     {{ transaction.discount_percent|default:"0"|floatformat:2 }}%
-
                                 </div>
 
                             </div>
@@ -1166,48 +878,37 @@
                         </td>
 
 
-                        <!-- =================================
-                             PAYMENT STATUS
-                        ================================== -->
+                        <!-- PAYMENT -->
 
                         <td>
 
                             {% if transaction.payment_status == "PAID" %}
 
                                 <span class="payment-status payment-paid">
-
                                     Paid
-
                                 </span>
 
                             {% elif transaction.payment_status == "PARTIAL" %}
 
                                 <span class="payment-status payment-partial">
-
                                     Partial
-
                                 </span>
 
                             {% elif transaction.payment_status == "UNPAID" %}
 
                                 <span class="payment-status payment-unpaid">
-
                                     Unpaid
-
                                 </span>
 
                             {% else %}
 
                                 <span class="payment-status payment-unpaid">
-
                                     Not Yet Paid
-
                                 </span>
 
                             {% endif %}
 
                         </td>
-
 
                     </tr>
 
@@ -1232,29 +933,19 @@
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                     >
-
                                         <path d="M3 3v5h5"></path>
-
                                         <path d="M3.05 13a9 9 0 1 0 2.13-5.36L3 10"></path>
-
                                         <path d="M12 7v5l3 2"></path>
-
                                     </svg>
 
                                 </div>
 
-
                                 <div class="empty-title">
-
                                     No Transactions Found
-
                                 </div>
 
-
                                 <div class="empty-text">
-
                                     There are no sales transactions to display.
-
                                 </div>
 
                             </div>
@@ -1272,29 +963,19 @@
         </div>
 
 
-        <!-- =================================================
-             PAGINATION
-        ================================================== -->
-
         {% if transactions.has_other_pages %}
 
         <div class="pagination-wrapper">
 
-
             <div class="pagination-info">
-
                 Page
                 {{ transactions.number }}
                 of
                 {{ transactions.paginator.num_pages }}
-
             </div>
 
 
             <div class="pagination">
-
-
-                <!-- PREVIOUS -->
 
                 {% if transactions.has_previous %}
 
@@ -1313,8 +994,6 @@
 
                 {% endif %}
 
-
-                <!-- PAGE NUMBERS -->
 
                 {% for page_number in transactions.paginator.page_range %}
 
@@ -1337,8 +1016,6 @@
 
                 {% endfor %}
 
-
-                <!-- NEXT -->
 
                 {% if transactions.has_next %}
 

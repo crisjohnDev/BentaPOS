@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from .models import Product, InventoryTransaction, Sale, SaleItem
+from .models import Product, InventoryTransaction, Sale, SaleItem, UserProfile, Salesperson
 from openpyxl import load_workbook
 from django.db.models import Sum, Count, Avg, Q, F, DecimalField, ExpressionWrapper
 from django.db.models.functions import Coalesce
@@ -12,6 +12,8 @@ from django.utils import timezone
 from datetime import datetime, time, timedelta
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from django.core.paginator import Paginator
+from decimal import Decimal
+
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -129,8 +131,14 @@ def dashboard(request):
     # =========================================================
 
     if total_transactions > 0:
-        average_sale = total_sales / total_transactions
+
+        average_sale = (
+            total_sales /
+            total_transactions
+        )
+
     else:
+
         average_sale = 0
 
 
@@ -141,10 +149,160 @@ def dashboard(request):
     sales_change_percent = 0
 
     if yesterday_sales:
+
         sales_change_percent = (
-            (total_sales - yesterday_sales)
-            / yesterday_sales
+            (
+                total_sales -
+                yesterday_sales
+            )
+            /
+            yesterday_sales
         ) * 100
+
+
+    # =========================================================
+    # PAYMENT STATUS
+    # =========================================================
+
+    paid_sales = (
+        Sale.objects
+        .filter(
+            payment_status="PAID"
+        )
+        .select_related(
+            "staff",
+            "salesperson",
+            "discount_class"
+        )
+        .prefetch_related(
+            "items"
+        )
+        .order_by(
+            "-created_at"
+        )[:10]
+    )
+
+
+    unpaid_sales = (
+        Sale.objects
+        .filter(
+            payment_status="UNPAID"
+        )
+        .select_related(
+            "staff",
+            "salesperson",
+            "discount_class"
+        )
+        .prefetch_related(
+            "items"
+        )
+        .order_by(
+            "-created_at"
+        )[:10]
+    )
+
+
+    partial_sales = (
+        Sale.objects
+        .filter(
+            payment_status="PARTIAL"
+        )
+        .select_related(
+            "staff",
+            "salesperson",
+            "discount_class"
+        )
+        .prefetch_related(
+            "items"
+        )
+        .order_by(
+            "-created_at"
+        )[:10]
+    )
+
+
+    # =========================================================
+    # PAYMENT SUMMARY
+    # =========================================================
+
+    paid_total = (
+        Sale.objects
+        .filter(
+            payment_status="PAID"
+        )
+        .aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+
+    unpaid_total = (
+        Sale.objects
+        .filter(
+            payment_status="UNPAID"
+        )
+        .aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+
+    partial_total = (
+        Sale.objects
+        .filter(
+            payment_status="PARTIAL"
+        )
+        .aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+
+    total_amount_due = (
+        Sale.objects
+        .filter(
+            payment_status__in=[
+                "UNPAID",
+                "PARTIAL",
+            ]
+        )
+        .aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+
+    # =========================================================
+    # PAYMENT COUNTS
+    # =========================================================
+
+    paid_count = (
+        Sale.objects
+        .filter(
+            payment_status="PAID"
+        )
+        .count()
+    )
+
+    unpaid_count = (
+        Sale.objects
+        .filter(
+            payment_status="UNPAID"
+        )
+        .count()
+    )
+
+    partial_count = (
+        Sale.objects
+        .filter(
+            payment_status="PARTIAL"
+        )
+        .count()
+    )
 
 
     # =========================================================
@@ -152,16 +310,26 @@ def dashboard(request):
     # =========================================================
 
     chart_labels = []
+
     chart_sales = []
+
     chart_transactions = []
+
 
     for i in range(6, -1, -1):
 
-        chart_date = today - timezone.timedelta(days=i)
+        chart_date = (
+            today -
+            timezone.timedelta(
+                days=i
+            )
+        )
+
 
         day_qs = Sale.objects.filter(
             created_at__date=chart_date
         )
+
 
         day_total = (
             day_qs.aggregate(
@@ -170,15 +338,21 @@ def dashboard(request):
             or 0
         )
 
+
         day_transactions = day_qs.count()
 
+
         chart_labels.append(
-            chart_date.strftime("%b %d")
+            chart_date.strftime(
+                "%b %d"
+            )
         )
+
 
         chart_sales.append(
             float(day_total)
         )
+
 
         chart_transactions.append(
             day_transactions
@@ -191,9 +365,17 @@ def dashboard(request):
 
     recent_sales = (
         Sale.objects
-        .select_related("staff", "discount_class")
-        .prefetch_related("items")
-        .order_by("-created_at")[:5]
+        .select_related(
+            "staff",
+            "salesperson",
+            "discount_class"
+        )
+        .prefetch_related(
+            "items"
+        )
+        .order_by(
+            "-created_at"
+        )[:5]
     )
 
 
@@ -207,64 +389,121 @@ def dashboard(request):
         # TODAY
         # -----------------------------
 
-        "total_sales": total_sales,
+        "total_sales":
+            total_sales,
 
-        "total_transactions": total_transactions,
+        "total_transactions":
+            total_transactions,
 
-        "total_items": total_items,
+        "total_items":
+            total_items,
 
-        "total_discount": total_discount,
+        "total_discount":
+            total_discount,
 
-        "average_sale": average_sale,
+        "average_sale":
+            average_sale,
 
 
         # -----------------------------
         # INVENTORY
         # -----------------------------
 
-        "total_products": total_products,
+        "total_products":
+            total_products,
 
-        "low_stock": low_stock,
+        "low_stock":
+            low_stock,
 
-        "out_of_stock": out_of_stock,
+        "out_of_stock":
+            out_of_stock,
 
 
         # -----------------------------
         # PERIOD SALES
         # -----------------------------
 
-        "monthly_sales": monthly_sales,
+        "monthly_sales":
+            monthly_sales,
 
-        "monthly_transactions": monthly_transactions,
+        "monthly_transactions":
+            monthly_transactions,
 
-        "yesterday_sales": yesterday_sales,
+        "yesterday_sales":
+            yesterday_sales,
 
-        "sales_change_percent": sales_change_percent,
+        "sales_change_percent":
+            sales_change_percent,
+
+
+        # -----------------------------
+        # PAYMENT SUMMARY
+        # -----------------------------
+
+        "paid_total":
+            paid_total,
+
+        "unpaid_total":
+            unpaid_total,
+
+        "partial_total":
+            partial_total,
+
+        "total_amount_due":
+            total_amount_due,
+
+        "paid_count":
+            paid_count,
+
+        "unpaid_count":
+            unpaid_count,
+
+        "partial_count":
+            partial_count,
+
+
+        # -----------------------------
+        # PAYMENT TABLES
+        # -----------------------------
+
+        "paid_sales":
+            paid_sales,
+
+        "unpaid_sales":
+            unpaid_sales,
+
+        "partial_sales":
+            partial_sales,
 
 
         # -----------------------------
         # CHART
         # -----------------------------
 
-        "chart_labels": chart_labels,
+        "chart_labels":
+            chart_labels,
 
-        "chart_sales": chart_sales,
+        "chart_sales":
+            chart_sales,
 
-        "chart_transactions": chart_transactions,
+        "chart_transactions":
+            chart_transactions,
 
 
         # -----------------------------
         # RECENT SALES
         # -----------------------------
 
-        "recent_sales": recent_sales,
+        "recent_sales":
+            recent_sales,
 
 
         # -----------------------------
         # DATE
         # -----------------------------
 
-        "today": today,
+        "today":
+            today,
     }
 
 
@@ -273,180 +512,40 @@ def dashboard(request):
         "pages/dashboard.html",
         context
     )
-
 @login_required
 @user_passes_test(is_superuser)
 def staff_list(request):
 
-    users = User.objects.all().order_by("username")
-
-    return render(request, "users/staff_list.html", {
-        "users": users
-    })
-
-@login_required
-@user_passes_test(is_superuser)
-def add_staff(request):
-
-    if request.method == "POST":
-
-        name = request.POST.get("name", "").strip()
-        username = request.POST.get("username", "").strip()
-        password1 = request.POST.get("password1", "")
-        password2 = request.POST.get("password2", "")
-
-        # Checkbox
-        is_staff = request.POST.get("is_staff") == "on"
-
-        # ==============================
-        # VALIDATION
-        # ==============================
-
-        if not name:
-            messages.error(request, "Name is required.")
-            return redirect("add_staff")
-
-        if not username:
-            messages.error(request, "Username is required.")
-            return redirect("add_staff")
-
-        if not password1:
-            messages.error(request, "Password is required.")
-            return redirect("add_staff")
-
-        if password1 != password2:
-            messages.error(
-                request,
-                "Passwords do not match."
-            )
-            return redirect("add_staff")
-
-        if User.objects.filter(username=username).exists():
-            messages.error(
-                request,
-                "Username already exists."
-            )
-            return redirect("add_staff")
-
-        # ==============================
-        # CREATE STAFF
-        # ==============================
-
-        user = User.objects.create(
-            first_name=name,
-            username=username,
-            password=make_password(password1),
-            is_staff=is_staff,
-            is_superuser=False
-        )
-
-        messages.success(
-            request,
-            f"Staff account '{user.username}' created successfully."
-        )
-
-        return redirect("staff_list")
-
-    return render(
-        request,
-        "users/staff_form.html"
+    users = (
+        User.objects
+        .filter(profile__role__in=[
+            "MANAGER",
+            "STAFF",
+            "CASHIER",
+            "INVENTORY",
+        ])
+        .select_related("profile")
+        .order_by("username")
     )
 
-
-@login_required
-@user_passes_test(is_superuser)
-def add_staff(request):
-
-    if request.method == "POST":
-
-        name = request.POST.get("name", "").strip()
-        username = request.POST.get("username", "").strip()
-        password1 = request.POST.get("password1", "")
-        password2 = request.POST.get("password2", "")
-
-        is_staff = request.POST.get("is_staff") == "on"
-
-        # ==============================
-        # VALIDATION
-        # ==============================
-
-        if not name:
-            messages.error(request, "Name is required.")
-            return redirect("add-user")
-
-        if not username:
-            messages.error(request, "Username is required.")
-            return redirect("add-user")
-
-        if not password1:
-            messages.error(request, "Password is required.")
-            return redirect("add-user")
-
-        if password1 != password2:
-            messages.error(request, "Passwords do not match.")
-            return redirect("add-user")
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-            return redirect("add-user")
-
-        # ==============================
-        # CREATE USER
-        # ==============================
-
-        user = User.objects.create(
-            first_name=name,
-            username=username,
-            is_staff=is_staff,
-            is_superuser=False
-        )
-
-        user.set_password(password1)
-        user.save()
-
-        messages.success(
-            request,
-            f"Staff account '{user.username}' created successfully."
-        )
-
-        return redirect("staff_list")
-
     return render(
         request,
-        "users/staff_form.html",
+        "users/staff_list.html",
         {
-            "is_edit": False,
-            "user": None,
+            "users": users
         }
     )
-
+# ==========================================================
+# ADD STAFF / USER
+# ==========================================================
 
 @login_required
 @user_passes_test(is_superuser)
-def edit_user(request, user_id):
+def add_staff(request):
 
-    user = get_object_or_404(
-        User,
-        id=user_id
-    )
-
-    # ==========================================
-    # PROTECT SUPERUSER
-    # ==========================================
-
-    if user.is_superuser:
-
-        messages.error(
-            request,
-            "The superuser account is protected."
-        )
-
-        return redirect("staff_list")
-
-
-    # ==========================================
+    # ======================================================
     # POST
-    # ==========================================
+    # ======================================================
 
     if request.method == "POST":
 
@@ -470,14 +569,291 @@ def edit_user(request, user_id):
             ""
         )
 
+        # Checkbox
         is_staff = (
             request.POST.get("is_staff") == "on"
         )
 
+        # Role
+        role = request.POST.get(
+            "role",
+            "STAFF"
+        ).strip().upper()
 
-        # ==========================================
+
+        # ==================================================
+        # VALID ROLES
+        # ==================================================
+
+        valid_roles = [
+            choice[0]
+            for choice in UserProfile.ROLE_CHOICES
+        ]
+
+        if role not in valid_roles:
+
+            messages.error(
+                request,
+                "Invalid user role selected."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
         # VALIDATE NAME
-        # ==========================================
+        # ==================================================
+
+        if not name:
+
+            messages.error(
+                request,
+                "Name is required."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # VALIDATE USERNAME
+        # ==================================================
+
+        if not username:
+
+            messages.error(
+                request,
+                "Username is required."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # VALIDATE PASSWORD
+        # ==================================================
+
+        if not password1:
+
+            messages.error(
+                request,
+                "Password is required."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # PASSWORD LENGTH
+        # ==================================================
+
+        if len(password1) < 8:
+
+            messages.error(
+                request,
+                "Password must be at least 8 characters."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # PASSWORD CONFIRMATION
+        # ==================================================
+
+        if password1 != password2:
+
+            messages.error(
+                request,
+                "Passwords do not match."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # CHECK USERNAME
+        # ==================================================
+
+        if User.objects.filter(
+            username=username
+        ).exists():
+
+            messages.error(
+                request,
+                "Username already exists."
+            )
+
+            return redirect("add-user")
+
+
+        # ==================================================
+        # CREATE USER
+        # ==================================================
+
+        user = User(
+            first_name=name,
+            username=username,
+            is_staff=is_staff,
+            is_superuser=False
+        )
+
+        # Proper password hashing
+        user.set_password(password1)
+
+        user.save()
+
+
+        # ==================================================
+        # CREATE USER PROFILE
+        # ==================================================
+
+        UserProfile.objects.create(
+            user=user,
+            role=role
+        )
+
+
+        # ==================================================
+        # SUCCESS MESSAGE
+        # ==================================================
+
+        role_display = (
+            user.profile.get_role_display()
+        )
+
+        messages.success(
+            request,
+            f"Staff account '{user.username}' "
+            f"created successfully as {role_display}."
+        )
+
+
+        # ==================================================
+        # REDIRECT
+        # ==================================================
+
+        return redirect("staff_list")
+
+
+    # ======================================================
+    # GET
+    # ======================================================
+
+    return render(
+        request,
+        "users/staff_form.html",
+        {
+            "is_edit": False,
+            "user": None,
+            "profile": None,
+            "roles": UserProfile.ROLE_CHOICES,
+        }
+    )
+
+
+# ==========================================================
+# EDIT USER
+# ==========================================================
+
+@login_required
+@user_passes_test(is_superuser)
+def edit_user(request, user_id):
+
+    user = get_object_or_404(
+        User,
+        id=user_id
+    )
+
+
+    # ======================================================
+    # PROTECT SUPERUSER
+    # ======================================================
+
+    if user.is_superuser:
+
+        messages.error(
+            request,
+            "The superuser account is protected."
+        )
+
+        return redirect("staff_list")
+
+
+    # ======================================================
+    # GET OR CREATE PROFILE
+    # ======================================================
+
+    profile, created = UserProfile.objects.get_or_create(
+        user=user,
+        defaults={
+            "role": "STAFF"
+        }
+    )
+
+
+    # ======================================================
+    # POST
+    # ======================================================
+
+    if request.method == "POST":
+
+        name = request.POST.get(
+            "name",
+            ""
+        ).strip()
+
+        username = request.POST.get(
+            "username",
+            ""
+        ).strip()
+
+        password1 = request.POST.get(
+            "password1",
+            ""
+        )
+
+        password2 = request.POST.get(
+            "password2",
+            ""
+        )
+
+        # Checkbox
+        is_staff = (
+            request.POST.get("is_staff") == "on"
+        )
+
+        # Role
+        role = request.POST.get(
+            "role",
+            "STAFF"
+        ).strip().upper()
+
+
+        # ==================================================
+        # VALID ROLES
+        # ==================================================
+
+        valid_roles = [
+            choice[0]
+            for choice in UserProfile.ROLE_CHOICES
+        ]
+
+        if role not in valid_roles:
+
+            messages.error(
+                request,
+                "Invalid user role selected."
+            )
+
+            return redirect(
+                "edit-user",
+                user_id=user.id
+            )
+
+
+        # ==================================================
+        # VALIDATE NAME
+        # ==================================================
 
         if not name:
 
@@ -492,9 +868,9 @@ def edit_user(request, user_id):
             )
 
 
-        # ==========================================
+        # ==================================================
         # VALIDATE USERNAME
-        # ==========================================
+        # ==================================================
 
         if not username:
 
@@ -509,9 +885,9 @@ def edit_user(request, user_id):
             )
 
 
-        # ==========================================
+        # ==================================================
         # CHECK USERNAME
-        # ==========================================
+        # ==================================================
 
         if User.objects.filter(
             username=username
@@ -530,11 +906,32 @@ def edit_user(request, user_id):
             )
 
 
-        # ==========================================
+        # ==================================================
         # PASSWORD
-        # ==========================================
+        # ==================================================
 
         if password1 or password2:
+
+            # ----------------------------------------------
+            # BOTH REQUIRED
+            # ----------------------------------------------
+
+            if not password1 or not password2:
+
+                messages.error(
+                    request,
+                    "Please enter and confirm the new password."
+                )
+
+                return redirect(
+                    "edit-user",
+                    user_id=user.id
+                )
+
+
+            # ----------------------------------------------
+            # MATCH
+            # ----------------------------------------------
 
             if password1 != password2:
 
@@ -548,6 +945,11 @@ def edit_user(request, user_id):
                     user_id=user.id
                 )
 
+
+            # ----------------------------------------------
+            # PASSWORD LENGTH
+            # ----------------------------------------------
+
             if len(password1) < 8:
 
                 messages.error(
@@ -560,12 +962,17 @@ def edit_user(request, user_id):
                     user_id=user.id
                 )
 
+
+            # ----------------------------------------------
+            # SET PASSWORD
+            # ----------------------------------------------
+
             user.set_password(password1)
 
 
-        # ==========================================
+        # ==================================================
         # UPDATE USER
-        # ==========================================
+        # ==================================================
 
         user.first_name = name
         user.username = username
@@ -577,17 +984,35 @@ def edit_user(request, user_id):
         user.save()
 
 
+        # ==================================================
+        # UPDATE USER PROFILE
+        # ==================================================
+
+        profile.role = role
+        profile.save()
+
+
+        # ==================================================
+        # SUCCESS
+        # ==================================================
+
         messages.success(
             request,
-            f"Staff account '{user.username}' updated successfully."
+            f"Staff account '{user.username}' "
+            f"updated successfully."
         )
+
+
+        # ==================================================
+        # REDIRECT
+        # ==================================================
 
         return redirect("staff_list")
 
 
-    # ==========================================
+    # ======================================================
     # DISPLAY FORM
-    # ==========================================
+    # ======================================================
 
     return render(
         request,
@@ -595,6 +1020,8 @@ def edit_user(request, user_id):
         {
             "is_edit": True,
             "user": user,
+            "profile": profile,
+            "roles": UserProfile.ROLE_CHOICES,
         }
     )
 
@@ -649,18 +1076,507 @@ def delete_user(request, user_id):
     )
 
 
+#Salesperson
+# ==========================================================
+# SALESPERSON LIST
+# ==========================================================
+
+@login_required
+@user_passes_test(is_superuser)
+def salesperson_list(request):
+
+    salespersons = (
+        Salesperson.objects
+        .all()
+        .order_by("last_name", "first_name")
+    )
+
+    # =========================================================
+    # SEARCH
+    # =========================================================
+
+    search = request.GET.get("search", "").strip()
+
+    if search:
+        salespersons = salespersons.filter(
+            Q(last_name__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(middle_name__icontains=search) |
+            Q(employee_id__icontains=search) |
+            Q(contact_number__icontains=search) |
+            Q(email_address__icontains=search)
+        )
+
+    # =========================================================
+    # STATUS FILTER
+    # =========================================================
+
+    status = request.GET.get("status", "all")
+
+    if status == "active":
+        salespersons = salespersons.filter(is_active=True)
+
+    elif status == "inactive":
+        salespersons = salespersons.filter(is_active=False)
+
+    # =========================================================
+    # PAGINATION
+    # =========================================================
+
+    paginator = Paginator(salespersons, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+
+    # =========================================================
+    # RENDER
+    # =========================================================
+
+    return render(
+        request,
+        "users/salesperson_list.html",
+        {
+            "salespersons": page_obj,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "search": search,
+            "status": status,
+        }
+    )
+# ==========================================================
+# ADD SALESPERSON
+# ==========================================================
+
+@login_required
+@user_passes_test(is_superuser)
+def add_salesperson(request):
+
+    if request.method == "POST":
+
+        # ==================================================
+        # GET FORM DATA
+        # ==================================================
+
+        employee_id = request.POST.get(
+            "employee_id",
+            ""
+        ).strip()
+
+        last_name = request.POST.get(
+            "last_name",
+            ""
+        ).strip()
+
+        first_name = request.POST.get(
+            "first_name",
+            ""
+        ).strip()
+
+        middle_name = request.POST.get(
+            "middle_name",
+            ""
+        ).strip()
+
+        contact_number = request.POST.get(
+            "contact_number",
+            ""
+        ).strip()
+
+        email_address = request.POST.get(
+            "email_address",
+            ""
+        ).strip()
+
+        is_active = (
+            request.POST.get("is_active") == "on"
+        )
+
+
+        # ==================================================
+        # VALIDATE LAST NAME
+        # ==================================================
+
+        if not last_name:
+
+            return render(
+                request,
+                "users/salesperson_form.html",
+                {
+                    "is_edit": False,
+                    "salesperson": None,
+                    "error": "Last name is required."
+                }
+            )
+
+
+        # ==================================================
+        # VALIDATE FIRST NAME
+        # ==================================================
+
+        if not first_name:
+
+            return render(
+                request,
+                "users/salesperson_form.html",
+                {
+                    "is_edit": False,
+                    "salesperson": None,
+                    "error": "First name is required."
+                }
+            )
+
+
+        # ==================================================
+        # CHECK EMPLOYEE ID
+        # ==================================================
+
+        if employee_id:
+
+            if Salesperson.objects.filter(
+                employee_id=employee_id
+            ).exists():
+
+                return render(
+                    request,
+                    "users/salesperson_form.html",
+                    {
+                        "is_edit": False,
+                        "salesperson": None,
+                        "error": "Employee ID already exists."
+                    }
+                )
+
+
+        # ==================================================
+        # VALIDATE EMAIL
+        # ==================================================
+
+        if email_address:
+
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+
+            try:
+
+                validate_email(email_address)
+
+            except ValidationError:
+
+                return render(
+                    request,
+                    "users/salesperson_form.html",
+                    {
+                        "is_edit": False,
+                        "salesperson": None,
+                        "error": "Please enter a valid email address."
+                    }
+                )
+
+
+        # ==================================================
+        # CREATE SALESPERSON
+        # ==================================================
+
+        salesperson = Salesperson.objects.create(
+
+            employee_id=employee_id or None,
+
+            last_name=last_name,
+
+            first_name=first_name,
+
+            middle_name=middle_name or None,
+
+            contact_number=contact_number or None,
+
+            email_address=email_address or None,
+
+            is_active=is_active
+        )
+
+
+        # ==================================================
+        # SUCCESS
+        # ==================================================
+
+        return redirect(
+            "salesperson-list"
+        )
+
+
+    # ======================================================
+    # GET REQUEST
+    # ======================================================
+
+    return render(
+        request,
+        "users/salesperson_form.html",
+        {
+            "is_edit": False,
+            "salesperson": None,
+            "error": None
+        }
+    )
+
+# ==========================================================
+# EDIT SALESPERSON
+# ==========================================================
+
+@login_required
+@user_passes_test(is_superuser)
+def edit_salesperson(request, salesperson_id):
+
+    salesperson = get_object_or_404(
+        Salesperson,
+        id=salesperson_id
+    )
+
+
+    # ======================================================
+    # POST
+    # ======================================================
+
+    if request.method == "POST":
+
+        # ==================================================
+        # GET FORM DATA
+        # ==================================================
+
+        employee_id = request.POST.get(
+            "employee_id",
+            ""
+        ).strip()
+
+        last_name = request.POST.get(
+            "last_name",
+            ""
+        ).strip()
+
+        first_name = request.POST.get(
+            "first_name",
+            ""
+        ).strip()
+
+        middle_name = request.POST.get(
+            "middle_name",
+            ""
+        ).strip()
+
+        contact_number = request.POST.get(
+            "contact_number",
+            ""
+        ).strip()
+
+        email_address = request.POST.get(
+            "email_address",
+            ""
+        ).strip()
+
+        is_active = (
+            request.POST.get("is_active") == "on"
+        )
+
+
+        # ==================================================
+        # VALIDATE LAST NAME
+        # ==================================================
+
+        if not last_name:
+
+            return render(
+                request,
+                "users/salesperson_form.html",
+                {
+                    "is_edit": True,
+                    "salesperson": salesperson,
+                    "error": "Last name is required."
+                }
+            )
+
+
+        # ==================================================
+        # VALIDATE FIRST NAME
+        # ==================================================
+
+        if not first_name:
+
+            return render(
+                request,
+                "users/salesperson_form.html",
+                {
+                    "is_edit": True,
+                    "salesperson": salesperson,
+                    "error": "First name is required."
+                }
+            )
+
+
+        # ==================================================
+        # CHECK EMPLOYEE ID
+        # ==================================================
+
+        if employee_id:
+
+            employee_exists = (
+                Salesperson.objects
+                .filter(
+                    employee_id=employee_id
+                )
+                .exclude(
+                    id=salesperson.id
+                )
+                .exists()
+            )
+
+            if employee_exists:
+
+                return render(
+                    request,
+                    "users/salesperson_form.html",
+                    {
+                        "is_edit": True,
+                        "salesperson": salesperson,
+                        "error": "Employee ID already exists."
+                    }
+                )
+
+
+        # ==================================================
+        # VALIDATE EMAIL
+        # ==================================================
+
+        if email_address:
+
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+
+            try:
+
+                validate_email(email_address)
+
+            except ValidationError:
+
+                return render(
+                    request,
+                    "users/salesperson_form.html",
+                    {
+                        "is_edit": True,
+                        "salesperson": salesperson,
+                        "error": "Please enter a valid email address."
+                    }
+                )
+
+
+        # ==================================================
+        # UPDATE SALESPERSON
+        # ==================================================
+
+        salesperson.employee_id = (
+            employee_id or None
+        )
+
+        salesperson.last_name = (
+            last_name
+        )
+
+        salesperson.first_name = (
+            first_name
+        )
+
+        salesperson.middle_name = (
+            middle_name or None
+        )
+
+        salesperson.contact_number = (
+            contact_number or None
+        )
+
+        salesperson.email_address = (
+            email_address or None
+        )
+
+        salesperson.is_active = (
+            is_active
+        )
+
+        salesperson.save()
+
+
+        # ==================================================
+        # SUCCESS
+        # ==================================================
+
+        return redirect(
+            "salesperson-list"
+        )
+
+
+    # ======================================================
+    # GET REQUEST
+    # ======================================================
+
+    return render(
+        request,
+        "users/salesperson_form.html",
+        {
+            "is_edit": True,
+            "salesperson": salesperson,
+            "error": None
+        }
+    )
+
+
+# ==========================================================
+# DELETE SALESPERSON
+# ==========================================================
+
+@login_required
+@user_passes_test(is_superuser)
+def delete_salesperson(request, salesperson_id):
+
+    salesperson = get_object_or_404(
+        Salesperson,
+        id=salesperson_id
+    )
+
+    if request.method == "POST":
+
+        salesperson.delete()
+
+        return redirect(
+            "salesperson-list"
+        )
+
+    return redirect(
+        "salesperson-list"
+    )
+
+
 #Products
 @login_required
 @user_passes_test(is_superuser)
 def product_list(request):
 
-    products = Product.objects.all()
+    products = Product.objects.all().order_by("-id")
+
+    # -----------------------------------------------------
+    # PAGINATION
+    # -----------------------------------------------------
+
+    paginator = Paginator(products, 10)  # 10 products per page
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "products/product_list.html",
         {
-            "products": products
+            "products": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
         }
     )
 
@@ -1735,21 +2651,17 @@ def admin_pos(request):
 
     # =========================================================
     # ALL TODAY'S SALES
-    #
-    # We intentionally do NOT use:
-    #
-    #     values("salesman")
-    #     salesman__id
-    #     salesman__username
-    #
-    # because your salesman field does not allow that ORM join.
-    #
     # =========================================================
 
     all_today_sales = list(
         Sale.objects
         .filter(
             created_at__date=today
+        )
+        .select_related(
+            "salesperson",
+            "staff",
+            "discount_class",
         )
         .prefetch_related(
             "items__product"
@@ -1761,66 +2673,99 @@ def admin_pos(request):
 
 
     # =========================================================
-    # HELPER: GET SALESMAN NAME
+    # HELPER: GET SALESPERSON NAME
     # =========================================================
 
-    def get_salesman_name(sale):
+    def get_salesperson_name(sale):
 
         try:
-            salesman = sale.salesman
+
+            salesperson = sale.salesperson
+
         except Exception:
-            salesman = None
+
+            salesperson = None
 
 
-        if salesman is None:
-
-            return "No Salesman"
-
-
-        # -----------------------------------------------------
-        # If salesman is a User-like object
-        # -----------------------------------------------------
-
-        if hasattr(
-            salesman,
-            "get_full_name"
-        ):
+        if salesperson:
 
             try:
 
-                full_name = salesman.get_full_name().strip()
+                full_name = salesperson.full_name
+
+                if full_name:
+
+                    return full_name.strip()
 
             except Exception:
 
-                full_name = ""
+                pass
 
 
-            if full_name:
+            # -------------------------------------------------
+            # Fallback to first + middle + last
+            # -------------------------------------------------
 
-                return full_name
+            try:
 
+                parts = [
+                    salesperson.first_name,
+                    salesperson.middle_name,
+                    salesperson.last_name,
+                ]
 
-            if hasattr(
-                salesman,
-                "username"
-            ):
-
-                username = str(
-                    salesman.username
+                full_name = " ".join(
+                    str(part).strip()
+                    for part in parts
+                    if part
                 ).strip()
 
-                if username:
+                if full_name:
 
-                    return username
+                    return full_name
+
+            except Exception:
+
+                pass
 
 
-        # -----------------------------------------------------
-        # Otherwise use the value directly
-        # -----------------------------------------------------
+            # -------------------------------------------------
+            # Fallback to employee ID
+            # -------------------------------------------------
 
-        return str(
-            salesman
-        ).strip() or "No Salesman"
+            try:
+
+                if salesperson.employee_id:
+
+                    return str(
+                        salesperson.employee_id
+                    ).strip()
+
+            except Exception:
+
+                pass
+
+
+            # -------------------------------------------------
+            # Final salesperson fallback
+            # -------------------------------------------------
+
+            try:
+
+                text = str(
+                    salesperson
+                ).strip()
+
+                if text:
+
+                    return text
+
+            except Exception:
+
+                pass
+
+
+        return "No Salesperson"
 
 
     # =========================================================
@@ -1828,6 +2773,34 @@ def admin_pos(request):
     # =========================================================
 
     def get_payment_status(sale):
+
+        # -----------------------------------------------------
+        # Use the actual payment_status field first
+        # -----------------------------------------------------
+
+        try:
+
+            status = (
+                sale.payment_status or ""
+            ).strip().upper()
+
+        except Exception:
+
+            status = ""
+
+
+        if status in [
+            "PAID",
+            "UNPAID",
+            "PARTIAL",
+        ]:
+
+            return status
+
+
+        # -----------------------------------------------------
+        # Fallback calculation
+        # -----------------------------------------------------
 
         try:
 
@@ -1852,7 +2825,7 @@ def admin_pos(request):
 
 
     # =========================================================
-    # HELPER: GET SALE BALANCE
+    # HELPER: GET BALANCE
     # =========================================================
 
     def get_balance(sale):
@@ -1862,10 +2835,13 @@ def admin_pos(request):
             total = sale.total or 0
             payment = sale.payment or 0
 
-            return max(
-                total - payment,
-                0
-            )
+            balance = total - payment
+
+            if balance < 0:
+
+                return 0
+
+            return balance
 
         except Exception:
 
@@ -1873,29 +2849,31 @@ def admin_pos(request):
 
 
     # =========================================================
-    # ADD DISPLAY INFORMATION TO SALES
+    # ADD DISPLAY INFORMATION
     # =========================================================
 
     for sale in all_today_sales:
 
-        sale.display_salesman = get_salesman_name(
-            sale
+        sale.display_salesman = (
+            get_salesperson_name(sale)
         )
 
-        sale.display_payment_status = get_payment_status(
-            sale
+        # Keep compatibility with template names
+        sale.display_salesperson = (
+            sale.display_salesman
         )
 
-        sale.display_balance = get_balance(
-            sale
+        sale.display_payment_status = (
+            get_payment_status(sale)
+        )
+
+        sale.display_balance = (
+            get_balance(sale)
         )
 
 
     # =========================================================
     # SUMMARY
-    #
-    # These are based on ALL sales today,
-    # not filtered sales.
     # =========================================================
 
     total_sales = sum(
@@ -1910,6 +2888,7 @@ def admin_pos(request):
 
 
     total_items = 0
+
 
     for sale in all_today_sales:
 
@@ -1955,7 +2934,7 @@ def admin_pos(request):
 
 
     # =========================================================
-    # TOTAL AMOUNT STILL DUE
+    # TOTAL AMOUNT DUE
     # =========================================================
 
     total_due = sum(
@@ -1990,14 +2969,15 @@ def admin_pos(request):
 
 
     # =========================================================
-    # SALESMAN OPTIONS
+    # SALESPERSON OPTIONS
     # =========================================================
 
-    salesman_options = sorted(
+    salesperson_options = sorted(
         {
-            sale.display_salesman
+            sale.display_salesperson
             for sale in all_today_sales
-            if sale.display_salesman
+            if sale.display_salesperson
+            and sale.display_salesperson != "No Salesperson"
         },
         key=lambda name: name.lower()
     )
@@ -2013,10 +2993,23 @@ def admin_pos(request):
     ).strip()
 
 
-    salesman_filter = request.GET.get(
-        "salesman",
+    salesperson_filter = request.GET.get(
+        "salesperson",
         ""
     ).strip()
+
+
+    # ---------------------------------------------------------
+    # Backwards compatibility if old template still sends
+    # "salesman"
+    # ---------------------------------------------------------
+
+    if not salesperson_filter:
+
+        salesperson_filter = request.GET.get(
+            "salesman",
+            ""
+        ).strip()
 
 
     payment_filter = request.GET.get(
@@ -2027,9 +3020,6 @@ def admin_pos(request):
 
     # =========================================================
     # FILTER SALES
-    #
-    # Filtering is done in Python so it works regardless of
-    # whether salesman is a CharField, FK, property, etc.
     # =========================================================
 
     filtered_sales = []
@@ -2051,29 +3041,48 @@ def admin_pos(request):
             ).lower()
 
 
-            salesman_text = (
-                sale.display_salesman or ""
+            salesperson_text = (
+                sale.display_salesperson or ""
             ).lower()
+
+
+            staff_text = ""
+
+            try:
+
+                if sale.staff:
+
+                    staff_text = (
+                        sale.staff.get_full_name()
+                        or sale.staff.username
+                        or ""
+                    ).lower()
+
+            except Exception:
+
+                pass
 
 
             if (
                 search_lower not in sale_id_text
                 and
-                search_lower not in salesman_text
+                search_lower not in salesperson_text
+                and
+                search_lower not in staff_text
             ):
 
                 continue
 
 
         # -----------------------------------------------------
-        # SALESMAN FILTER
+        # SALESPERSON FILTER
         # -----------------------------------------------------
 
-        if salesman_filter:
+        if salesperson_filter:
 
             if (
-                sale.display_salesman
-                != salesman_filter
+                sale.display_salesperson
+                != salesperson_filter
             ):
 
                 continue
@@ -2120,25 +3129,30 @@ def admin_pos(request):
 
 
     # =========================================================
-    # SALESMAN PERFORMANCE
+    # SALESPERSON PERFORMANCE
     # =========================================================
 
-    salesman_data = {}
+    salesperson_data = {}
 
 
     for sale in all_today_sales:
 
-        salesman_name = (
-            sale.display_salesman
+        salesperson_name = (
+            sale.display_salesperson
         )
 
 
-        if salesman_name not in salesman_data:
+        if salesperson_name not in salesperson_data:
 
-            salesman_data[salesman_name] = {
+            salesperson_data[
+                salesperson_name
+            ] = {
 
                 "salesman":
-                    salesman_name,
+                    salesperson_name,
+
+                "salesperson":
+                    salesperson_name,
 
                 "transactions":
                     0,
@@ -2156,46 +3170,46 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Transactions
+        # TRANSACTIONS
         # -----------------------------------------------------
 
-        salesman_data[
-            salesman_name
+        salesperson_data[
+            salesperson_name
         ]["transactions"] += 1
 
 
         # -----------------------------------------------------
-        # Sales
+        # TOTAL SALES
         # -----------------------------------------------------
 
-        salesman_data[
-            salesman_name
+        salesperson_data[
+            salesperson_name
         ]["total_sales"] += (
             sale.total or 0
         )
 
 
         # -----------------------------------------------------
-        # Payment
+        # TOTAL PAYMENT
         # -----------------------------------------------------
 
-        salesman_data[
-            salesman_name
+        salesperson_data[
+            salesperson_name
         ]["total_paid"] += (
             sale.payment or 0
         )
 
 
         # -----------------------------------------------------
-        # Items
+        # ITEMS SOLD
         # -----------------------------------------------------
 
         try:
 
             for item in sale.items.all():
 
-                salesman_data[
-                    salesman_name
+                salesperson_data[
+                    salesperson_name
                 ]["items_sold"] += (
                     item.quantity or 0
                 )
@@ -2206,11 +3220,11 @@ def admin_pos(request):
 
 
     # =========================================================
-    # SALESMAN LIST
+    # SALESPERSON LIST
     # =========================================================
 
     salesman_sales = list(
-        salesman_data.values()
+        salesperson_data.values()
     )
 
 
@@ -2277,7 +3291,7 @@ def admin_pos(request):
     context = {
 
         # -----------------------------------------------------
-        # Date
+        # DATE
         # -----------------------------------------------------
 
         "today":
@@ -2285,7 +3299,7 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Summary
+        # SUMMARY
         # -----------------------------------------------------
 
         "total_sales":
@@ -2311,7 +3325,7 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Payment status
+        # PAYMENT STATUS
         # -----------------------------------------------------
 
         "paid_transactions":
@@ -2325,7 +3339,7 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Sales
+        # SALES
         # -----------------------------------------------------
 
         "recent_sales":
@@ -2339,18 +3353,24 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Salesman
+        # SALESPERSON
         # -----------------------------------------------------
 
         "salesman_sales":
             salesman_sales,
 
+        "salesperson_sales":
+            salesman_sales,
+
         "salesman_options":
-            salesman_options,
+            salesperson_options,
+
+        "salesperson_options":
+            salesperson_options,
 
 
         # -----------------------------------------------------
-        # Unpaid
+        # UNPAID
         # -----------------------------------------------------
 
         "unpaid_sales":
@@ -2367,20 +3387,27 @@ def admin_pos(request):
 
 
         # -----------------------------------------------------
-        # Filters
+        # FILTERS
         # -----------------------------------------------------
 
         "search":
             search,
 
         "salesman_filter":
-            salesman_filter,
+            salesperson_filter,
+
+        "salesperson_filter":
+            salesperson_filter,
 
         "payment_filter":
             payment_filter,
 
     }
 
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,

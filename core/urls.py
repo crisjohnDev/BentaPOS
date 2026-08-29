@@ -16,31 +16,13 @@ urlpatterns = [
     path("inventory/stock-in/", views.stock_in, name="stock-in"),
     path("inventory/history/", views.inventory_history, name="inventory-history"),
     path("inventory/<int:product_id>/history/", views.product_inventory_history, name="product-inventory-history"),
-    path(
-        "pos/",
-        views.admin_pos,
-        name="admin-pos"
-    ),
-
-    path(
-        "pos/<int:sale_id>/",
-        views.admin_pos_detail,
-        name="admin-pos-detail"
-    ),
-    path(
-        "sales/",
-        views.sales,
-        name="sales"
-    ),
-
-    path(
-        "sales/<int:sale_id>/",
-        views.sale_detail,
-        name="sale-detail"
-    ),
-    path(
-        "reports/",
-        views.reports,
-        name="reports"
-    ),
+    path("pos/", views.admin_pos, name="admin-pos"),
+    path("pos/<int:sale_id>/", views.admin_pos_detail, name="admin-pos-detail"),
+    path("sales/", views.sales, name="sales"),
+    path("sales/<int:sale_id>/", views.sale_detail, name="sale-detail"),
+    path("reports/", views.reports, name="reports"),
+    path("salespersons/", views.salesperson_list, name="salesperson-list"),
+    path("salespersons/add/", views.add_salesperson, name="add-salesperson"),
+    path("salespersons/<int:salesperson_id>/edit/", views.edit_salesperson, name="edit-salesperson"),
+    path("salespersons/delete/<int:salesperson_id>/", views.delete_salesperson, name="delete-salesperson"),
 ]

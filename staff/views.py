@@ -15,6 +15,7 @@ from core.models import (
     DiscountClass,
     Sale,
     SaleItem,
+    Salesperson
 )
 
 
@@ -58,9 +59,9 @@ def money(value):
 @user_passes_test(is_staff)
 def staff_dashboard(request):
 
-    # -----------------------------------------------------
+    # =========================================================
     # ENSURE DISCOUNT CLASSES EXIST
-    # -----------------------------------------------------
+    # =========================================================
 
     DiscountClass.objects.update_or_create(
         code="A",
@@ -89,23 +90,26 @@ def staff_dashboard(request):
         }
     )
 
-    # -----------------------------------------------------
+    # =========================================================
     # PRODUCTS
-    # -----------------------------------------------------
+    # =========================================================
 
     search = request.GET.get(
         "search",
         ""
     ).strip()
 
-    products = Product.objects.filter(
-        qty__gt=0
-    ).order_by(
-        "product_model"
+    products = (
+        Product.objects
+        .filter(
+            qty__gt=0
+        )
+        .order_by(
+            "product_model"
+        )
     )
 
     if search:
-
         products = products.filter(
             Q(product_model__icontains=search)
             |
@@ -114,13 +118,40 @@ def staff_dashboard(request):
             Q(category__icontains=search)
         )
 
-    # -----------------------------------------------------
-    # DISCOUNTS
-    # -----------------------------------------------------
+    # =========================================================
+    # DISCOUNT CLASSES
+    # =========================================================
 
-    discount_classes = DiscountClass.objects.all().order_by(
-        "code"
+    discount_classes = (
+        DiscountClass.objects
+        .all()
+        .order_by("code")
     )
+
+    # =========================================================
+    # SALESPERSONS
+    # =========================================================
+    #
+    # Use the dedicated Salesperson model instead of Django User.
+    #
+    # Only active salespersons are shown.
+    #
+
+    salespersons = (
+        Salesperson.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "first_name",
+            "last_name",
+            "employee_id"
+        )
+    )
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,
@@ -128,10 +159,15 @@ def staff_dashboard(request):
         {
             "products": products,
             "discount_classes": discount_classes,
+            "salespersons": salespersons,
             "search": search,
         }
     )
 
+
+# =========================================================
+# COMPLETE SALE
+# =========================================================
 
 # =========================================================
 # COMPLETE SALE
@@ -153,28 +189,22 @@ def complete_sale(request):
 
     try:
 
-        # =================================================
+        # =========================================================
         # BASIC INFORMATION
-        # =================================================
+        # =========================================================
 
-        salesman = (
-            request.POST.get(
-                "salesman_name",
-                ""
-            ).strip()
-        )
+        salesperson_id = request.POST.get(
+            "salesperson_id",
+            ""
+        ).strip()
 
-        payment_status_raw = (
-            request.POST.get(
-                "payment_status",
-                "paid"
-            ).strip().lower()
-        )
+        payment_status_raw = request.POST.get(
+            "payment_status",
+            "paid"
+        ).strip().lower()
 
-        discount_class_id = (
-            request.POST.get(
-                "discount_class"
-            )
+        discount_class_id = request.POST.get(
+            "discount_class"
         )
 
         discount_percent = decimal_value(
@@ -191,7 +221,11 @@ def complete_sale(request):
             )
         )
 
-    except ValueError as error:
+    except (
+        ValueError,
+        TypeError,
+        InvalidOperation
+    ) as error:
 
         return JsonResponse(
             {
@@ -202,15 +236,36 @@ def complete_sale(request):
         )
 
     # =========================================================
-    # SALESMAN
+    # SALESPERSON
     # =========================================================
 
-    if not salesman:
+    if not salesperson_id:
 
         return JsonResponse(
             {
                 "success": False,
-                "message": "Please enter the salesperson name."
+                "message": "Please select a salesperson."
+            },
+            status=400
+        )
+
+    try:
+
+        salesperson = Salesperson.objects.get(
+            id=int(salesperson_id),
+            is_active=True
+        )
+
+    except (
+        Salesperson.DoesNotExist,
+        ValueError,
+        TypeError
+    ):
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Selected salesperson does not exist."
             },
             status=400
         )
@@ -337,8 +392,12 @@ def complete_sale(request):
             "0"
         )
 
-        if not product_id:
+        item_discount_cluster = request.POST.get(
+            f"items[{index}][discount_cluster]",
+            "A"
+        ).strip().upper()
 
+        if not product_id:
             break
 
         try:
@@ -351,7 +410,11 @@ def complete_sale(request):
                 item_discount_raw
             )
 
-        except (ValueError, TypeError, InvalidOperation):
+        except (
+            ValueError,
+            TypeError,
+            InvalidOperation
+        ):
 
             return JsonResponse(
                 {
@@ -361,34 +424,109 @@ def complete_sale(request):
                 status=400
             )
 
+        # =====================================================
+        # QUANTITY
+        # =====================================================
+
         if quantity <= 0:
 
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Quantity must be greater than zero."
-                },
-                status=400
-            )
-
-        if item_discount < 0 or item_discount > 100:
-
-            return JsonResponse(
-                {
-                    "success": False,
                     "message": (
-                        "Item discount must be between "
-                        "0% and 100%."
+                        "Quantity must be greater than zero."
                     )
                 },
                 status=400
             )
 
+        # =====================================================
+        # DISCOUNT CLUSTER
+        # =====================================================
+
+        if item_discount_cluster not in [
+            "A",
+            "B",
+            "C"
+        ]:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Invalid item discount cluster."
+                    )
+                },
+                status=400
+            )
+
+        # =====================================================
+        # VALIDATE ITEM DISCOUNT
+        # =====================================================
+
+        if item_discount < 0:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Item discount cannot be negative."
+                    )
+                },
+                status=400
+            )
+
+        # Cluster A
+        if item_discount_cluster == "A":
+
+            item_discount = Decimal("0.00")
+
+        # Cluster B
+        elif item_discount_cluster == "B":
+
+            if item_discount > Decimal("10.00"):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Cluster B allows a maximum "
+                            "of 10% discount."
+                        )
+                    },
+                    status=400
+                )
+
+        # Cluster C
+        elif item_discount_cluster == "C":
+
+            if item_discount > Decimal("100.00"):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Cluster C allows a maximum "
+                            "of 100% discount."
+                        )
+                    },
+                    status=400
+                )
+
+        # =====================================================
+        # PRODUCT ID
+        # =====================================================
+
         try:
 
-            product_id = int(product_id)
+            product_id = int(
+                product_id
+            )
 
-        except (ValueError, TypeError):
+        except (
+            ValueError,
+            TypeError
+        ):
 
             return JsonResponse(
                 {
@@ -403,6 +541,7 @@ def complete_sale(request):
                 "product_id": product_id,
                 "quantity": quantity,
                 "item_discount": item_discount,
+                "discount_cluster": item_discount_cluster,
             }
         )
 
@@ -430,9 +569,9 @@ def complete_sale(request):
 
         with transaction.atomic():
 
-            # -------------------------------------------------
+            # =================================================
             # LOCK PRODUCTS
-            # -------------------------------------------------
+            # =================================================
 
             locked_items = []
 
@@ -463,12 +602,15 @@ def complete_sale(request):
                         "item_discount": (
                             cart_item["item_discount"]
                         ),
+                        "discount_cluster": (
+                            cart_item["discount_cluster"]
+                        ),
                     }
                 )
 
-            # -------------------------------------------------
-            # CALCULATE EVERYTHING SERVER SIDE
-            # -------------------------------------------------
+            # =================================================
+            # CALCULATE ITEMS
+            # =================================================
 
             sale_subtotal = Decimal("0.00")
 
@@ -484,6 +626,10 @@ def complete_sale(request):
 
                 item_discount_percent = (
                     item["item_discount"]
+                )
+
+                discount_cluster = (
+                    item["discount_cluster"]
                 )
 
                 gross_subtotal = money(
@@ -506,6 +652,10 @@ def complete_sale(request):
                     item_discount_amount
                 )
 
+                if item_total < 0:
+
+                    item_total = Decimal("0.00")
+
                 sale_subtotal += gross_subtotal
 
                 item_discount_total += (
@@ -525,6 +675,9 @@ def complete_sale(request):
                             item_discount_amount
                         ),
                         "total": item_total,
+                        "discount_cluster": (
+                            discount_cluster
+                        ),
                     }
                 )
 
@@ -536,17 +689,19 @@ def complete_sale(request):
                 item_discount_total
             )
 
-            # -------------------------------------------------
-            # CLASS DISCOUNT
-            #
-            # Applied AFTER item discounts.
-            # -------------------------------------------------
+            # =================================================
+            # AMOUNT AFTER ITEM DISCOUNT
+            # =================================================
 
             amount_after_item_discount = money(
                 sale_subtotal
                 -
                 item_discount_total
             )
+
+            # =================================================
+            # CLASS DISCOUNT
+            # =================================================
 
             class_discount_amount = money(
                 amount_after_item_discount
@@ -558,15 +713,23 @@ def complete_sale(request):
                 )
             )
 
+            # =================================================
+            # FINAL TOTAL
+            # =================================================
+
             final_total = money(
                 amount_after_item_discount
                 -
                 class_discount_amount
             )
 
-            # -------------------------------------------------
+            if final_total < 0:
+
+                final_total = Decimal("0.00")
+
+            # =================================================
             # PAYMENT
-            # -------------------------------------------------
+            # =================================================
 
             if payment_status == "PAID":
 
@@ -579,7 +742,8 @@ def complete_sale(request):
                 actual_payment = payment
 
                 actual_change = money(
-                    payment - final_total
+                    payment -
+                    final_total
                 )
 
             elif payment_status == "UNPAID":
@@ -590,23 +754,22 @@ def complete_sale(request):
 
             else:
 
-                # PARTIAL
                 if payment <= 0:
 
                     raise ValueError(
-                        "Partial payment must be greater than zero."
+                        "Partial payment must be "
+                        "greater than zero."
                     )
 
                 if payment >= final_total:
 
-                    # If they pay the full amount,
-                    # automatically make it PAID.
                     payment_status = "PAID"
 
                     actual_payment = payment
 
                     actual_change = money(
-                        payment - final_total
+                        payment -
+                        final_total
                     )
 
                 else:
@@ -615,12 +778,9 @@ def complete_sale(request):
 
                     actual_change = Decimal("0.00")
 
-            # -------------------------------------------------
-            # TOTAL DISCOUNT STORED ON SALE
-            #
-            # This contains BOTH:
-            # item discounts + class discount.
-            # -------------------------------------------------
+            # =================================================
+            # TOTAL DISCOUNT
+            # =================================================
 
             total_discount_amount = money(
                 item_discount_total
@@ -628,15 +788,27 @@ def complete_sale(request):
                 class_discount_amount
             )
 
-            # -------------------------------------------------
+            # =================================================
             # CREATE SALE
-            # -------------------------------------------------
+            # =================================================
+            #
+            # IMPORTANT:
+            #
+            # Do NOT use:
+            #
+            # salesman=
+            # salesman_name=
+            #
+            # The salesperson is stored as a Salesperson
+            # relationship.
+            #
+            # =================================================
 
             sale = Sale.objects.create(
 
                 staff=request.user,
 
-                salesman=salesman,
+                salesperson=salesperson,
 
                 discount_class=discount_class,
 
@@ -644,7 +816,9 @@ def complete_sale(request):
 
                 discount_percent=discount_percent,
 
-                discount_amount=total_discount_amount,
+                discount_amount=(
+                    total_discount_amount
+                ),
 
                 total=final_total,
 
@@ -655,19 +829,15 @@ def complete_sale(request):
                 change=actual_change,
             )
 
-            # -------------------------------------------------
+            # =================================================
             # CREATE SALE ITEMS
-            # -------------------------------------------------
+            # =================================================
 
             for item in calculated_items:
 
                 product = item["product"]
 
                 quantity = item["quantity"]
-
-                # ---------------------------------------------
-                # SALE ITEM
-                # ---------------------------------------------
 
                 SaleItem.objects.create(
 
@@ -692,9 +862,9 @@ def complete_sale(request):
                     total=item["total"],
                 )
 
-                # ---------------------------------------------
+                # =================================================
                 # STOCK
-                # ---------------------------------------------
+                # =================================================
 
                 previous_qty = product.qty
 
@@ -710,9 +880,9 @@ def complete_sale(request):
                     ]
                 )
 
-                # ---------------------------------------------
+                # =================================================
                 # INVENTORY TRANSACTION
-                # ---------------------------------------------
+                # =================================================
 
                 InventoryTransaction.objects.create(
 
@@ -736,15 +906,43 @@ def complete_sale(request):
                     created_by=request.user,
                 )
 
+    # =========================================================
+    # PRODUCT DOES NOT EXIST
+    # =========================================================
+
     except Product.DoesNotExist:
 
         return JsonResponse(
             {
                 "success": False,
-                "message": "One of the selected products no longer exists."
+                "message": (
+                    "One of the selected products "
+                    "no longer exists."
+                )
             },
             status=400
         )
+
+    # =========================================================
+    # SALESPERSON DOES NOT EXIST
+    # =========================================================
+
+    except Salesperson.DoesNotExist:
+
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "The selected salesperson "
+                    "no longer exists."
+                )
+            },
+            status=400
+        )
+
+    # =========================================================
+    # VALIDATION ERROR
+    # =========================================================
 
     except ValueError as error:
 
@@ -755,6 +953,10 @@ def complete_sale(request):
             },
             status=400
         )
+
+    # =========================================================
+    # DATABASE / OTHER ERROR
+    # =========================================================
 
     except Exception as error:
 
@@ -782,17 +984,33 @@ def complete_sale(request):
 
         receipt_items.append(
             {
-                "name": item.product.product_model,
-                "quantity": item.quantity,
-                "price": f"{item.price:.2f}",
-                "subtotal": f"{item.subtotal:.2f}",
+                "name": (
+                    item.product.product_model
+                ),
+
+                "quantity": (
+                    item.quantity
+                ),
+
+                "price": (
+                    f"{item.price:.2f}"
+                ),
+
+                "subtotal": (
+                    f"{item.subtotal:.2f}"
+                ),
+
                 "discount_percent": (
                     f"{item.discount_percent:.2f}"
                 ),
+
                 "discount_amount": (
                     f"{item.discount_amount:.2f}"
                 ),
-                "total": f"{item.total:.2f}",
+
+                "total": (
+                    f"{item.total:.2f}"
+                ),
             }
         )
 
@@ -815,9 +1033,26 @@ def complete_sale(request):
                 or request.user.username
             ),
 
-            "salesman": sale.salesman or "",
+            "salesperson": (
+                salesperson.full_name
+            ),
 
-            "payment_status": sale.payment_status,
+            "salesman": (
+                salesperson.full_name
+            ),
+
+            "salesperson_id": (
+                salesperson.id
+            ),
+
+            "employee_id": (
+                salesperson.employee_id
+                or ""
+            ),
+
+            "payment_status": (
+                sale.payment_status
+            ),
 
             "discount_class": (
                 discount_class.name
@@ -918,12 +1153,6 @@ def transaction_history(request):
 
     # =========================================================
     # SEARCH
-    #
-    # Search:
-    # - Sale ID
-    # - Salesperson
-    # - Product
-    # - Staff username
     # =========================================================
 
     search = request.GET.get(
@@ -961,6 +1190,10 @@ def transaction_history(request):
                 Q(
                     items__product__product_model__icontains=search
                 )
+                |
+                Q(
+                    items__product__description__icontains=search
+                )
             ).distinct()
 
     # =========================================================
@@ -980,10 +1213,6 @@ def transaction_history(request):
 
     # =========================================================
     # PAYMENT STATUS FILTER
-    #
-    # PAID
-    # UNPAID
-    # PARTIAL
     # =========================================================
 
     selected_status = request.GET.get(
@@ -1026,10 +1255,11 @@ def transaction_history(request):
 
     for sale in sales:
 
-        total_items += sum(
-            item.quantity
-            for item in sale.items.all()
-        )
+        for item in sale.items.all():
+
+            total_items += (
+                item.quantity or 0
+            )
 
     # =========================================================
     # TODAY'S TRANSACTIONS

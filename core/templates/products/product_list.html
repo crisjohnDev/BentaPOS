@@ -12,17 +12,22 @@ Product Management
 Manage products, prices, categories, and inventory
 {% endblock %}
 
-
 {% block extra_css %}
 
 <style>
+
+    /* =========================================================
+       PRODUCT PAGE
+    ========================================================= */
 
     .product-page {
         width: 100%;
     }
 
 
-    /* HEADER */
+    /* =========================================================
+       HEADER
+    ========================================================= */
 
     .page-header-actions {
 
@@ -36,6 +41,21 @@ Manage products, prices, categories, and inventory
 
     }
 
+
+    .header-buttons {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+    }
+
+
+    /* =========================================================
+       PRIMARY BUTTON
+    ========================================================= */
 
     .btn-primary {
 
@@ -61,6 +81,12 @@ Manage products, prices, categories, and inventory
 
         text-decoration: none;
 
+        border: 1px solid #000;
+
+        transition:
+            background .18s ease,
+            transform .1s ease;
+
     }
 
 
@@ -69,6 +95,13 @@ Manage products, prices, categories, and inventory
         background: #222;
 
         color: #fff;
+
+    }
+
+
+    .btn-primary:active {
+
+        transform: scale(.98);
 
     }
 
@@ -82,7 +115,56 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* TABLE */
+    /* =========================================================
+       SECONDARY BUTTON
+    ========================================================= */
+
+    .btn-secondary {
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        padding: 10px 18px;
+
+        border: 1px solid #d1d1d1;
+
+        border-radius: 8px;
+
+        background: #fff;
+
+        color: #333;
+
+        font-size: 13px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+        transition:
+            background .18s ease,
+            color .18s ease,
+            border-color .18s ease;
+
+    }
+
+
+    .btn-secondary:hover {
+
+        background: #f5f5f5;
+
+        color: #000;
+
+        border-color: #c8c8c8;
+
+    }
+
+
+    /* =========================================================
+       TABLE CARD
+    ========================================================= */
 
     .table-card {
 
@@ -99,6 +181,19 @@ Manage products, prices, categories, and inventory
     }
 
 
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .table-wrapper {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+    }
+
+
     .data-table {
 
         width: 100%;
@@ -108,6 +203,8 @@ Manage products, prices, categories, and inventory
         text-align: left;
 
         font-size: 13px;
+
+        min-width: 850px;
 
     }
 
@@ -129,6 +226,8 @@ Manage products, prices, categories, and inventory
         letter-spacing: .8px;
 
         border-bottom: 1px solid #eaeaea;
+
+        white-space: nowrap;
 
     }
 
@@ -160,7 +259,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* PRODUCT */
+    /* =========================================================
+       PRODUCT
+    ========================================================= */
 
     .product-name {
 
@@ -188,7 +289,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* PRICE */
+    /* =========================================================
+       PRICE
+    ========================================================= */
 
     .price {
 
@@ -199,7 +302,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* QTY */
+    /* =========================================================
+       QUANTITY
+    ========================================================= */
 
     .qty {
 
@@ -208,7 +313,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* CATEGORY */
+    /* =========================================================
+       CATEGORY
+    ========================================================= */
 
     .badge {
 
@@ -231,7 +338,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* ACTIONS */
+    /* =========================================================
+       ACTIONS
+    ========================================================= */
 
     .table-actions {
 
@@ -275,7 +384,9 @@ Manage products, prices, categories, and inventory
     }
 
 
-    /* EMPTY */
+    /* =========================================================
+       EMPTY
+    ========================================================= */
 
     .empty-state {
 
@@ -283,12 +394,158 @@ Manage products, prices, categories, and inventory
 
         color: #888;
 
-        padding: 40px 20px !important;
+        padding: 50px 20px !important;
 
     }
 
 
-    /* MOBILE */
+    /* =========================================================
+       PAGINATION
+    ========================================================= */
+
+    .pagination-wrapper {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 15px;
+
+        padding: 16px 20px;
+
+        border-top: 1px solid #eee;
+
+        background: #fff;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .pagination-info {
+
+        color: #777;
+
+        font-size: 12px;
+
+    }
+
+
+    .pagination-info strong {
+
+        color: #333;
+
+        font-weight: 600;
+
+    }
+
+
+    /* =========================================================
+       PAGINATION BUTTONS
+    ========================================================= */
+
+    .pagination {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+    }
+
+
+    .page-link {
+
+        min-width: 34px;
+
+        height: 34px;
+
+        padding: 0 9px;
+
+        display: inline-flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border: 1px solid #dcdcdc;
+
+        border-radius: 7px;
+
+        background: #fff;
+
+        color: #444;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        text-decoration: none;
+
+        box-sizing: border-box;
+
+        transition:
+            background .18s ease,
+            border-color .18s ease,
+            color .18s ease;
+
+    }
+
+
+    .page-link:hover {
+
+        background: #f5f5f5;
+
+        border-color: #cfcfcf;
+
+        color: #111;
+
+    }
+
+
+    .page-link.active {
+
+        background: #000;
+
+        border-color: #000;
+
+        color: #fff;
+
+    }
+
+
+    .page-link.disabled {
+
+        color: #aaa;
+
+        background: #fafafa;
+
+        border-color: #e5e5e5;
+
+        pointer-events: none;
+
+    }
+
+
+    .page-dots {
+
+        min-width: 28px;
+
+        text-align: center;
+
+        color: #999;
+
+        font-size: 12px;
+
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
 
     @media (max-width: 900px) {
 
@@ -319,122 +576,133 @@ Manage products, prices, categories, and inventory
 
         }
 
-        .btn-primary {
+
+        .header-buttons {
+
+            width: 100%;
+
+            flex-direction: column;
+
+        }
+
+
+        .btn-primary,
+        .btn-secondary {
 
             width: 100%;
 
         }
 
+
+        .pagination-wrapper {
+
+            flex-direction: column;
+
+            align-items: center;
+
+        }
+
+
+        .pagination-info {
+
+            text-align: center;
+
+        }
+
+
+        .pagination {
+
+            justify-content: center;
+
+            flex-wrap: wrap;
+
+        }
+
     }
-
-    .btn-secondary {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    padding: 10px 18px;
-
-    border: 1px solid #d1d1d1;
-
-    border-radius: 8px;
-
-    background: #fff;
-
-    color: #333;
-
-    font-size: 13px;
-
-    font-weight: 600;
-
-    text-decoration: none;
-
-}
-
-.btn-secondary:hover {
-
-    background: #f5f5f5;
-
-    color: #000;
-
-}
 
 </style>
 
 {% endblock %}
 
-
 {% block content %}
 
 <div class="product-page">
 
+<!-- =====================================================
+     HEADER
+====================================================== -->
 
-    <!-- HEADER -->
+<div class="page-header-actions">
 
-    <div class="page-header-actions">
+    <div></div>
 
-        <div></div>
+    <div class="header-buttons">
 
-        <div style="display:flex; gap:10px;">
 
-            <!-- IMPORT EXCEL -->
+        <!-- IMPORT EXCEL -->
 
-            <a
-                href="{% url 'import-products' %}"
-                class="btn-secondary"
+        <a
+            href="{% url 'import-products' %}"
+            class="btn-secondary"
+        >
+            Import Excel
+        </a>
+
+
+        <!-- ADD PRODUCT -->
+
+        <a
+            href="{% url 'add-product' %}"
+            class="btn-primary"
+        >
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
             >
 
-                Import Excel
+                <line
+                    x1="12"
+                    y1="5"
+                    x2="12"
+                    y2="19"
+                />
 
-            </a>
+                <line
+                    x1="5"
+                    y1="12"
+                    x2="19"
+                    y2="12"
+                />
 
+            </svg>
 
-            <!-- ADD PRODUCT -->
+            Add Product
 
-            <a
-                href="{% url 'add-product' %}"
-                class="btn-primary"
-            >
-
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                >
-
-                    <line
-                        x1="12"
-                        y1="5"
-                        x2="12"
-                        y2="19"
-                    />
-
-                    <line
-                        x1="5"
-                        y1="12"
-                        x2="19"
-                        y2="12"
-                    />
-
-                </svg>
-
-                Add Product
-
-            </a>
-
-        </div>
+        </a>
 
     </div>
 
+</div>
 
-    <!-- TABLE -->
 
-    <div class="table-card">
+<!-- =====================================================
+     TABLE CARD
+====================================================== -->
+
+<div class="table-card">
+
+
+    <!-- =================================================
+         TABLE
+    ================================================== -->
+
+    <div class="table-wrapper">
 
         <table class="data-table">
 
@@ -463,23 +731,35 @@ Manage products, prices, categories, and inventory
 
             <tbody>
 
+
                 {% for product in products %}
 
                 <tr>
 
+
+                    <!-- ID -->
+
                     <td data-label="ID">
+
                         #{{ product.id }}
+
                     </td>
 
+
+                    <!-- PRODUCT -->
 
                     <td data-label="Product">
 
                         <div class="product-name">
+
                             {{ product.product_model }}
+
                         </div>
 
                     </td>
 
+
+                    <!-- DESCRIPTION -->
 
                     <td data-label="Description">
 
@@ -500,6 +780,8 @@ Manage products, prices, categories, and inventory
                     </td>
 
 
+                    <!-- CATEGORY -->
+
                     <td data-label="Category">
 
                         <span class="badge">
@@ -510,6 +792,8 @@ Manage products, prices, categories, and inventory
 
                     </td>
 
+
+                    <!-- PRICE -->
 
                     <td data-label="Price">
 
@@ -522,6 +806,8 @@ Manage products, prices, categories, and inventory
                     </td>
 
 
+                    <!-- QUANTITY -->
+
                     <td data-label="Qty">
 
                         <span class="qty">
@@ -533,38 +819,56 @@ Manage products, prices, categories, and inventory
                     </td>
 
 
+                    <!-- ACTIONS -->
+
                     <td data-label="Actions">
 
                         <div class="table-actions">
+
+
+                            <!-- EDIT -->
 
                             <a
                                 href="{% url 'edit-product' product.id %}"
                                 class="action-link"
                             >
+
                                 Edit
+
                             </a>
 
 
                             <span style="color:#ddd;">
+
                                 |
+
                             </span>
 
+
+                            <!-- DELETE -->
 
                             <a
                                 href="{% url 'delete-product' product.id %}"
                                 class="action-link delete-link"
                             >
+
                                 Delete
+
                             </a>
+
 
                         </div>
 
                     </td>
 
+
                 </tr>
 
 
                 {% empty %}
+
+
+                <!-- EMPTY STATE -->
 
                 <tr>
 
@@ -579,13 +883,216 @@ Manage products, prices, categories, and inventory
 
                 </tr>
 
+
                 {% endfor %}
+
 
             </tbody>
 
         </table>
 
     </div>
+
+
+    <!-- =================================================
+         PAGINATION
+    ================================================== -->
+
+    {% if paginator.num_pages > 1 %}
+
+    <div class="pagination-wrapper">
+
+
+        <!-- PAGINATION INFO -->
+
+        <div class="pagination-info">
+
+            Showing
+
+            <strong>
+                {{ page_obj.start_index }}
+            </strong>
+
+            to
+
+            <strong>
+                {{ page_obj.end_index }}
+            </strong>
+
+            of
+
+            <strong>
+                {{ paginator.count }}
+            </strong>
+
+            products
+
+        </div>
+
+
+        <!-- PAGINATION -->
+
+        <div class="pagination">
+
+
+            <!-- PREVIOUS -->
+
+            {% if page_obj.has_previous %}
+
+                <a
+                    href="?page={{ page_obj.previous_page_number }}"
+                    class="page-link"
+                    aria-label="Previous page"
+                >
+
+                    ‹
+
+                </a>
+
+            {% else %}
+
+                <span
+                    class="page-link disabled"
+                    aria-disabled="true"
+                >
+
+                    ‹
+
+                </span>
+
+            {% endif %}
+
+
+            <!-- FIRST PAGE -->
+
+            {% if page_obj.number > 3 %}
+
+                <a
+                    href="?page=1"
+                    class="page-link"
+                >
+
+                    1
+
+                </a>
+
+
+                {% if page_obj.number > 4 %}
+
+                    <span class="page-dots">
+
+                        ...
+
+                    </span>
+
+                {% endif %}
+
+            {% endif %}
+
+
+            <!-- PAGE NUMBERS -->
+
+            {% for num in paginator.page_range %}
+
+                {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+
+
+                    {% if num == page_obj.number %}
+
+                        <span
+                            class="page-link active"
+                            aria-current="page"
+                        >
+
+                            {{ num }}
+
+                        </span>
+
+                    {% else %}
+
+                        <a
+                            href="?page={{ num }}"
+                            class="page-link"
+                        >
+
+                            {{ num }}
+
+                        </a>
+
+                    {% endif %}
+
+
+                {% endif %}
+
+            {% endfor %}
+
+
+            <!-- LAST PAGE -->
+
+            {% if page_obj.number < paginator.num_pages|add:"-2" %}
+
+
+                {% if page_obj.number < paginator.num_pages|add:"-3" %}
+
+                    <span class="page-dots">
+
+                        ...
+
+                    </span>
+
+                {% endif %}
+
+
+                <a
+                    href="?page={{ paginator.num_pages }}"
+                    class="page-link"
+                >
+
+                    {{ paginator.num_pages }}
+
+                </a>
+
+
+            {% endif %}
+
+
+            <!-- NEXT -->
+
+            {% if page_obj.has_next %}
+
+                <a
+                    href="?page={{ page_obj.next_page_number }}"
+                    class="page-link"
+                    aria-label="Next page"
+                >
+
+                    ›
+
+                </a>
+
+            {% else %}
+
+                <span
+                    class="page-link disabled"
+                    aria-disabled="true"
+                >
+
+                    ›
+
+                </span>
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
 
 </div>
 

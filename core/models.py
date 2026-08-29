@@ -5,6 +5,145 @@ from django.contrib.auth.models import User
 
 
 # =========================================================
+# USER PROFILE / ROLE
+# =========================================================
+
+class UserProfile(models.Model):
+
+    ROLE_CHOICES = [
+        ("ADMIN", "Administrator"),
+        ("MANAGER", "Manager"),
+        ("STAFF", "Staff"),
+        ("CASHIER", "Cashier"),
+        ("INVENTORY", "Inventory Staff"),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="STAFF"
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.get_role_display()}"
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+
+# =========================================================
+# SALESPERSON
+# =========================================================
+
+class Salesperson(models.Model):
+
+    first_name = models.CharField(
+        max_length=100
+    )
+
+    middle_name = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
+
+    last_name = models.CharField(
+        max_length=100
+    )
+
+    employee_id = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        null=True
+    )
+
+    contact_number = models.CharField(
+        max_length=30,
+        blank=True,
+        null=True
+    )
+
+    email_address = models.EmailField(
+        blank=True,
+        null=True
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def save(self, *args, **kwargs):
+
+        if not self.employee_id:
+
+            last_salesperson = (
+                Salesperson.objects
+                .filter(
+                    employee_id__startswith="BPOS-"
+                )
+                .order_by("-id")
+                .first()
+            )
+
+            if (
+                last_salesperson
+                and last_salesperson.employee_id
+            ):
+                try:
+                    last_number = int(
+                        last_salesperson.employee_id.replace(
+                            "BPOS-",
+                            ""
+                        )
+                    )
+
+                    next_number = last_number + 1
+
+                except ValueError:
+                    next_number = 1
+
+            else:
+                next_number = 1
+
+            self.employee_id = (
+                f"BPOS-{next_number:04d}"
+            )
+
+        super().save(*args, **kwargs)
+
+    @property
+    def full_name(self):
+        name_parts = [
+            self.first_name,
+            self.middle_name,
+            self.last_name
+        ]
+
+        return " ".join(
+            part.strip()
+            for part in name_parts
+            if part
+        )
+
+    def __str__(self):
+        if self.employee_id:
+            return f"{self.full_name} ({self.employee_id})"
+
+        return self.full_name
+
+# =========================================================
 # PRODUCT
 # =========================================================
 
@@ -179,13 +318,15 @@ class Sale(models.Model):
     )
 
     # -----------------------------------------------------
-    # SALESMAN / SALESPERSON
+    # SALESPERSON
     # -----------------------------------------------------
 
-    salesman = models.CharField(
-        max_length=150,
+    salesperson = models.ForeignKey(
+        Salesperson,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        null=True
+        related_name="sales"
     )
 
     # -----------------------------------------------------
@@ -266,14 +407,35 @@ class Sale(models.Model):
         auto_now_add=True
     )
 
+    # -----------------------------------------------------
+    # AMOUNT DUE
+    # -----------------------------------------------------
+
     @property
     def amount_due(self):
+
         amount = self.total - self.payment
 
         if amount < 0:
             return Decimal("0.00")
 
         return amount
+
+    # -----------------------------------------------------
+    # SALESPERSON NAME
+    # -----------------------------------------------------
+
+    @property
+    def salesperson_name(self):
+
+        if self.salesperson:
+            return self.salesperson.full_name
+
+        return "No salesperson"
+
+    # -----------------------------------------------------
+    # STRING
+    # -----------------------------------------------------
 
     def __str__(self):
         return f"Sale #{self.id}"
@@ -301,11 +463,19 @@ class SaleItem(models.Model):
 
     quantity = models.PositiveIntegerField()
 
+    # -----------------------------------------------------
+    # PRICE
+    # -----------------------------------------------------
+
     # Price captured at time of sale
     price = models.DecimalField(
         max_digits=10,
         decimal_places=2
     )
+
+    # -----------------------------------------------------
+    # SUBTOTAL
+    # -----------------------------------------------------
 
     # Gross line subtotal
     subtotal = models.DecimalField(
@@ -313,7 +483,10 @@ class SaleItem(models.Model):
         decimal_places=2
     )
 
-    # Item discount
+    # -----------------------------------------------------
+    # ITEM DISCOUNT
+    # -----------------------------------------------------
+
     discount_percent = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -326,6 +499,10 @@ class SaleItem(models.Model):
         default=Decimal("0.00")
     )
 
+    # -----------------------------------------------------
+    # FINAL TOTAL
+    # -----------------------------------------------------
+
     # Final line total after item discount
     total = models.DecimalField(
         max_digits=12,
@@ -334,6 +511,7 @@ class SaleItem(models.Model):
     )
 
     def __str__(self):
+
         return (
             f"{self.product.product_model} "
             f"x {self.quantity}"

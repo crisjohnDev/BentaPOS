@@ -261,6 +261,139 @@
 
 
 /* =========================================================
+   PAYMENT SUMMARY
+========================================================= */
+
+.payment-summary {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+}
+
+
+.payment-summary-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    padding: 18px;
+
+    min-height: 120px;
+}
+
+
+.payment-summary-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.payment-summary-label {
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: #777;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+}
+
+
+.payment-summary-icon {
+
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+.payment-summary-icon svg {
+
+    width: 17px;
+
+    height: 17px;
+}
+
+
+.payment-summary-value {
+
+    margin-top: 12px;
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.payment-summary-count {
+
+    margin-top: 5px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+.payment-paid {
+
+    background: #e9f8ef;
+
+    color: #16803c;
+}
+
+
+.payment-unpaid {
+
+    background: #ffeded;
+
+    color: #d93025;
+}
+
+
+.payment-partial {
+
+    background: #fff3e6;
+
+    color: #c56a00;
+}
+
+
+.payment-due {
+
+    background: #f2ecff;
+
+    color: #6d3dcc;
+}
+
+
+/* =========================================================
    SALES DIAGRAM
 ========================================================= */
 
@@ -405,31 +538,241 @@
 }
 
 
-.comparison-change {
+/* =========================================================
+   PAYMENT TABLES
+========================================================= */
 
-    margin-top: 5px;
+.payment-table-card {
 
-    font-size: 10px;
+    background: #fff;
 
-    font-weight: 600;
+    border: 1px solid #e5e5e5;
+
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    margin-bottom: 20px;
 }
 
 
-.change-positive {
+.payment-table-header {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #eee;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.payment-table-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+}
+
+
+.payment-table-subtitle {
+
+    margin-top: 3px;
+
+    color: #999;
+
+    font-size: 10px;
+}
+
+
+.payment-table-total {
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+.paid-text {
 
     color: #16803c;
 }
 
 
-.change-negative {
+.unpaid-text {
 
     color: #d93025;
 }
 
 
-.change-neutral {
+.partial-text {
 
-    color: #888;
+    color: #c56a00;
+}
+
+
+.table-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.sales-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 1050px;
+}
+
+
+.sales-table th {
+
+    padding: 12px 18px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #eee;
+
+    color: #777;
+
+    font-size: 10px;
+
+    text-align: left;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+}
+
+
+.sales-table td {
+
+    padding: 13px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    color: #333;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+}
+
+
+.sales-table tr:last-child td {
+
+    border-bottom: none;
+}
+
+
+.sale-id {
+
+    color: #111;
+
+    font-weight: 700;
+}
+
+
+.sale-total {
+
+    color: #16803c;
+
+    font-weight: 700;
+}
+
+
+.sale-payment {
+
+    color: #1769aa;
+
+    font-weight: 600;
+}
+
+
+.sale-due {
+
+    color: #d93025;
+
+    font-weight: 700;
+}
+
+
+.sale-staff {
+
+    color: #666;
+}
+
+
+.sale-salesperson {
+
+    color: #444;
+
+    font-weight: 600;
+}
+
+
+.status-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+}
+
+
+.status-paid {
+
+    background: #e9f8ef;
+
+    color: #16803c;
+}
+
+
+.status-unpaid {
+
+    background: #ffeded;
+
+    color: #d93025;
+}
+
+
+.status-partial {
+
+    background: #fff3e6;
+
+    color: #c56a00;
+}
+
+
+.empty-sales {
+
+    padding: 40px !important;
+
+    text-align: center;
+
+    color: #999 !important;
 }
 
 
@@ -490,94 +833,14 @@
     font-size: 11px;
 
     font-weight: 600;
+
+    text-decoration: none;
 }
 
 
-.table-wrapper {
+.recent-sales-link:hover {
 
-    width: 100%;
-
-    overflow-x: auto;
-}
-
-
-.sales-table {
-
-    width: 100%;
-
-    border-collapse: collapse;
-
-    min-width: 700px;
-}
-
-
-.sales-table th {
-
-    padding: 12px 18px;
-
-    background: #fafafa;
-
-    border-bottom: 1px solid #eee;
-
-    color: #777;
-
-    font-size: 10px;
-
-    text-align: left;
-
-    text-transform: uppercase;
-
-    letter-spacing: .4px;
-}
-
-
-.sales-table td {
-
-    padding: 13px 18px;
-
-    border-bottom: 1px solid #f0f0f0;
-
-    color: #333;
-
-    font-size: 12px;
-}
-
-
-.sales-table tr:last-child td {
-
-    border-bottom: none;
-}
-
-
-.sale-id {
-
-    color: #111;
-
-    font-weight: 700;
-}
-
-
-.sale-total {
-
-    color: #16803c;
-
-    font-weight: 700;
-}
-
-
-.sale-staff {
-
-    color: #666;
-}
-
-
-.empty-sales {
-
-    padding: 40px;
-
-    text-align: center;
-
-    color: #999;
+    text-decoration: underline;
 }
 
 
@@ -594,6 +857,8 @@
     border-radius: 12px;
 
     padding: 20px;
+
+    margin-bottom: 20px;
 }
 
 
@@ -651,6 +916,8 @@
     gap: 11px;
 
     transition: .18s ease;
+
+    text-decoration: none;
 }
 
 
@@ -730,6 +997,12 @@
             repeat(2, minmax(0, 1fr));
     }
 
+    .payment-summary {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
     .quick-actions {
 
         grid-template-columns:
@@ -751,6 +1024,11 @@
         grid-template-columns: 1fr;
     }
 
+    .payment-summary {
+
+        grid-template-columns: 1fr;
+    }
+
     .comparison-grid {
 
         grid-template-columns: 1fr;
@@ -762,6 +1040,13 @@
     }
 
     .sales-chart-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .payment-table-header {
 
         align-items: flex-start;
 
@@ -812,8 +1097,11 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                     >
+
                         <path d="M12 1v22"/>
+
                         <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7"/>
+
                     </svg>
 
                 </div>
@@ -853,6 +1141,7 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <rect
                             x="3"
                             y="4"
@@ -862,7 +1151,9 @@
                         />
 
                         <path d="M7 8h10"/>
+
                         <path d="M7 12h4"/>
+
                         <path d="M7 16h7"/>
 
                     </svg>
@@ -904,9 +1195,13 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+
                         <path d="M3 8v8l9 5 9-5V8"/>
+
                         <path d="M12 13v8"/>
+
                     </svg>
 
                 </div>
@@ -946,9 +1241,13 @@
                         stroke="currentColor"
                         stroke-width="2"
                     >
+
                         <path d="M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h8"/>
+
                         <path d="M16 3h5v5"/>
+
                         <path d="M21 3l-9 9"/>
+
                     </svg>
 
                 </div>
@@ -1045,8 +1344,202 @@
 
             <div class="secondary-description">
 
-                {{ monthly_transactions }}
+                {{ monthly_transactions|default:0 }}
                 transactions this month
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         PAYMENT SUMMARY
+    ====================================================== -->
+
+    <div class="payment-summary">
+
+
+        <!-- PAID -->
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Paid Sales
+                </div>
+
+                <div class="payment-summary-icon payment-paid">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+
+                        <path d="M20 6L9 17l-5-5"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value paid-text">
+
+                ₱{{ paid_total|default:0|floatformat:2 }}
+
+            </div>
+
+            <div class="payment-summary-count">
+
+                {{ paid_count|default:0 }} paid transactions
+
+            </div>
+
+        </div>
+
+
+        <!-- UNPAID -->
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Unpaid Sales
+                </div>
+
+                <div class="payment-summary-icon payment-unpaid">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="9"
+                        />
+
+                        <path d="M9 9l6 6"/>
+
+                        <path d="M15 9l-6 6"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value unpaid-text">
+
+                ₱{{ unpaid_total|default:0|floatformat:2 }}
+
+            </div>
+
+            <div class="payment-summary-count">
+
+                {{ unpaid_count|default:0 }} unpaid transactions
+
+            </div>
+
+        </div>
+
+
+        <!-- PARTIAL -->
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Partially Paid
+                </div>
+
+                <div class="payment-summary-icon payment-partial">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="9"
+                        />
+
+                        <path d="M12 7v5l3 2"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value partial-text">
+
+                ₱{{ partial_total|default:0|floatformat:2 }}
+
+            </div>
+
+            <div class="payment-summary-count">
+
+                {{ partial_count|default:0 }} partially paid
+
+            </div>
+
+        </div>
+
+
+        <!-- AMOUNT DUE -->
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Amount Due
+                </div>
+
+                <div class="payment-summary-icon payment-due">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+
+                        <path d="M12 1v22"/>
+
+                        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value unpaid-text">
+
+                ₱{{ total_amount_due|default:0|floatformat:2 }}
+
+            </div>
+
+            <div class="payment-summary-count">
+
+                Unpaid and partially paid balance
 
             </div>
 
@@ -1120,9 +1613,7 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
-
                     TODAY
-
                 </div>
 
                 <div class="comparison-item-value">
@@ -1139,9 +1630,7 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
-
                     YESTERDAY
-
                 </div>
 
                 <div class="comparison-item-value">
@@ -1158,9 +1647,7 @@
             <div class="comparison-item">
 
                 <div class="comparison-item-label">
-
                     THIS MONTH
-
                 </div>
 
                 <div class="comparison-item-value">
@@ -1178,38 +1665,34 @@
 
 
     <!-- =====================================================
-         RECENT SALES
+         PAID SALES
     ====================================================== -->
 
-    <div class="recent-sales-card">
+    <div class="payment-table-card">
 
-        <div class="recent-sales-header">
+        <div class="payment-table-header">
 
             <div>
 
-                <div class="recent-sales-title">
+                <div class="payment-table-title">
 
-                    Recent Sales
+                    Paid Sales
 
                 </div>
 
-                <div class="recent-sales-subtitle">
+                <div class="payment-table-subtitle">
 
-                    Latest completed transactions
+                    Latest fully paid transactions
 
                 </div>
 
             </div>
 
+            <div class="payment-table-total paid-text">
 
-            <a
-                href="{% url 'sales' %}"
-                class="recent-sales-link"
-            >
+                {{ paid_count|default:0 }} Paid
 
-                View All →
-
-            </a>
+            </div>
 
         </div>
 
@@ -1222,29 +1705,25 @@
 
                     <tr>
 
-                        <th>
-                            Sale #
-                        </th>
+                        <th>Sale #</th>
 
-                        <th>
-                            Staff
-                        </th>
+                        <th>Salesperson</th>
 
-                        <th>
-                            Items
-                        </th>
+                        <th>Staff</th>
 
-                        <th>
-                            Discount
-                        </th>
+                        <th>Items</th>
 
-                        <th>
-                            Total
-                        </th>
+                        <th>Discount</th>
 
-                        <th>
-                            Date
-                        </th>
+                        <th>Total</th>
+
+                        <th>Payment</th>
+
+                        <th>Change</th>
+
+                        <th>Status</th>
+
+                        <th>Date</th>
 
                     </tr>
 
@@ -1253,13 +1732,28 @@
 
                 <tbody>
 
-                    {% for sale in recent_sales %}
+                    {% for sale in paid_sales %}
 
                     <tr>
 
                         <td class="sale-id">
 
                             #{{ sale.id }}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+
+                                {{ sale.salesperson.full_name }}
+
+                            {% else %}
+
+                                No Salesperson
+
+                            {% endif %}
 
                         </td>
 
@@ -1296,22 +1790,39 @@
 
                         <td>
 
-                            {% if sale.discount_amount %}
-
-                                ₱{{ sale.discount_amount|floatformat:2 }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
 
                         </td>
 
 
                         <td class="sale-total">
 
-                            ₱{{ sale.total|floatformat:2 }}
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-payment">
+
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.change|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-paid">
+
+                                PAID
+
+                            </span>
 
                         </td>
 
@@ -1329,7 +1840,631 @@
                     <tr>
 
                         <td
-                            colspan="6"
+                            colspan="10"
+                            class="empty-sales"
+                        >
+
+                            No paid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         UNPAID SALES
+    ====================================================== -->
+
+    <div class="payment-table-card">
+
+        <div class="payment-table-header">
+
+            <div>
+
+                <div class="payment-table-title">
+
+                    Unpaid Sales
+
+                </div>
+
+                <div class="payment-table-subtitle">
+
+                    Sales that still require full payment
+
+                </div>
+
+            </div>
+
+            <div class="payment-table-total unpaid-text">
+
+                {{ unpaid_count|default:0 }} Unpaid
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Sale #</th>
+
+                        <th>Salesperson</th>
+
+                        <th>Staff</th>
+
+                        <th>Items</th>
+
+                        <th>Discount</th>
+
+                        <th>Total</th>
+
+                        <th>Payment</th>
+
+                        <th>Amount Due</th>
+
+                        <th>Status</th>
+
+                        <th>Date</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in unpaid_sales %}
+
+                    <tr>
+
+                        <td class="sale-id">
+
+                            #{{ sale.id }}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+
+                                {{ sale.salesperson.full_name }}
+
+                            {% else %}
+
+                                No Salesperson
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-staff">
+
+                            {% if sale.staff %}
+
+                                {% if sale.staff.get_full_name %}
+
+                                    {{ sale.staff.get_full_name }}
+
+                                {% else %}
+
+                                    {{ sale.staff.username }}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.items.all|length }}
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-total">
+
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-payment">
+
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-due">
+
+                            ₱{{ sale.amount_due|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-unpaid">
+
+                                UNPAID
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="10"
+                            class="empty-sales"
+                        >
+
+                            No unpaid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PARTIALLY PAID SALES
+    ====================================================== -->
+
+    <div class="payment-table-card">
+
+        <div class="payment-table-header">
+
+            <div>
+
+                <div class="payment-table-title">
+
+                    Partially Paid Sales
+
+                </div>
+
+                <div class="payment-table-subtitle">
+
+                    Sales with an outstanding balance
+
+                </div>
+
+            </div>
+
+            <div class="payment-table-total partial-text">
+
+                {{ partial_count|default:0 }} Partial
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Sale #</th>
+
+                        <th>Salesperson</th>
+
+                        <th>Staff</th>
+
+                        <th>Items</th>
+
+                        <th>Discount</th>
+
+                        <th>Total</th>
+
+                        <th>Payment</th>
+
+                        <th>Amount Due</th>
+
+                        <th>Status</th>
+
+                        <th>Date</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in partial_sales %}
+
+                    <tr>
+
+                        <td class="sale-id">
+
+                            #{{ sale.id }}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+
+                                {{ sale.salesperson.full_name }}
+
+                            {% else %}
+
+                                No Salesperson
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-staff">
+
+                            {% if sale.staff %}
+
+                                {% if sale.staff.get_full_name %}
+
+                                    {{ sale.staff.get_full_name }}
+
+                                {% else %}
+
+                                    {{ sale.staff.username }}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.items.all|length }}
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-total">
+
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-payment">
+
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-due">
+
+                            ₱{{ sale.amount_due|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-partial">
+
+                                PARTIAL
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="10"
+                            class="empty-sales"
+                        >
+
+                            No partially paid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT SALES
+    ====================================================== -->
+
+    <div class="recent-sales-card">
+
+        <div class="recent-sales-header">
+
+            <div>
+
+                <div class="recent-sales-title">
+
+                    Recent Sales
+
+                </div>
+
+                <div class="recent-sales-subtitle">
+
+                    Latest transactions
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{% url 'sales' %}"
+                class="recent-sales-link"
+            >
+
+                View All →
+
+            </a>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Sale #
+                        </th>
+
+                        <th>
+                            Salesperson
+                        </th>
+
+                        <th>
+                            Staff
+                        </th>
+
+                        <th>
+                            Items
+                        </th>
+
+                        <th>
+                            Discount
+                        </th>
+
+                        <th>
+                            Total
+                        </th>
+
+                        <th>
+                            Payment
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in recent_sales %}
+
+                    <tr>
+
+                        <td class="sale-id">
+
+                            #{{ sale.id }}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+
+                                {{ sale.salesperson.full_name }}
+
+                            {% else %}
+
+                                No Salesperson
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-staff">
+
+                            {% if sale.staff %}
+
+                                {% if sale.staff.get_full_name %}
+
+                                    {{ sale.staff.get_full_name }}
+
+                                {% else %}
+
+                                    {{ sale.staff.username }}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.items.all|length }}
+
+                        </td>
+
+
+                        <td>
+
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-total">
+
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td class="sale-payment">
+
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if sale.payment_status == "PAID" %}
+
+                                <span class="status-badge status-paid">
+
+                                    PAID
+
+                                </span>
+
+                            {% elif sale.payment_status == "PARTIAL" %}
+
+                                <span class="status-badge status-partial">
+
+                                    PARTIAL
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+
+                                    UNPAID
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="9"
                             class="empty-sales"
                         >
 
@@ -1397,8 +2532,11 @@
                         />
 
                         <path d="M7 8h10"/>
+
                         <path d="M7 12h2"/>
+
                         <path d="M11 12h2"/>
+
                         <path d="M15 12h2"/>
 
                     </svg>
@@ -1442,6 +2580,7 @@
                     >
 
                         <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+
                         <path d="M3 8v8l9 5 9-5V8"/>
 
                     </svg>
@@ -1485,7 +2624,9 @@
                     >
 
                         <path d="M3 7h18"/>
+
                         <path d="M5 7l1-4h12l1 4"/>
+
                         <path d="M5 7v13h14V7"/>
 
                     </svg>
@@ -1529,6 +2670,7 @@
                     >
 
                         <path d="M4 19V5"/>
+
                         <path d="M4 19h16"/>
 
                         <rect
@@ -1589,7 +2731,6 @@
 {% block extra_js %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 
 <script>
 

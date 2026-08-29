@@ -613,6 +613,36 @@
                 <span>Users Management</span>
             </a>
 
+            <!-- SALESPERSON MANAGEMENT -->
+            <a href="{% url 'salesperson-list' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'salesperson-list' %}active{% endif %}">
+
+                <svg viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+
+                    <!-- Person -->
+                    <circle cx="9" cy="8" r="3"/>
+
+                    <!-- Person body -->
+                    <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+
+                    <!-- Sales / growth arrow -->
+                    <path d="M15 6h6"/>
+
+                    <path d="M18 3l3 3-3 3"/>
+
+                    <path d="M15 17h6"/>
+
+                </svg>
+
+                <span>Salesperson Management</span>
+
+            </a>
+
             <!-- REPORTS -->
             <div class="navigation-label">Reports</div>
 
