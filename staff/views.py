@@ -15,7 +15,8 @@ from core.models import (
     DiscountClass,
     Sale,
     SaleItem,
-    Salesperson
+    Salesperson,
+    Client
 )
 
 
@@ -59,9 +60,9 @@ def money(value):
 @user_passes_test(is_staff)
 def staff_dashboard(request):
 
-    # =========================================================
+    # =====================================================
     # ENSURE DISCOUNT CLASSES EXIST
-    # =========================================================
+    # =====================================================
 
     DiscountClass.objects.update_or_create(
         code="A",
@@ -90,9 +91,10 @@ def staff_dashboard(request):
         }
     )
 
-    # =========================================================
+
+    # =====================================================
     # PRODUCTS
-    # =========================================================
+    # =====================================================
 
     search = request.GET.get(
         "search",
@@ -101,15 +103,12 @@ def staff_dashboard(request):
 
     products = (
         Product.objects
-        .filter(
-            qty__gt=0
-        )
-        .order_by(
-            "product_model"
-        )
+        .filter(qty__gt=0)
+        .order_by("product_model")
     )
 
     if search:
+
         products = products.filter(
             Q(product_model__icontains=search)
             |
@@ -118,9 +117,10 @@ def staff_dashboard(request):
             Q(category__icontains=search)
         )
 
-    # =========================================================
+
+    # =====================================================
     # DISCOUNT CLASSES
-    # =========================================================
+    # =====================================================
 
     discount_classes = (
         DiscountClass.objects
@@ -128,30 +128,42 @@ def staff_dashboard(request):
         .order_by("code")
     )
 
-    # =========================================================
+
+    # =====================================================
     # SALESPERSONS
-    # =========================================================
-    #
-    # Use the dedicated Salesperson model instead of Django User.
-    #
-    # Only active salespersons are shown.
-    #
+    # =====================================================
 
     salespersons = (
         Salesperson.objects
-        .filter(
-            is_active=True
-        )
+        .filter(is_active=True)
         .order_by(
             "first_name",
-            "last_name",
-            "employee_id"
+            "last_name"
         )
     )
 
-    # =========================================================
+
+    # =====================================================
+    # CLIENTS
+    # =====================================================
+
+    clients = (
+        Client.objects
+        .filter(is_active=True)
+        .select_related(
+            "salesperson",
+            "discount_class"
+        )
+        .order_by(
+            "last_name",
+            "first_name"
+        )
+    )
+
+
+    # =====================================================
     # RENDER
-    # =========================================================
+    # =====================================================
 
     return render(
         request,
@@ -160,14 +172,12 @@ def staff_dashboard(request):
             "products": products,
             "discount_classes": discount_classes,
             "salespersons": salespersons,
+            "clients": clients,
             "search": search,
         }
     )
 
 
-# =========================================================
-# COMPLETE SALE
-# =========================================================
 
 # =========================================================
 # COMPLETE SALE
@@ -178,7 +188,6 @@ def staff_dashboard(request):
 def complete_sale(request):
 
     if request.method != "POST":
-
         return JsonResponse(
             {
                 "success": False,
@@ -189,23 +198,29 @@ def complete_sale(request):
 
     try:
 
-        # =========================================================
+        # =====================================================
         # BASIC INFORMATION
-        # =========================================================
+        # =====================================================
 
         salesperson_id = request.POST.get(
-            "salesperson_id",
+            "salesperson",
+            ""
+        ).strip()
+
+        client_id = request.POST.get(
+            "client",
+            ""
+        ).strip()
+
+        discount_class_id = request.POST.get(
+            "discount_class",
             ""
         ).strip()
 
         payment_status_raw = request.POST.get(
             "payment_status",
-            "paid"
-        ).strip().lower()
-
-        discount_class_id = request.POST.get(
-            "discount_class"
-        )
+            "PAID"
+        ).strip().upper()
 
         discount_percent = decimal_value(
             request.POST.get(
@@ -219,6 +234,971 @@ def complete_sale(request):
                 "payment",
                 "0"
             )
+        )
+
+        # =====================================================
+        # DEBUG
+        # =====================================================
+
+        print("========== COMPLETE SALE DEBUG ==========")
+        print("salesperson:", salesperson_id)
+        print("client:", client_id)
+        print("discount_class:", discount_class_id)
+        print("payment_status:", payment_status_raw)
+        print("discount_percent:", discount_percent)
+        print("payment:", payment)
+        print("product_ids:", request.POST.getlist("product_ids[]"))
+        print("quantities:", request.POST.getlist("quantities[]"))
+        print("prices:", request.POST.getlist("prices[]"))
+        print(
+            "item_discount_percentages:",
+            request.POST.getlist("item_discount_percentages[]")
+        )
+        print("=========================================")
+
+        # =====================================================
+        # SALESPERSON
+        # =====================================================
+
+        if not salesperson_id:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Please select a salesperson."
+                },
+                status=400
+            )
+
+        try:
+
+            salesperson = Salesperson.objects.get(
+                id=int(salesperson_id),
+                is_active=True
+            )
+
+        except (
+            Salesperson.DoesNotExist,
+            ValueError,
+            TypeError
+        ):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Selected salesperson does not exist."
+                },
+                status=400
+            )
+
+        # =====================================================
+        # CLIENT
+        # =====================================================
+
+        client = None
+
+        if client_id:
+
+            try:
+
+                client = Client.objects.get(
+                    id=int(client_id),
+                    is_active=True
+                )
+
+            except (
+                Client.DoesNotExist,
+                ValueError,
+                TypeError
+            ):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Selected client does not exist."
+                    },
+                    status=400
+                )
+
+        # =====================================================
+        # DISCOUNT CLASS
+        # =====================================================
+
+        discount_class = None
+
+        if discount_class_id:
+
+            try:
+
+                discount_class = DiscountClass.objects.get(
+                    id=int(discount_class_id)
+                )
+
+            except (
+                DiscountClass.DoesNotExist,
+                ValueError,
+                TypeError
+            ):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Selected discount class does not exist."
+                    },
+                    status=400
+                )
+
+        # =====================================================
+        # DISCOUNT VALIDATION
+        # =====================================================
+
+        if discount_percent < 0:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Discount cannot be negative."
+                },
+                status=400
+            )
+
+        # No client = no client discount
+
+        if not client and discount_percent != 0:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Please select a client before applying "
+                        "a client discount."
+                    )
+                },
+                status=400
+            )
+
+        # Discount percentage requires discount class
+
+        if discount_percent != 0 and not discount_class:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Please select a discount class before "
+                        "applying a client discount."
+                    )
+                },
+                status=400
+            )
+
+        # Validate maximum discount
+
+        if discount_class:
+
+            maximum = discount_class.max_discount
+
+            if discount_percent > maximum:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            f"{discount_class.name} allows "
+                            f"up to {maximum:.2f}% discount."
+                        )
+                    },
+                    status=400
+                )
+
+        # =====================================================
+        # PAYMENT STATUS
+        # =====================================================
+
+        if payment_status_raw == "PAID":
+
+            payment_status = "PAID"
+
+        elif payment_status_raw == "PARTIAL":
+
+            payment_status = "PARTIAL"
+
+        elif payment_status_raw == "UNPAID":
+
+            payment_status = "UNPAID"
+
+        else:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid payment status."
+                },
+                status=400
+            )
+
+        # =====================================================
+        # PAYMENT BASIC VALIDATION
+        # =====================================================
+
+        if payment < 0:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Payment cannot be negative."
+                },
+                status=400
+            )
+
+        # =====================================================
+        # READ CART
+        #
+        # Frontend sends:
+        #
+        # product_ids[]
+        # quantities[]
+        # prices[]
+        # item_discount_percentages[]
+        # item_discount_amounts[]
+        #
+        # =====================================================
+
+        product_ids = request.POST.getlist(
+            "product_ids[]"
+        )
+
+        quantities = request.POST.getlist(
+            "quantities[]"
+        )
+
+        item_discount_percentages = request.POST.getlist(
+            "item_discount_percentages[]"
+        )
+
+        if not product_ids:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "No products were added."
+                },
+                status=400
+            )
+
+        if len(product_ids) != len(quantities):
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Invalid cart data."
+                },
+                status=400
+            )
+
+        # =====================================================
+        # BUILD CART ITEMS
+        # =====================================================
+
+        items = []
+
+        for index, product_id_raw in enumerate(product_ids):
+
+            quantity_raw = (
+                quantities[index]
+                if index < len(quantities)
+                else "0"
+            )
+
+            item_discount_raw = (
+                item_discount_percentages[index]
+                if index < len(item_discount_percentages)
+                else "0"
+            )
+
+            try:
+
+                product_id = int(product_id_raw)
+
+                quantity = int(quantity_raw)
+
+                item_discount = decimal_value(
+                    item_discount_raw
+                )
+
+            except (
+                ValueError,
+                TypeError,
+                InvalidOperation
+            ):
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Invalid cart item."
+                    },
+                    status=400
+                )
+
+            # =================================================
+            # QUANTITY
+            # =================================================
+
+            if quantity <= 0:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Quantity must be greater than zero."
+                        )
+                    },
+                    status=400
+                )
+
+            # =================================================
+            # ITEM DISCOUNT
+            # =================================================
+
+            if item_discount < 0:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Item discount cannot be negative."
+                        )
+                    },
+                    status=400
+                )
+
+            # =================================================
+            # DETERMINE ITEM DISCOUNT CLUSTER
+            #
+            # Frontend sends the percentage.
+            #
+            # 0       = A
+            # <= 10   = B
+            # <= 100  = C
+            #
+            # =================================================
+
+            if item_discount <= Decimal("0.00"):
+
+                item_discount = Decimal("0.00")
+
+                item_discount_cluster = "A"
+
+            elif item_discount <= Decimal("10.00"):
+
+                item_discount_cluster = "B"
+
+            elif item_discount <= Decimal("100.00"):
+
+                item_discount_cluster = "C"
+
+            else:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Item discount cannot exceed 100%."
+                        )
+                    },
+                    status=400
+                )
+
+            items.append(
+                {
+                    "product_id": product_id,
+                    "quantity": quantity,
+                    "item_discount": item_discount,
+                    "discount_cluster": item_discount_cluster,
+                }
+            )
+
+        # =====================================================
+        # PROCESS SALE
+        # =====================================================
+
+        try:
+
+            with transaction.atomic():
+
+                # =============================================
+                # LOCK PRODUCTS
+                # =============================================
+
+                locked_items = []
+
+                for cart_item in items:
+
+                    product = (
+                        Product.objects
+                        .select_for_update()
+                        .get(
+                            id=cart_item["product_id"]
+                        )
+                    )
+
+                    quantity = cart_item["quantity"]
+
+                    if product.qty < quantity:
+
+                        raise ValueError(
+                            f"Not enough stock for "
+                            f"{product.product_model}. "
+                            f"Available: {product.qty}"
+                        )
+
+                    locked_items.append(
+                        {
+                            "product": product,
+                            "quantity": quantity,
+                            "item_discount": (
+                                cart_item["item_discount"]
+                            ),
+                            "discount_cluster": (
+                                cart_item["discount_cluster"]
+                            ),
+                        }
+                    )
+
+                # =============================================
+                # CALCULATE ITEMS
+                # =============================================
+
+                sale_subtotal = Decimal("0.00")
+
+                item_discount_total = Decimal("0.00")
+
+                calculated_items = []
+
+                for item in locked_items:
+
+                    product = item["product"]
+
+                    quantity = item["quantity"]
+
+                    item_discount_percent = (
+                        item["item_discount"]
+                    )
+
+                    discount_cluster = (
+                        item["discount_cluster"]
+                    )
+
+                    gross_subtotal = money(
+                        product.price * quantity
+                    )
+
+                    item_discount_amount = money(
+                        gross_subtotal
+                        *
+                        (
+                            item_discount_percent
+                            /
+                            Decimal("100")
+                        )
+                    )
+
+                    item_total = money(
+                        gross_subtotal
+                        -
+                        item_discount_amount
+                    )
+
+                    if item_total < 0:
+
+                        item_total = Decimal("0.00")
+
+                    sale_subtotal += gross_subtotal
+
+                    item_discount_total += (
+                        item_discount_amount
+                    )
+
+                    calculated_items.append(
+                        {
+                            "product": product,
+                            "quantity": quantity,
+                            "price": product.price,
+                            "subtotal": gross_subtotal,
+                            "discount_percent": (
+                                item_discount_percent
+                            ),
+                            "discount_amount": (
+                                item_discount_amount
+                            ),
+                            "total": item_total,
+                            "discount_cluster": (
+                                discount_cluster
+                            ),
+                        }
+                    )
+
+                sale_subtotal = money(
+                    sale_subtotal
+                )
+
+                item_discount_total = money(
+                    item_discount_total
+                )
+
+                # =============================================
+                # AMOUNT AFTER ITEM DISCOUNT
+                # =============================================
+
+                amount_after_item_discount = money(
+                    sale_subtotal
+                    -
+                    item_discount_total
+                )
+
+                # =============================================
+                # CLIENT DISCOUNT
+                # =============================================
+
+                class_discount_amount = money(
+                    amount_after_item_discount
+                    *
+                    (
+                        discount_percent
+                        /
+                        Decimal("100")
+                    )
+                )
+
+                # =============================================
+                # FINAL TOTAL
+                # =============================================
+
+                final_total = money(
+                    amount_after_item_discount
+                    -
+                    class_discount_amount
+                )
+
+                if final_total < 0:
+
+                    final_total = Decimal("0.00")
+
+                # =============================================
+                # PAYMENT
+                # =============================================
+
+                if payment_status == "PAID":
+
+                    if payment < final_total:
+
+                        raise ValueError(
+                            "Cash received is not enough "
+                            "for a fully paid sale."
+                        )
+
+                    actual_payment = payment
+
+                    actual_change = money(
+                        payment
+                        -
+                        final_total
+                    )
+
+                elif payment_status == "PARTIAL":
+
+                    if payment <= 0:
+
+                        raise ValueError(
+                            "Partial payment must be "
+                            "greater than zero."
+                        )
+
+                    if payment >= final_total:
+
+                        raise ValueError(
+                            "For a partially paid sale, "
+                            "payment must be less than "
+                            "the total amount."
+                        )
+
+                    actual_payment = payment
+
+                    actual_change = Decimal("0.00")
+
+                else:
+
+                    # UNPAID
+
+                    actual_payment = Decimal("0.00")
+
+                    actual_change = Decimal("0.00")
+
+                # =============================================
+                # TOTAL DISCOUNT
+                # =============================================
+
+                total_discount_amount = money(
+                    item_discount_total
+                    +
+                    class_discount_amount
+                )
+
+                # =============================================
+                # CREATE SALE
+                # =============================================
+
+                sale = Sale.objects.create(
+
+                    staff=request.user,
+
+                    salesperson=salesperson,
+
+                    client=client,
+
+                    discount_class=discount_class,
+
+                    subtotal=sale_subtotal,
+
+                    discount_percent=discount_percent,
+
+                    discount_amount=(
+                        total_discount_amount
+                    ),
+
+                    total=final_total,
+
+                    payment_status=payment_status,
+
+                    payment=actual_payment,
+
+                    change=actual_change,
+
+                )
+
+                # =============================================
+                # CREATE SALE ITEMS
+                # =============================================
+
+                for item in calculated_items:
+
+                    product = item["product"]
+
+                    quantity = item["quantity"]
+
+                    SaleItem.objects.create(
+
+                        sale=sale,
+
+                        product=product,
+
+                        quantity=quantity,
+
+                        price=item["price"],
+
+                        subtotal=item["subtotal"],
+
+                        discount_percent=(
+                            item["discount_percent"]
+                        ),
+
+                        discount_amount=(
+                            item["discount_amount"]
+                        ),
+
+                        total=item["total"],
+
+                    )
+
+                    # =========================================
+                    # STOCK
+                    # =========================================
+
+                    previous_qty = product.qty
+
+                    product.qty = (
+                        product.qty
+                        -
+                        quantity
+                    )
+
+                    product.save(
+                        update_fields=[
+                            "qty",
+                            "updated_at",
+                        ]
+                    )
+
+                    # =========================================
+                    # INVENTORY TRANSACTION
+                    # =========================================
+
+                    InventoryTransaction.objects.create(
+
+                        product=product,
+
+                        transaction_type="OUT",
+
+                        quantity=quantity,
+
+                        previous_qty=previous_qty,
+
+                        new_qty=product.qty,
+
+                        reference=f"SALE-{sale.id}",
+
+                        notes=(
+                            f"Sale #{sale.id} - "
+                            f"{product.product_model}"
+                        ),
+
+                        created_by=request.user,
+
+                    )
+
+        # =====================================================
+        # PRODUCT DOES NOT EXIST
+        # =====================================================
+
+        except Product.DoesNotExist:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "One of the selected products "
+                        "no longer exists."
+                    )
+                },
+                status=400
+            )
+
+        # =====================================================
+        # SALESPERSON DOES NOT EXIST
+        # =====================================================
+
+        except Salesperson.DoesNotExist:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "The selected salesperson "
+                        "no longer exists."
+                    )
+                },
+                status=400
+            )
+
+        # =====================================================
+        # CLIENT DOES NOT EXIST
+        # =====================================================
+
+        except Client.DoesNotExist:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "The selected client "
+                        "no longer exists."
+                    )
+                },
+                status=400
+            )
+
+        # =====================================================
+        # VALIDATION ERROR
+        # =====================================================
+
+        except ValueError as error:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": str(error)
+                },
+                status=400
+            )
+
+        # =====================================================
+        # DATABASE / OTHER ERROR
+        # =====================================================
+
+        except Exception as error:
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        f"Unable to complete sale: {error}"
+                    )
+                },
+                status=500
+            )
+
+        # =====================================================
+        # RECEIPT ITEMS
+        # =====================================================
+
+        receipt_items = []
+
+        for item in (
+            sale.items
+            .select_related("product")
+            .all()
+        ):
+
+            receipt_items.append(
+                {
+                    "name": (
+                        item.product.product_model
+                    ),
+
+                    "quantity": (
+                        item.quantity
+                    ),
+
+                    "price": (
+                        f"{item.price:.2f}"
+                    ),
+
+                    "subtotal": (
+                        f"{item.subtotal:.2f}"
+                    ),
+
+                    "discount_percent": (
+                        f"{item.discount_percent:.2f}"
+                    ),
+
+                    "discount_amount": (
+                        f"{item.discount_amount:.2f}"
+                    ),
+
+                    "total": (
+                        f"{item.total:.2f}"
+                    ),
+                }
+            )
+
+        # =====================================================
+        # JSON RESPONSE
+        # =====================================================
+
+        return JsonResponse(
+            {
+                "success": True,
+
+                "sale_id": sale.id,
+
+                "date": sale.created_at.strftime(
+                    "%b %d, %Y %I:%M %p"
+                ),
+
+                "staff": (
+                    request.user.get_full_name()
+                    or request.user.username
+                ),
+
+                # =============================================
+                # SALESPERSON
+                # =============================================
+
+                "salesperson": (
+                    salesperson.full_name
+                ),
+
+                "salesperson_id": (
+                    salesperson.id
+                ),
+
+                # =============================================
+                # CLIENT
+                # =============================================
+
+                "client": (
+                    client.full_name
+                    if client
+                    else "Walk-in Client"
+                ),
+
+                "client_id": (
+                    client.id
+                    if client
+                    else None
+                ),
+
+                "client_organization": (
+                    client.organization
+                    if client and client.organization
+                    else ""
+                ),
+
+                # =============================================
+                # DISCOUNT
+                # =============================================
+
+                "discount_class": (
+                    discount_class.name
+                    if discount_class
+                    else "No Discount"
+                ),
+
+                "discount_class_code": (
+                    discount_class.code
+                    if discount_class
+                    else ""
+                ),
+
+                "discount_percent": (
+                    f"{sale.discount_percent:.2f}"
+                ),
+
+                "subtotal": (
+                    f"{sale.subtotal:.2f}"
+                ),
+
+                "item_discount_amount": (
+                    f"{item_discount_total:.2f}"
+                ),
+
+                "client_discount_amount": (
+                    f"{class_discount_amount:.2f}"
+                ),
+
+                "discount_amount": (
+                    f"{sale.discount_amount:.2f}"
+                ),
+
+                "total": (
+                    f"{sale.total:.2f}"
+                ),
+
+                # =============================================
+                # PAYMENT
+                # =============================================
+
+                "payment_status": (
+                    sale.payment_status
+                ),
+
+                "payment": (
+                    f"{sale.payment:.2f}"
+                ),
+
+                "change": (
+                    f"{sale.change:.2f}"
+                ),
+
+                "amount_due": (
+                    f"{sale.amount_due:.2f}"
+                ),
+
+                # =============================================
+                # ITEMS
+                # =============================================
+
+                "items": receipt_items,
+            }
         )
 
     except (
@@ -235,729 +1215,6 @@ def complete_sale(request):
             status=400
         )
 
-    # =========================================================
-    # SALESPERSON
-    # =========================================================
-
-    if not salesperson_id:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Please select a salesperson."
-            },
-            status=400
-        )
-
-    try:
-
-        salesperson = Salesperson.objects.get(
-            id=int(salesperson_id),
-            is_active=True
-        )
-
-    except (
-        Salesperson.DoesNotExist,
-        ValueError,
-        TypeError
-    ):
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Selected salesperson does not exist."
-            },
-            status=400
-        )
-
-    # =========================================================
-    # PAYMENT STATUS
-    # =========================================================
-
-    if payment_status_raw == "paid":
-
-        payment_status = "PAID"
-
-    elif payment_status_raw == "unpaid":
-
-        payment_status = "UNPAID"
-
-    elif payment_status_raw == "partial":
-
-        payment_status = "PARTIAL"
-
-    else:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Invalid payment status."
-            },
-            status=400
-        )
-
-    # =========================================================
-    # DISCOUNT CLASS
-    # =========================================================
-
-    discount_class = None
-
-    if discount_class_id:
-
-        discount_class = get_object_or_404(
-            DiscountClass,
-            id=discount_class_id
-        )
-
-    # =========================================================
-    # VALIDATE DISCOUNT
-    # =========================================================
-
-    if discount_percent < 0:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Discount cannot be negative."
-            },
-            status=400
-        )
-
-    if discount_class:
-
-        maximum = discount_class.max_discount
-
-        if discount_percent > maximum:
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        f"{discount_class.name} allows "
-                        f"up to {maximum:.2f}% discount."
-                    )
-                },
-                status=400
-            )
-
-    else:
-
-        if discount_percent != 0:
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "A discount class is required "
-                        "for a discount."
-                    )
-                },
-                status=400
-            )
-
-    # =========================================================
-    # PAYMENT VALIDATION
-    # =========================================================
-
-    if payment < 0:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "Payment cannot be negative."
-            },
-            status=400
-        )
-
-    # =========================================================
-    # READ CART
-    # =========================================================
-
-    items = []
-
-    index = 0
-
-    while True:
-
-        product_id = request.POST.get(
-            f"items[{index}][product_id]"
-        )
-
-        quantity_raw = request.POST.get(
-            f"items[{index}][quantity]"
-        )
-
-        item_discount_raw = request.POST.get(
-            f"items[{index}][discount_percent]",
-            "0"
-        )
-
-        item_discount_cluster = request.POST.get(
-            f"items[{index}][discount_cluster]",
-            "A"
-        ).strip().upper()
-
-        if not product_id:
-            break
-
-        try:
-
-            quantity = int(
-                quantity_raw
-            )
-
-            item_discount = decimal_value(
-                item_discount_raw
-            )
-
-        except (
-            ValueError,
-            TypeError,
-            InvalidOperation
-        ):
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid cart item."
-                },
-                status=400
-            )
-
-        # =====================================================
-        # QUANTITY
-        # =====================================================
-
-        if quantity <= 0:
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "Quantity must be greater than zero."
-                    )
-                },
-                status=400
-            )
-
-        # =====================================================
-        # DISCOUNT CLUSTER
-        # =====================================================
-
-        if item_discount_cluster not in [
-            "A",
-            "B",
-            "C"
-        ]:
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "Invalid item discount cluster."
-                    )
-                },
-                status=400
-            )
-
-        # =====================================================
-        # VALIDATE ITEM DISCOUNT
-        # =====================================================
-
-        if item_discount < 0:
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "Item discount cannot be negative."
-                    )
-                },
-                status=400
-            )
-
-        # Cluster A
-        if item_discount_cluster == "A":
-
-            item_discount = Decimal("0.00")
-
-        # Cluster B
-        elif item_discount_cluster == "B":
-
-            if item_discount > Decimal("10.00"):
-
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": (
-                            "Cluster B allows a maximum "
-                            "of 10% discount."
-                        )
-                    },
-                    status=400
-                )
-
-        # Cluster C
-        elif item_discount_cluster == "C":
-
-            if item_discount > Decimal("100.00"):
-
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": (
-                            "Cluster C allows a maximum "
-                            "of 100% discount."
-                        )
-                    },
-                    status=400
-                )
-
-        # =====================================================
-        # PRODUCT ID
-        # =====================================================
-
-        try:
-
-            product_id = int(
-                product_id
-            )
-
-        except (
-            ValueError,
-            TypeError
-        ):
-
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "Invalid product."
-                },
-                status=400
-            )
-
-        items.append(
-            {
-                "product_id": product_id,
-                "quantity": quantity,
-                "item_discount": item_discount,
-                "discount_cluster": item_discount_cluster,
-            }
-        )
-
-        index += 1
-
-    # =========================================================
-    # CART REQUIRED
-    # =========================================================
-
-    if not items:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": "No products were added."
-            },
-            status=400
-        )
-
-    # =========================================================
-    # PROCESS SALE
-    # =========================================================
-
-    try:
-
-        with transaction.atomic():
-
-            # =================================================
-            # LOCK PRODUCTS
-            # =================================================
-
-            locked_items = []
-
-            for cart_item in items:
-
-                product = (
-                    Product.objects
-                    .select_for_update()
-                    .get(
-                        id=cart_item["product_id"]
-                    )
-                )
-
-                quantity = cart_item["quantity"]
-
-                if product.qty < quantity:
-
-                    raise ValueError(
-                        f"Not enough stock for "
-                        f"{product.product_model}. "
-                        f"Available: {product.qty}"
-                    )
-
-                locked_items.append(
-                    {
-                        "product": product,
-                        "quantity": quantity,
-                        "item_discount": (
-                            cart_item["item_discount"]
-                        ),
-                        "discount_cluster": (
-                            cart_item["discount_cluster"]
-                        ),
-                    }
-                )
-
-            # =================================================
-            # CALCULATE ITEMS
-            # =================================================
-
-            sale_subtotal = Decimal("0.00")
-
-            item_discount_total = Decimal("0.00")
-
-            calculated_items = []
-
-            for item in locked_items:
-
-                product = item["product"]
-
-                quantity = item["quantity"]
-
-                item_discount_percent = (
-                    item["item_discount"]
-                )
-
-                discount_cluster = (
-                    item["discount_cluster"]
-                )
-
-                gross_subtotal = money(
-                    product.price * quantity
-                )
-
-                item_discount_amount = money(
-                    gross_subtotal
-                    *
-                    (
-                        item_discount_percent
-                        /
-                        Decimal("100")
-                    )
-                )
-
-                item_total = money(
-                    gross_subtotal
-                    -
-                    item_discount_amount
-                )
-
-                if item_total < 0:
-
-                    item_total = Decimal("0.00")
-
-                sale_subtotal += gross_subtotal
-
-                item_discount_total += (
-                    item_discount_amount
-                )
-
-                calculated_items.append(
-                    {
-                        "product": product,
-                        "quantity": quantity,
-                        "price": product.price,
-                        "subtotal": gross_subtotal,
-                        "discount_percent": (
-                            item_discount_percent
-                        ),
-                        "discount_amount": (
-                            item_discount_amount
-                        ),
-                        "total": item_total,
-                        "discount_cluster": (
-                            discount_cluster
-                        ),
-                    }
-                )
-
-            sale_subtotal = money(
-                sale_subtotal
-            )
-
-            item_discount_total = money(
-                item_discount_total
-            )
-
-            # =================================================
-            # AMOUNT AFTER ITEM DISCOUNT
-            # =================================================
-
-            amount_after_item_discount = money(
-                sale_subtotal
-                -
-                item_discount_total
-            )
-
-            # =================================================
-            # CLASS DISCOUNT
-            # =================================================
-
-            class_discount_amount = money(
-                amount_after_item_discount
-                *
-                (
-                    discount_percent
-                    /
-                    Decimal("100")
-                )
-            )
-
-            # =================================================
-            # FINAL TOTAL
-            # =================================================
-
-            final_total = money(
-                amount_after_item_discount
-                -
-                class_discount_amount
-            )
-
-            if final_total < 0:
-
-                final_total = Decimal("0.00")
-
-            # =================================================
-            # PAYMENT
-            # =================================================
-
-            if payment_status == "PAID":
-
-                if payment < final_total:
-
-                    raise ValueError(
-                        "Cash received is not enough."
-                    )
-
-                actual_payment = payment
-
-                actual_change = money(
-                    payment -
-                    final_total
-                )
-
-            elif payment_status == "UNPAID":
-
-                actual_payment = Decimal("0.00")
-
-                actual_change = Decimal("0.00")
-
-            else:
-
-                if payment <= 0:
-
-                    raise ValueError(
-                        "Partial payment must be "
-                        "greater than zero."
-                    )
-
-                if payment >= final_total:
-
-                    payment_status = "PAID"
-
-                    actual_payment = payment
-
-                    actual_change = money(
-                        payment -
-                        final_total
-                    )
-
-                else:
-
-                    actual_payment = payment
-
-                    actual_change = Decimal("0.00")
-
-            # =================================================
-            # TOTAL DISCOUNT
-            # =================================================
-
-            total_discount_amount = money(
-                item_discount_total
-                +
-                class_discount_amount
-            )
-
-            # =================================================
-            # CREATE SALE
-            # =================================================
-            #
-            # IMPORTANT:
-            #
-            # Do NOT use:
-            #
-            # salesman=
-            # salesman_name=
-            #
-            # The salesperson is stored as a Salesperson
-            # relationship.
-            #
-            # =================================================
-
-            sale = Sale.objects.create(
-
-                staff=request.user,
-
-                salesperson=salesperson,
-
-                discount_class=discount_class,
-
-                subtotal=sale_subtotal,
-
-                discount_percent=discount_percent,
-
-                discount_amount=(
-                    total_discount_amount
-                ),
-
-                total=final_total,
-
-                payment_status=payment_status,
-
-                payment=actual_payment,
-
-                change=actual_change,
-            )
-
-            # =================================================
-            # CREATE SALE ITEMS
-            # =================================================
-
-            for item in calculated_items:
-
-                product = item["product"]
-
-                quantity = item["quantity"]
-
-                SaleItem.objects.create(
-
-                    sale=sale,
-
-                    product=product,
-
-                    quantity=quantity,
-
-                    price=item["price"],
-
-                    subtotal=item["subtotal"],
-
-                    discount_percent=(
-                        item["discount_percent"]
-                    ),
-
-                    discount_amount=(
-                        item["discount_amount"]
-                    ),
-
-                    total=item["total"],
-                )
-
-                # =================================================
-                # STOCK
-                # =================================================
-
-                previous_qty = product.qty
-
-                product.qty = (
-                    product.qty -
-                    quantity
-                )
-
-                product.save(
-                    update_fields=[
-                        "qty",
-                        "updated_at",
-                    ]
-                )
-
-                # =================================================
-                # INVENTORY TRANSACTION
-                # =================================================
-
-                InventoryTransaction.objects.create(
-
-                    product=product,
-
-                    transaction_type="OUT",
-
-                    quantity=quantity,
-
-                    previous_qty=previous_qty,
-
-                    new_qty=product.qty,
-
-                    reference=f"SALE-{sale.id}",
-
-                    notes=(
-                        f"Sale #{sale.id} - "
-                        f"{product.product_model}"
-                    ),
-
-                    created_by=request.user,
-                )
-
-    # =========================================================
-    # PRODUCT DOES NOT EXIST
-    # =========================================================
-
-    except Product.DoesNotExist:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "One of the selected products "
-                    "no longer exists."
-                )
-            },
-            status=400
-        )
-
-    # =========================================================
-    # SALESPERSON DOES NOT EXIST
-    # =========================================================
-
-    except Salesperson.DoesNotExist:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "The selected salesperson "
-                    "no longer exists."
-                )
-            },
-            status=400
-        )
-
-    # =========================================================
-    # VALIDATION ERROR
-    # =========================================================
-
-    except ValueError as error:
-
-        return JsonResponse(
-            {
-                "success": False,
-                "message": str(error)
-            },
-            status=400
-        )
-
-    # =========================================================
-    # DATABASE / OTHER ERROR
-    # =========================================================
-
     except Exception as error:
 
         return JsonResponse(
@@ -969,128 +1226,6 @@ def complete_sale(request):
             },
             status=500
         )
-
-    # =========================================================
-    # RECEIPT ITEMS
-    # =========================================================
-
-    receipt_items = []
-
-    for item in (
-        sale.items
-        .select_related("product")
-        .all()
-    ):
-
-        receipt_items.append(
-            {
-                "name": (
-                    item.product.product_model
-                ),
-
-                "quantity": (
-                    item.quantity
-                ),
-
-                "price": (
-                    f"{item.price:.2f}"
-                ),
-
-                "subtotal": (
-                    f"{item.subtotal:.2f}"
-                ),
-
-                "discount_percent": (
-                    f"{item.discount_percent:.2f}"
-                ),
-
-                "discount_amount": (
-                    f"{item.discount_amount:.2f}"
-                ),
-
-                "total": (
-                    f"{item.total:.2f}"
-                ),
-            }
-        )
-
-    # =========================================================
-    # JSON RESPONSE
-    # =========================================================
-
-    return JsonResponse(
-        {
-            "success": True,
-
-            "sale_id": sale.id,
-
-            "date": sale.created_at.strftime(
-                "%b %d, %Y %I:%M %p"
-            ),
-
-            "staff": (
-                request.user.get_full_name()
-                or request.user.username
-            ),
-
-            "salesperson": (
-                salesperson.full_name
-            ),
-
-            "salesman": (
-                salesperson.full_name
-            ),
-
-            "salesperson_id": (
-                salesperson.id
-            ),
-
-            "employee_id": (
-                salesperson.employee_id
-                or ""
-            ),
-
-            "payment_status": (
-                sale.payment_status
-            ),
-
-            "discount_class": (
-                discount_class.name
-                if discount_class
-                else "No Discount"
-            ),
-
-            "discount_percent": (
-                f"{sale.discount_percent:.2f}"
-            ),
-
-            "subtotal": (
-                f"{sale.subtotal:.2f}"
-            ),
-
-            "discount_amount": (
-                f"{sale.discount_amount:.2f}"
-            ),
-
-            "total": (
-                f"{sale.total:.2f}"
-            ),
-
-            "payment": (
-                f"{sale.payment:.2f}"
-            ),
-
-            "change": (
-                f"{sale.change:.2f}"
-            ),
-
-            "amount_due": (
-                f"{sale.amount_due:.2f}"
-            ),
-
-            "items": receipt_items,
-        }
-    )
 
 
 # =========================================================
@@ -1105,6 +1240,8 @@ def sale_receipt(request, sale_id):
         Sale.objects
         .select_related(
             "staff",
+            "salesperson",
+            "client",
             "discount_class"
         )
         .prefetch_related(

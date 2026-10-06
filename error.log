@@ -1,0 +1,24 @@
+2026-09-22 19:43:42,897 [INFO] __main__: ======================================================================
+2026-09-22 19:43:42,898 [INFO] __main__: Starting BentaPOS
+2026-09-22 19:43:42,898 [INFO] __main__: APP_DIR: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config
+2026-09-22 19:43:42,898 [INFO] __main__: BUNDLE_DIR: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config
+2026-09-22 19:43:42,898 [INFO] __main__: Python executable: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config\venv\Scripts\python.exe
+2026-09-22 19:43:42,898 [INFO] __main__: ======================================================================
+2026-09-22 19:43:42,898 [INFO] __main__: Starting database migration...
+2026-09-22 19:43:43,018 [INFO] __main__: Database migration completed successfully.
+2026-09-22 19:43:43,021 [INFO] __main__: Starting Waitress server on 127.0.0.1:8000
+2026-09-22 19:43:43,026 [INFO] waitress: Serving on http://127.0.0.1:8000
+2026-09-22 19:43:45,021 [INFO] __main__: Opening http://127.0.0.1:8000
+2026-09-22 19:56:25,375 [INFO] __main__: PyWebView closed.
+2026-09-22 20:28:23,391 [INFO] __main__: ======================================================================
+2026-09-22 20:28:23,393 [INFO] __main__: Starting BentaPOS
+2026-09-22 20:28:23,393 [INFO] __main__: APP_DIR: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config
+2026-09-22 20:28:23,393 [INFO] __main__: BUNDLE_DIR: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config
+2026-09-22 20:28:23,393 [INFO] __main__: Python executable: C:\Users\MR Circuits\OneDrive\Desktop\MR Sales\config\venv\Scripts\python.exe
+2026-09-22 20:28:23,393 [INFO] __main__: ======================================================================
+2026-09-22 20:28:23,393 [INFO] __main__: Starting database migration...
+2026-09-22 20:28:23,642 [INFO] __main__: Database migration completed successfully.
+2026-09-22 20:28:23,644 [INFO] __main__: Starting Waitress server on 127.0.0.1:8000
+2026-09-22 20:28:23,657 [INFO] waitress: Serving on http://127.0.0.1:8000
+2026-09-22 20:28:25,647 [INFO] __main__: Opening http://127.0.0.1:8000
+2026-09-22 20:29:11,539 [INFO] __main__: PyWebView closed.

@@ -1,0 +1,3247 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+BentaPOS - Reports
+{% endblock %}
+
+{% block page_title %}
+Sales Reports
+{% endblock %}
+
+{% block page_subtitle %}
+Sales performance and transaction analytics
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   REPORT PAGE
+========================================================= */
+
+.reports-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   REPORT HEADER
+========================================================= */
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.report-header-left h1 {
+    margin: 0 0 6px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.report-header-left p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.report-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.period-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-select {
+    height: 40px;
+    min-width: 130px;
+    padding: 0 35px 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.period-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.print-btn {
+    height: 40px;
+    padding: 0 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.print-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+
+/* =========================================================
+   PERIOD INFO
+========================================================= */
+
+.period-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 12px 15px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.period-info strong {
+    color: #374151;
+}
+
+
+/* =========================================================
+   STAT CARDS
+========================================================= */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+
+/* =========================================================
+   SOLID SUMMARY CARD
+========================================================= */
+
+.stat-card {
+    position: relative;
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 115px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    color: #ffffff;
+    overflow: hidden;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================================================
+   CARD COLORS
+========================================================= */
+
+.stat-card:nth-child(1) {
+    background: #237a57;
+}
+
+.stat-card:nth-child(2) {
+    background: #1f4e79;
+}
+
+.stat-card:nth-child(3) {
+    background: #176b87;
+}
+
+.stat-card:nth-child(4) {
+    background: #b86b00;
+}
+
+
+/* =========================================================
+   STAT CONTENT
+========================================================= */
+
+.stat-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.88);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 25px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.stat-subtitle {
+    margin-top: 7px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================================
+   SECONDARY SUMMARY GRID
+========================================================= */
+
+.secondary-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.secondary-stat-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
+.secondary-stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 7px;
+}
+
+.secondary-stat-value {
+    font-size: 21px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.secondary-stat-description {
+    margin-top: 5px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   STATUS GRID
+========================================================= */
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.status-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
+.status-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 13px;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.status-row:last-child {
+    border-bottom: none;
+}
+
+.status-name {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.status-value {
+    color: #111827;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   MAIN REPORT GRID
+========================================================= */
+
+.report-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.report-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.report-card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.report-card-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 650;
+    color: #111827;
+}
+
+.report-card-header p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   CHART CARD
+========================================================= */
+
+.chart-card {
+    min-height: 450px;
+}
+
+.chart-content {
+    padding: 20px;
+}
+
+
+/* =========================================================
+   CHART + SIDE DETAILS
+========================================================= */
+
+.chart-layout {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    min-height: 350px;
+}
+
+
+/* =========================================================
+   DOUGHNUT AREA
+========================================================= */
+
+.doughnut-chart-area {
+    flex: 1;
+    min-width: 0;
+    min-height: 350px;
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    touch-action: manipulation;
+}
+
+.doughnut-chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 350px;
+}
+
+#salesChart {
+    width: 100% !important;
+    height: 100% !important;
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   CENTER OF DOUGHNUT
+========================================================= */
+
+.chart-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    text-align: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.chart-center-label {
+    color: #9ca3af;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.chart-center-value {
+    color: #111827;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   RIGHT SIDE PANEL
+========================================================= */
+
+.sales-details-panel {
+    width: 330px;
+    flex-shrink: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* =========================================================
+   HOVER DETAIL
+========================================================= */
+
+.hover-detail-box {
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 15px;
+    min-height: 135px;
+    margin-bottom: 14px;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.hover-detail-box.active {
+    background: #ffffff;
+    border-color: #d1d5db;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.detail-empty {
+    height: 105px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    color: #9ca3af;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 12px;
+}
+
+.detail-color {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.detail-title {
+    font-size: 14px;
+    font-weight: 650;
+    color: #111827;
+}
+
+.detail-sales {
+    font-size: 23px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.detail-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.detail-meta-item {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.detail-meta-item strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SIDE LEGEND
+========================================================= */
+
+.legend-title {
+    font-size: 13px;
+    font-weight: 650;
+    color: #374151;
+    margin-bottom: 9px;
+}
+
+.sales-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    overflow-y: auto;
+    max-height: 190px;
+
+    padding-right: 4px;
+}
+
+.sales-legend::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sales-legend::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sales-legend::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   LEGEND ITEM
+========================================================= */
+
+.legend-item {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+
+    padding: 9px 10px;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    background: transparent;
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.legend-item:hover {
+    background: #f9fafb;
+    border-color: #eeeeee;
+}
+
+.legend-item.active {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+.legend-item.dimmed {
+    opacity: 0.45;
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-info {
+    min-width: 0;
+}
+
+.legend-label {
+    display: block;
+
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+    font-weight: 550;
+    color: #374151;
+}
+
+.legend-transactions {
+    display: block;
+    margin-top: 2px;
+
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.legend-value {
+    text-align: right;
+}
+
+.legend-sales {
+    display: block;
+
+    font-size: 12px;
+    font-weight: 650;
+    color: #111827;
+}
+
+.legend-percent {
+    display: block;
+    margin-top: 2px;
+
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   REPORT TABLES
+========================================================= */
+
+.full-width-card {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table th {
+    padding: 13px 18px;
+
+    text-align: left;
+
+    font-size: 11px;
+    font-weight: 650;
+    color: #6b7280;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    white-space: nowrap;
+}
+
+.report-table td {
+    padding: 13px 18px;
+
+    font-size: 13px;
+    color: #374151;
+
+    border-bottom: 1px solid #f1f1f1;
+
+    white-space: nowrap;
+}
+
+.report-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.report-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.table-primary {
+    font-weight: 600;
+    color: #111827;
+}
+
+.table-money {
+    font-weight: 650;
+    color: #111827;
+}
+
+.table-muted {
+    color: #9ca3af;
+}
+
+.empty-row {
+    text-align: center !important;
+    color: #9ca3af !important;
+    padding: 35px !important;
+}
+
+
+/* =========================================================
+   TWO COLUMN REPORT TABLE GRID
+========================================================= */
+
+.report-table-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.status-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-unpaid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-partial {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* =========================================================
+   INVENTORY SUMMARY
+========================================================= */
+
+.inventory-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    padding: 20px;
+}
+
+.inventory-summary-box {
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: #fafafa;
+}
+
+.inventory-summary-label {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.inventory-summary-value {
+    font-size: 21px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.inventory-summary-count {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   STOCK OVERVIEW
+========================================================= */
+
+.stock-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    padding: 20px;
+}
+
+.stock-overview-item {
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: #ffffff;
+}
+
+.stock-overview-label {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.stock-overview-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+}
+
+
+/* =========================================================
+   RECENT SALES
+========================================================= */
+
+.recent-card {
+    width: 100%;
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+
+    .report-actions {
+        display: none !important;
+    }
+
+    .period-info {
+        background: #ffffff !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .secondary-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-table-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-card,
+    .secondary-stat-card,
+    .status-card {
+        break-inside: avoid;
+    }
+
+    body {
+        background: #ffffff !important;
+    }
+
+    .stat-card {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .secondary-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stock-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-details-panel {
+        width: 300px;
+    }
+}
+
+
+@media (max-width: 850px) {
+
+    .chart-layout {
+        flex-direction: column;
+    }
+
+    .doughnut-chart-area {
+        min-height: 300px;
+    }
+
+    .doughnut-chart-wrapper {
+        height: 300px;
+    }
+
+    .sales-details-panel {
+        width: 100%;
+    }
+
+    .sales-legend {
+        max-height: 220px;
+    }
+
+    .report-table-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .report-header {
+        align-items: flex-start;
+    }
+
+    .report-actions {
+        width: 100%;
+    }
+
+    .period-form {
+        flex: 1;
+    }
+
+    .period-select {
+        width: 100%;
+    }
+
+    .print-btn {
+        flex-shrink: 0;
+    }
+
+    .stats-grid,
+    .secondary-stats-grid,
+    .status-grid,
+    .stock-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        min-height: 100px;
+    }
+
+    .chart-content {
+        padding: 14px;
+    }
+
+    .chart-layout {
+        gap: 15px;
+    }
+
+    .doughnut-chart-wrapper {
+        height: 280px;
+    }
+
+    .doughnut-chart-area {
+        min-height: 280px;
+    }
+
+    .chart-center-value {
+        font-size: 19px;
+    }
+
+    .sales-details-panel {
+        width: 100%;
+    }
+
+    .hover-detail-box {
+        margin-bottom: 12px;
+    }
+
+    .period-info {
+        flex-wrap: wrap;
+    }
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="reports-page">
+
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="report-header">
+
+        <div class="report-header-left">
+
+            <h1>
+                Sales Reports
+            </h1>
+
+            <p>
+                Sales performance and transaction analytics
+            </p>
+
+        </div>
+
+
+        <div class="report-actions">
+
+            <form
+                method="GET"
+                class="period-form"
+            >
+
+                <select
+                    name="period"
+                    class="period-select"
+                    onchange="this.form.submit()"
+                >
+
+                    <option
+                        value="daily"
+                        {% if period == "daily" %}selected{% endif %}
+                    >
+                        Daily
+                    </option>
+
+                    <option
+                        value="weekly"
+                        {% if period == "weekly" %}selected{% endif %}
+                    >
+                        Weekly
+                    </option>
+
+                    <option
+                        value="monthly"
+                        {% if period == "monthly" %}selected{% endif %}
+                    >
+                        Monthly
+                    </option>
+
+                </select>
+
+            </form>
+
+
+            <button
+                type="button"
+                class="print-btn"
+                onclick="window.print()"
+            >
+                Print Report
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PERIOD
+    ====================================================== -->
+
+    <div class="period-info">
+
+        <span>
+            Reporting period:
+        </span>
+
+        <strong>
+            {{ start_date|date:"M d, Y" }}
+        </strong>
+
+        <span>
+            to
+        </span>
+
+        <strong>
+            {{ end_date|date:"M d, Y" }}
+        </strong>
+
+    </div>
+
+
+    <!-- =====================================================
+         PRIMARY STATISTICS
+    ====================================================== -->
+
+    <div class="stats-grid">
+
+
+        <!-- TOTAL SALES -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <div class="stat-label">
+                    Total Sales
+                </div>
+
+                <div class="stat-value">
+                    ₱{{ total_sales|floatformat:2 }}
+                </div>
+
+            </div>
+
+            <div class="stat-subtitle">
+                Sales revenue for this period
+            </div>
+
+        </div>
+
+
+        <!-- TRANSACTIONS -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <div class="stat-label">
+                    Transactions
+                </div>
+
+                <div class="stat-value">
+                    {{ total_transactions }}
+                </div>
+
+            </div>
+
+            <div class="stat-subtitle">
+                Transactions recorded
+            </div>
+
+        </div>
+
+
+        <!-- ITEMS -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <div class="stat-label">
+                    Items Sold
+                </div>
+
+                <div class="stat-value">
+                    {{ total_items }}
+                </div>
+
+            </div>
+
+            <div class="stat-subtitle">
+                Total quantity sold
+            </div>
+
+        </div>
+
+
+        <!-- AVERAGE -->
+
+        <div class="stat-card">
+
+            <div>
+
+                <div class="stat-label">
+                    Average Sale
+                </div>
+
+                <div class="stat-value">
+                    ₱{{ average_sale|floatformat:2 }}
+                </div>
+
+            </div>
+
+            <div class="stat-subtitle">
+                Average transaction value
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SECONDARY SALES SUMMARY
+    ====================================================== -->
+
+    <div class="secondary-stats-grid">
+
+
+        <div class="secondary-stat-card">
+
+            <div class="secondary-stat-label">
+                Subtotal
+            </div>
+
+            <div class="secondary-stat-value">
+                ₱{{ total_subtotal|floatformat:2 }}
+            </div>
+
+            <div class="secondary-stat-description">
+                Gross transaction subtotal
+            </div>
+
+        </div>
+
+
+        <div class="secondary-stat-card">
+
+            <div class="secondary-stat-label">
+                Discounts
+            </div>
+
+            <div class="secondary-stat-value">
+                ₱{{ total_discount|floatformat:2 }}
+            </div>
+
+            <div class="secondary-stat-description">
+                Discounts applied to sales
+            </div>
+
+        </div>
+
+
+        <div class="secondary-stat-card">
+
+            <div class="secondary-stat-label">
+                Payments Received
+            </div>
+
+            <div class="secondary-stat-value">
+                ₱{{ total_payment|floatformat:2 }}
+            </div>
+
+            <div class="secondary-stat-description">
+                Total payments recorded
+            </div>
+
+        </div>
+
+
+        <div class="secondary-stat-card">
+
+            <div class="secondary-stat-label">
+                Amount Due
+            </div>
+
+            <div class="secondary-stat-value">
+                ₱{{ total_amount_due|floatformat:2 }}
+            </div>
+
+            <div class="secondary-stat-description">
+                Remaining amount from sales
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATUS SUMMARY
+    ====================================================== -->
+
+    <div class="status-grid">
+
+
+        <!-- PAYMENT STATUS -->
+
+        <div class="status-card">
+
+            <div class="status-card-title">
+                Payment Status
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Paid
+                </span>
+
+                <span class="status-value">
+                    {{ paid_sales }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Partial
+                </span>
+
+                <span class="status-value">
+                    {{ partial_sales }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Unpaid
+                </span>
+
+                <span class="status-value">
+                    {{ unpaid_sales }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- CLIENTS -->
+
+        <div class="status-card">
+
+            <div class="status-card-title">
+                Clients
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Total Clients
+                </span>
+
+                <span class="status-value">
+                    {{ total_clients }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Active
+                </span>
+
+                <span class="status-value">
+                    {{ active_clients }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Inactive
+                </span>
+
+                <span class="status-value">
+                    {{ inactive_clients }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- SALESPERSONS -->
+
+        <div class="status-card">
+
+            <div class="status-card-title">
+                Salespersons
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Total
+                </span>
+
+                <span class="status-value">
+                    {{ total_salespersons }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Active
+                </span>
+
+                <span class="status-value">
+                    {{ active_salespersons }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Inactive
+                </span>
+
+                <span class="status-value">
+                    {{ inactive_salespersons }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- DISCOUNTS -->
+
+        <div class="status-card">
+
+            <div class="status-card-title">
+                Discount Classes
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Total Classes
+                </span>
+
+                <span class="status-value">
+                    {{ total_discount_classes }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Item Discounts
+                </span>
+
+                <span class="status-value">
+                    ₱{{ total_item_discount|floatformat:2 }}
+                </span>
+
+            </div>
+
+            <div class="status-row">
+
+                <span class="status-name">
+                    Sale Discounts
+                </span>
+
+                <span class="status-value">
+                    ₱{{ total_discount|floatformat:2 }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN REPORT
+    ====================================================== -->
+
+    <div class="report-grid">
+
+
+        <!-- =================================================
+             SALES CHART
+        ================================================== -->
+
+        <div class="report-card chart-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Sales Distribution
+                </h2>
+
+                <p>
+                    Hover over a section to view detailed information
+                </p>
+
+            </div>
+
+
+            <div class="chart-content">
+
+                <div class="chart-layout">
+
+
+                    <!-- =====================================
+                         DOUGHNUT
+                    ====================================== -->
+
+                    <div class="doughnut-chart-area">
+
+                        <div class="doughnut-chart-wrapper">
+
+                            <canvas id="salesChart"></canvas>
+
+
+                            <!-- CENTER TEXT -->
+
+                            <div class="chart-center">
+
+                                <div class="chart-center-label">
+                                    Total Sales
+                                </div>
+
+                                <div class="chart-center-value">
+                                    ₱{{ total_sales|floatformat:2 }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         DETAILS + LEGEND
+                    ====================================== -->
+
+                    <div class="sales-details-panel">
+
+
+                        <!-- =================================
+                             HOVER DETAIL
+                        ================================== -->
+
+                        <div
+                            id="hoverDetailBox"
+                            class="hover-detail-box"
+                        >
+
+                            <div class="detail-empty">
+
+                                Hover over a chart section
+                                to view its details
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             LEGEND
+                        ================================== -->
+
+                        <div class="legend-title">
+                            Sales Breakdown
+                        </div>
+
+                        <div
+                            id="salesLegend"
+                            class="sales-legend"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RECENT SALES
+        ================================================== -->
+
+        <div class="report-card recent-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Recent Sales
+                </h2>
+
+                <p>
+                    Latest transactions for this period
+                </p>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Transaction
+                            </th>
+
+                            <th>
+                                Date
+                            </th>
+
+                            <th>
+                                Staff
+                            </th>
+
+                            <th>
+                                Items
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for sale in recent_sales %}
+
+                        <tr>
+
+                            <td class="table-primary">
+                                #{{ sale.id }}
+                            </td>
+
+                            <td>
+                                {{ sale.created_at|date:"M d, Y h:i A" }}
+                            </td>
+
+                            <td>
+
+                                {% if sale.staff %}
+
+                                    {{ sale.staff.username }}
+
+                                {% else %}
+
+                                    <span class="table-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if sale.items.all %}
+
+                                    {{ sale.items.all|length }}
+
+                                {% else %}
+
+                                    <span class="table-muted">
+                                        —
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td class="table-money">
+                                ₱{{ sale.total|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="5"
+                                class="empty-row"
+                            >
+                                No sales found for this period.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PRODUCT SALES REPORT
+    ====================================================== -->
+
+    <div class="report-card full-width-card">
+
+        <div class="report-card-header">
+
+            <h2>
+                Product Sales
+            </h2>
+
+            <p>
+                Product-level sales performance for the selected period
+            </p>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="report-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Quantity Sold
+                        </th>
+
+                        <th>
+                            Gross Sales
+                        </th>
+
+                        <th>
+                            Discount
+                        </th>
+
+                        <th>
+                            Net Sales
+                        </th>
+
+                        <th>
+                            Transactions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for product in product_sales %}
+
+                    <tr>
+
+                        <td class="table-primary">
+
+                            {{ product.product__product_model }}
+
+                            {% if product.product__description %}
+
+                                <div
+                                    style="
+                                        font-size: 11px;
+                                        color: #9ca3af;
+                                        margin-top: 3px;
+                                    "
+                                >
+                                    {{ product.product__description }}
+                                </div>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ product.product__category|default:"—" }}
+                        </td>
+
+                        <td>
+                            {{ product.quantity_sold }}
+                        </td>
+
+                        <td>
+                            ₱{{ product.gross_sales|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            ₱{{ product.discount_total|floatformat:2 }}
+                        </td>
+
+                        <td class="table-money">
+                            ₱{{ product.net_sales|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            {{ product.transaction_count }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="empty-row"
+                        >
+                            No product sales found for this period.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CLIENT + SALESPERSON REPORT
+    ====================================================== -->
+
+    <div class="report-table-grid">
+
+
+        <!-- =================================================
+             CLIENT SALES
+        ================================================== -->
+
+        <div class="report-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Client Sales
+                </h2>
+
+                <p>
+                    Sales grouped by client
+                </p>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Client
+                            </th>
+
+                            <th>
+                                Transactions
+                            </th>
+
+                            <th>
+                                Sales
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for client in client_sales %}
+
+                        <tr>
+
+                            <td class="table-primary">
+
+                                {% if client.client__organization %}
+
+                                    {{ client.client__organization }}
+
+                                {% else %}
+
+                                    {{ client.client__first_name }}
+
+                                    {% if client.client__middle_name %}
+                                        {{ client.client__middle_name|slice:":1" }}.
+                                    {% endif %}
+
+                                    {{ client.client__last_name }}
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+                                {{ client.transaction_count }}
+                            </td>
+
+                            <td class="table-money">
+                                ₱{{ client.total_sales|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="empty-row"
+                            >
+                                No client sales found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SALESPERSON SALES
+        ================================================== -->
+
+        <div class="report-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Salesperson Sales
+                </h2>
+
+                <p>
+                    Sales grouped by salesperson
+                </p>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Salesperson
+                            </th>
+
+                            <th>
+                                Transactions
+                            </th>
+
+                            <th>
+                                Sales
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for salesperson in salesperson_sales %}
+
+                        <tr>
+
+                            <td class="table-primary">
+
+                                {{ salesperson.salesperson__first_name }}
+
+                                {% if salesperson.salesperson__middle_name %}
+                                    {{ salesperson.salesperson__middle_name|slice:":1" }}.
+                                {% endif %}
+
+                                {{ salesperson.salesperson__last_name }}
+
+                            </td>
+
+                            <td>
+                                {{ salesperson.transaction_count }}
+                            </td>
+
+                            <td class="table-money">
+                                ₱{{ salesperson.total_sales|floatformat:2 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="empty-row"
+                            >
+                                No salesperson sales found.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         DISCOUNT CLASS REPORT
+    ====================================================== -->
+
+    <div class="report-card full-width-card">
+
+        <div class="report-card-header">
+
+            <h2>
+                Discount Class Sales
+            </h2>
+
+            <p>
+                Sales and discounts grouped by discount class
+            </p>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="report-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Code
+                        </th>
+
+                        <th>
+                            Discount Class
+                        </th>
+
+                        <th>
+                            Transactions
+                        </th>
+
+                        <th>
+                            Sales
+                        </th>
+
+                        <th>
+                            Discount Given
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for discount in discount_class_sales %}
+
+                    <tr>
+
+                        <td class="table-primary">
+                            {{ discount.discount_class__code }}
+                        </td>
+
+                        <td>
+                            {{ discount.discount_class__name }}
+                        </td>
+
+                        <td>
+                            {{ discount.transaction_count }}
+                        </td>
+
+                        <td class="table-money">
+                            ₱{{ discount.total_sales|floatformat:2 }}
+                        </td>
+
+                        <td>
+                            ₱{{ discount.discount_total|floatformat:2 }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="empty-row"
+                        >
+                            No discount class sales found for this period.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INVENTORY SUMMARY
+    ====================================================== -->
+
+    <div class="report-card full-width-card">
+
+        <div class="report-card-header">
+
+            <h2>
+                Inventory Activity
+            </h2>
+
+            <p>
+                Inventory transactions recorded during the selected period
+            </p>
+
+        </div>
+
+
+        <div class="inventory-summary-grid">
+
+
+            <!-- STOCK IN -->
+
+            <div class="inventory-summary-box">
+
+                <div class="inventory-summary-label">
+                    Stock In
+                </div>
+
+                <div class="inventory-summary-value">
+                    {{ inventory_stock_in }}
+                </div>
+
+                <div class="inventory-summary-count">
+
+                    {{ inventory_stock_in_transactions }}
+
+                    transaction{{ inventory_stock_in_transactions|pluralize }}
+
+                </div>
+
+            </div>
+
+
+            <!-- STOCK OUT -->
+
+            <div class="inventory-summary-box">
+
+                <div class="inventory-summary-label">
+                    Stock Out
+                </div>
+
+                <div class="inventory-summary-value">
+                    {{ inventory_stock_out }}
+                </div>
+
+                <div class="inventory-summary-count">
+
+                    {{ inventory_stock_out_transactions }}
+
+                    transaction{{ inventory_stock_out_transactions|pluralize }}
+
+                </div>
+
+            </div>
+
+
+            <!-- ADJUSTMENT -->
+
+            <div class="inventory-summary-box">
+
+                <div class="inventory-summary-label">
+                    Adjustments
+                </div>
+
+                <div class="inventory-summary-value">
+                    {{ inventory_adjustment }}
+                </div>
+
+                <div class="inventory-summary-count">
+
+                    {{ inventory_adjustment_transactions }}
+
+                    transaction{{ inventory_adjustment_transactions|pluralize }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             INVENTORY TRANSACTION TABLE
+        ================================================== -->
+
+        <div class="table-wrapper">
+
+            <table class="report-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Product
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Quantity
+                        </th>
+
+                        <th>
+                            Created By
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for transaction in inventory_transactions %}
+
+                    <tr>
+
+                        <td>
+                            {{ transaction.created_at|date:"M d, Y h:i A" }}
+                        </td>
+
+                        <td class="table-primary">
+                            {{ transaction.product.product_model }}
+                        </td>
+
+                        <td>
+
+                            {{ transaction.transaction_type }}
+
+                        </td>
+
+                        <td>
+                            {{ transaction.quantity }}
+                        </td>
+
+                        <td>
+
+                            {% if transaction.created_by %}
+
+                                {{ transaction.created_by.username }}
+
+                            {% else %}
+
+                                <span class="table-muted">
+                                    —
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="empty-row"
+                        >
+                            No inventory transactions found for this period.
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STOCK OVERVIEW
+    ====================================================== -->
+
+    <div class="report-card full-width-card">
+
+        <div class="report-card-header">
+
+            <h2>
+                Current Inventory Overview
+            </h2>
+
+            <p>
+                Current product and stock status
+            </p>
+
+        </div>
+
+
+        <div class="stock-overview-grid">
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    Total Products
+                </div>
+
+                <div class="stock-overview-value">
+                    {{ total_products }}
+                </div>
+
+            </div>
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    Total Stock Quantity
+                </div>
+
+                <div class="stock-overview-value">
+                    {{ total_stock_quantity }}
+                </div>
+
+            </div>
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    Stock Value
+                </div>
+
+                <div class="stock-overview-value">
+                    ₱{{ total_stock_value|floatformat:2 }}
+                </div>
+
+            </div>
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    In Stock
+                </div>
+
+                <div class="stock-overview-value">
+                    {{ in_stock_count }}
+                </div>
+
+            </div>
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    Low Stock
+                </div>
+
+                <div class="stock-overview-value">
+                    {{ low_stock_count }}
+                </div>
+
+            </div>
+
+
+            <div class="stock-overview-item">
+
+                <div class="stock-overview-label">
+                    Out of Stock
+                </div>
+
+                <div class="stock-overview-value">
+                    {{ out_of_stock_count }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         LOW STOCK PRODUCTS
+    ====================================================== -->
+
+    <div class="report-table-grid">
+
+
+        <div class="report-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Low Stock Products
+                </h2>
+
+                <p>
+                    Products at or below their stock threshold
+                </p>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Current Stock
+                            </th>
+
+                            <th>
+                                Threshold
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for product in low_stock_products %}
+
+                        <tr>
+
+                            <td class="table-primary">
+                                {{ product.product_model }}
+                            </td>
+
+                            <td>
+                                {{ product.qty }}
+                            </td>
+
+                            <td>
+                                {{ product.low_stock_threshold }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="empty-row"
+                            >
+                                No low stock products.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             OUT OF STOCK
+        ================================================== -->
+
+        <div class="report-card">
+
+            <div class="report-card-header">
+
+                <h2>
+                    Out of Stock Products
+                </h2>
+
+                <p>
+                    Products with zero available quantity
+                </p>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="report-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Product
+                            </th>
+
+                            <th>
+                                Category
+                            </th>
+
+                            <th>
+                                Stock
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for product in out_of_stock_products %}
+
+                        <tr>
+
+                            <td class="table-primary">
+                                {{ product.product_model }}
+                            </td>
+
+                            <td>
+                                {{ product.category|default:"—" }}
+                            </td>
+
+                            <td>
+                                {{ product.qty }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="empty-row"
+                            >
+                                No out-of-stock products.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =========================================================
+     CHART.JS
+========================================================= -->
+
+<script src="{% static 'js/chart.js' %}"></script>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    /* =====================================================
+       DJANGO DATA
+    ====================================================== */
+
+    const chartLabels = {{ chart_labels|safe }};
+    const chartSales = {{ chart_sales|safe }};
+    const chartTransactions = {{ chart_transactions|safe }};
+
+
+    /* =====================================================
+       ELEMENTS
+    ====================================================== */
+
+    const canvas = document.getElementById("salesChart");
+    const legendContainer = document.getElementById("salesLegend");
+    const detailBox = document.getElementById("hoverDetailBox");
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    /* =====================================================
+       FILTER VALID DATA
+    ====================================================== */
+
+    const data = [];
+
+    for (let i = 0; i < chartLabels.length; i++) {
+
+        const sales = Number(chartSales[i] || 0);
+        const transactions = Number(chartTransactions[i] || 0);
+
+        if (sales > 0) {
+
+            data.push({
+                label: chartLabels[i],
+                sales: sales,
+                transactions: transactions
+            });
+
+        }
+
+    }
+
+
+    /* =====================================================
+       EMPTY CHART
+    ====================================================== */
+
+    if (data.length === 0) {
+
+        detailBox.innerHTML = `
+            <div class="detail-empty">
+                No sales data available
+                for this period.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       COLORS
+    ====================================================== */
+
+    const colors = [
+        "#2563eb",
+        "#16a34a",
+        "#f59e0b",
+        "#dc2626",
+        "#7c3aed",
+        "#0891b2",
+        "#db2777",
+        "#65a30d",
+        "#ea580c",
+        "#4f46e5",
+        "#0d9488",
+        "#9333ea"
+    ];
+
+
+    const backgroundColors = data.map(
+        (_, index) => colors[index % colors.length]
+    );
+
+
+    /* =====================================================
+       TOTAL
+    ====================================================== */
+
+    const totalSales = data.reduce(
+        (sum, item) => sum + item.sales,
+        0
+    );
+
+
+    /* =====================================================
+       FORMAT MONEY
+    ====================================================== */
+
+    function formatMoney(value) {
+
+        return "₱" + Number(value).toLocaleString(
+            "en-PH",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       SHOW DETAIL
+    ====================================================== */
+
+    function showDetail(index) {
+
+        if (
+            index === null ||
+            index === undefined ||
+            !data[index]
+        ) {
+            return;
+        }
+
+
+        const item = data[index];
+
+        const percentage =
+            totalSales > 0
+                ? (item.sales / totalSales) * 100
+                : 0;
+
+
+        detailBox.innerHTML = `
+
+            <div class="detail-header">
+
+                <span
+                    class="detail-color"
+                    style="background:${backgroundColors[index]}"
+                ></span>
+
+                <span class="detail-title">
+                    ${item.label}
+                </span>
+
+            </div>
+
+
+            <div class="detail-sales">
+                ${formatMoney(item.sales)}
+            </div>
+
+
+            <div class="detail-meta">
+
+                <div class="detail-meta-item">
+
+                    Transactions:
+
+                    <strong>
+                        ${item.transactions}
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-meta-item">
+
+                    Share:
+
+                    <strong>
+                        ${percentage.toFixed(1)}%
+                    </strong>
+
+                </div>
+
+            </div>
+
+        `;
+
+
+        detailBox.classList.add("active");
+
+
+        const legendItems =
+            legendContainer.querySelectorAll(".legend-item");
+
+
+        legendItems.forEach((element, i) => {
+
+            element.classList.toggle(
+                "active",
+                i === index
+            );
+
+            element.classList.toggle(
+                "dimmed",
+                i !== index
+            );
+
+        });
+
+    }
+
+
+    /* =====================================================
+       CLEAR DETAIL
+    ====================================================== */
+
+    function clearDetail() {
+
+        detailBox.innerHTML = `
+
+            <div class="detail-empty">
+
+                Hover over a chart section
+                to view its details
+
+            </div>
+
+        `;
+
+
+        detailBox.classList.remove("active");
+
+
+        const legendItems =
+            legendContainer.querySelectorAll(".legend-item");
+
+
+        legendItems.forEach(element => {
+
+            element.classList.remove("active");
+            element.classList.remove("dimmed");
+
+        });
+
+    }
+
+
+    /* =====================================================
+       CHART VARIABLE
+    ====================================================== */
+
+    let salesChart = null;
+
+
+    /* =====================================================
+       CREATE LEGEND
+    ====================================================== */
+
+    data.forEach((item, index) => {
+
+        const percentage =
+            totalSales > 0
+                ? (item.sales / totalSales) * 100
+                : 0;
+
+
+        const legendItem =
+            document.createElement("div");
+
+
+        legendItem.className = "legend-item";
+
+
+        legendItem.innerHTML = `
+
+            <span
+                class="legend-color"
+                style="background:${backgroundColors[index]}"
+            ></span>
+
+
+            <span class="legend-info">
+
+                <span class="legend-label">
+                    ${item.label}
+                </span>
+
+                <span class="legend-transactions">
+
+                    ${item.transactions}
+                    transaction${item.transactions == 1 ? "" : "s"}
+
+                </span>
+
+            </span>
+
+
+            <span class="legend-value">
+
+                <span class="legend-sales">
+                    ${formatMoney(item.sales)}
+                </span>
+
+                <span class="legend-percent">
+                    ${percentage.toFixed(1)}%
+                </span>
+
+            </span>
+
+        `;
+
+
+        /* =============================================
+           LEGEND HOVER
+        ============================================== */
+
+        legendItem.addEventListener(
+            "mouseenter",
+            function () {
+
+                showDetail(index);
+
+                if (salesChart) {
+
+                    salesChart.setActiveElements([
+                        {
+                            datasetIndex: 0,
+                            index: index
+                        }
+                    ]);
+
+                    salesChart.update("none");
+
+                }
+
+            }
+        );
+
+
+        /* =============================================
+           LEGEND LEAVE
+        ============================================== */
+
+        legendItem.addEventListener(
+            "mouseleave",
+            function () {
+
+                clearDetail();
+
+                if (salesChart) {
+
+                    salesChart.setActiveElements([]);
+
+                    salesChart.update("none");
+
+                }
+
+            }
+        );
+
+
+        legendContainer.appendChild(
+            legendItem
+        );
+
+    });
+
+
+    /* =====================================================
+       CHART
+    ====================================================== */
+
+    salesChart = new Chart(
+        canvas.getContext("2d"),
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: data.map(
+                    item => item.label
+                ),
+
+                datasets: [
+
+                    {
+
+                        data: data.map(
+                            item => item.sales
+                        ),
+
+                        backgroundColor:
+                            backgroundColors,
+
+                        borderWidth: 3,
+
+                        borderColor: "#ffffff",
+
+                        hoverBorderWidth: 3,
+
+                        hoverOffset: 8
+
+                    }
+
+                ]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+
+                events: [
+                    "mousemove",
+                    "mouseout",
+                    "click"
+                ],
+
+
+                interaction: {
+
+                    mode: "nearest",
+
+                    intersect: true
+
+                },
+
+
+                animation: {
+
+                    duration: 250
+
+                },
+
+
+                plugins: {
+
+                    tooltip: {
+
+                        enabled: false
+
+                    },
+
+
+                    legend: {
+
+                        display: false
+
+                    }
+
+                },
+
+
+                onHover: function (
+                    event,
+                    elements
+                ) {
+
+                    if (
+                        event.native &&
+                        event.native.target
+                    ) {
+
+                        event.native.target.style.cursor =
+                            elements.length
+                                ? "pointer"
+                                : "default";
+
+                    }
+
+
+                    if (elements.length > 0) {
+
+                        const index =
+                            elements[0].index;
+
+                        showDetail(index);
+
+                    }
+
+                },
+
+
+                onClick: function (
+                    event,
+                    elements
+                ) {
+
+                    if (elements.length > 0) {
+
+                        const index =
+                            elements[0].index;
+
+                        showDetail(index);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    );
+
+
+    /* =====================================================
+       MOUSE LEAVE CHART
+    ====================================================== */
+
+    canvas.addEventListener(
+        "mouseleave",
+        function () {
+
+            salesChart.setActiveElements([]);
+
+            salesChart.update("none");
+
+            clearDetail();
+
+        }
+    );
+
+
+    /* =====================================================
+       TOUCH SUPPORT
+    ====================================================== */
+
+    canvas.addEventListener(
+        "touchstart",
+        function () {
+
+            canvas.style.touchAction =
+                "manipulation";
+
+        },
+        {
+            passive: true
+        }
+    );
+
+});
+
+</script>
+
+{% endblock %}

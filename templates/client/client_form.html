@@ -1,0 +1,1528 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if is_edit %}
+        BentaPOS - Edit Client
+    {% else %}
+        BentaPOS - Add Client
+    {% endif %}
+{% endblock %}
+
+{% block page_title %}
+    {% if is_edit %}
+        Edit Client
+    {% else %}
+        Add New Client
+    {% endif %}
+{% endblock %}
+
+{% block page_subtitle %}
+    {% if is_edit %}
+        Update client information
+    {% else %}
+        Add a new client to the system
+    {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.client-container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.client-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+}
+
+.required {
+    color: #000;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.form-input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 14px;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.form-input:focus {
+    border-color: #000;
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+.form-input::placeholder {
+    color: #aaa;
+}
+
+
+/* =========================================================
+   FILE INPUT
+========================================================= */
+
+.form-file {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.form-file:focus {
+    outline: none;
+    border-color: #000;
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+.form-file::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    background: #f7f7f7;
+    color: #222;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.form-file::file-selector-button:hover {
+    background: #eeeeee;
+}
+
+
+/* =========================================================
+   CURRENT FILE
+========================================================= */
+
+.current-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 13px;
+    background: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+}
+
+.current-file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.current-file-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #f0f0f0;
+    border-radius: 6px;
+}
+
+.current-file-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.current-file-name {
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.current-file-label {
+    font-size: 11px;
+    color: #777;
+}
+
+.current-file-link {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #111;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.current-file-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   TEXTAREA
+========================================================= */
+
+.form-textarea {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    resize: vertical;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.form-textarea:focus {
+    border-color: #000;
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+.form-textarea::placeholder {
+    color: #aaa;
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+.form-select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    background: #fff;
+    color: #111;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    padding: 0 14px;
+    cursor: pointer;
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+.form-select:focus {
+    border-color: #000;
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+
+/* =========================================================
+   HELP TEXT
+========================================================= */
+
+.form-help {
+    font-size: 11px;
+    color: #777;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   SECTION TITLE
+========================================================= */
+
+.section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 2px;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.form-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #fdf2f2;
+    border: 1px solid #f8b4b4;
+    border-radius: 8px;
+    color: #9b1c1c;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 4px;
+}
+
+.form-error svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    background: #fafafa;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.checkbox-group input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #000;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    margin-top: 5px;
+    border-top: 1px solid #f0f0f0;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn-secondary,
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .1s ease;
+}
+
+.btn-secondary {
+    border: 1px solid #d1d1d1;
+    background: #fff;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+    color: #000;
+}
+
+.btn-primary {
+    border: none;
+    background: #000;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #222;
+}
+
+.btn-primary:active {
+    transform: scale(.98);
+}
+
+
+/* =========================================================
+   BUSINESS PERMIT MODAL
+========================================================= */
+
+.permit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.65);
+    box-sizing: border-box;
+}
+
+.permit-modal.show {
+    display: flex;
+}
+
+.permit-modal-content {
+    position: relative;
+    width: min(100%, 1000px);
+    height: min(90vh, 760px);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+}
+
+.permit-modal-header {
+    min-height: 58px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fff;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.permit-modal-title {
+    min-width: 0;
+}
+
+.permit-modal-title-label {
+    font-size: 11px;
+    color: #777;
+    margin-bottom: 2px;
+}
+
+.permit-modal-title-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.permit-modal-close {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    transition:
+        background .18s ease,
+        border-color .18s ease;
+}
+
+.permit-modal-close:hover {
+    background: #f5f5f5;
+    border-color: #cfcfcf;
+}
+
+.permit-modal-close svg {
+    width: 17px;
+    height: 17px;
+}
+
+.permit-modal-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #f3f3f3;
+    overflow: hidden;
+}
+
+.permit-preview-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.permit-preview-frame {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+    background: #fff;
+}
+
+
+/* =========================================================
+   MOBILE MODAL
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .client-container {
+        width: 100%;
+    }
+
+    .client-card {
+        padding: 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+    }
+
+    .current-file {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .permit-modal {
+        padding: 10px;
+    }
+
+    .permit-modal-content {
+        width: 100%;
+        height: 95vh;
+        border-radius: 8px;
+    }
+
+    .permit-modal-header {
+        padding: 0 12px;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="client-container">
+
+    <div class="client-card">
+
+        <!-- =================================================
+             ERROR
+        ================================================== -->
+
+        {% if error %}
+
+            <div class="form-error">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                    ></circle>
+
+                    <line
+                        x1="12"
+                        y1="8"
+                        x2="12"
+                        y2="12"
+                    ></line>
+
+                    <line
+                        x1="12"
+                        y1="16"
+                        x2="12.01"
+                        y2="16"
+                    ></line>
+
+                </svg>
+
+                <span>
+                    {{ error }}
+                </span>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- =================================================
+             FORM
+        ================================================== -->
+
+        <form
+            method="POST"
+            class="form-grid"
+            autocomplete="off"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- =================================================
+                 PERSONAL INFORMATION
+            ================================================== -->
+
+            <div class="section-title">
+                Personal Information
+            </div>
+
+
+            <!-- =================================================
+                 LAST + FIRST NAME
+            ================================================== -->
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label
+                        for="id_last_name"
+                        class="form-label"
+                    >
+                        Last Name
+                        <span class="required">
+                            *
+                        </span>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="last_name"
+                        id="id_last_name"
+                        class="form-input"
+                        required
+                        maxlength="100"
+                        value="{% if is_edit %}{{ client.last_name|default:'' }}{% else %}{{ request.POST.last_name|default:'' }}{% endif %}"
+                        placeholder="e.g. Dela Cruz"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label
+                        for="id_first_name"
+                        class="form-label"
+                    >
+                        First Name
+                        <span class="required">
+                            *
+                        </span>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="first_name"
+                        id="id_first_name"
+                        class="form-input"
+                        required
+                        maxlength="100"
+                        value="{% if is_edit %}{{ client.first_name|default:'' }}{% else %}{{ request.POST.first_name|default:'' }}{% endif %}"
+                        placeholder="e.g. Juan"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 MIDDLE NAME
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_middle_name"
+                    class="form-label"
+                >
+                    Middle Name
+                </label>
+
+                <input
+                    type="text"
+                    name="middle_name"
+                    id="id_middle_name"
+                    class="form-input"
+                    maxlength="100"
+                    value="{% if is_edit %}{{ client.middle_name|default:'' }}{% else %}{{ request.POST.middle_name|default:'' }}{% endif %}"
+                    placeholder="e.g. Santos"
+                >
+
+            </div>
+
+
+            <!-- =================================================
+                 ORGANIZATION / COMPANY
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_organization"
+                    class="form-label"
+                >
+                    Organization / Company
+                </label>
+
+                <input
+                    type="text"
+                    name="organization"
+                    id="id_organization"
+                    class="form-input"
+                    maxlength="200"
+                    value="{% if is_edit %}{{ client.organization|default:'' }}{% else %}{{ request.POST.organization|default:'' }}{% endif %}"
+                    placeholder="e.g. ABC Trading Corporation"
+                >
+
+                <span class="form-help">
+                    Enter the company or organization associated
+                    with this client.
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 ADDRESS
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_address"
+                    class="form-label"
+                >
+                    Address
+                </label>
+
+                <textarea
+                    name="address"
+                    id="id_address"
+                    class="form-textarea"
+                    placeholder="Enter complete client address"
+                >{% if is_edit %}{{ client.address|default:'' }}{% else %}{{ request.POST.address|default:'' }}{% endif %}</textarea>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTACT INFORMATION
+            ================================================== -->
+
+            <div class="section-title">
+                Contact Information
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label
+                        for="id_contact_number"
+                        class="form-label"
+                    >
+                        Contact Number
+                    </label>
+
+                    <input
+                        type="text"
+                        name="contact_number"
+                        id="id_contact_number"
+                        class="form-input"
+                        maxlength="30"
+                        value="{% if is_edit %}{{ client.contact_number|default:'' }}{% else %}{{ request.POST.contact_number|default:'' }}{% endif %}"
+                        placeholder="e.g. 09123456789"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label
+                        for="id_email_address"
+                        class="form-label"
+                    >
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        name="email_address"
+                        id="id_email_address"
+                        class="form-input"
+                        maxlength="254"
+                        value="{% if is_edit %}{{ client.email_address|default:'' }}{% else %}{{ request.POST.email_address|default:'' }}{% endif %}"
+                        placeholder="e.g. juan@example.com"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 BUSINESS DOCUMENTATION
+            ================================================== -->
+
+            <div class="section-title">
+                Business Documentation
+            </div>
+
+
+            <div class="form-group">
+
+                <label
+                    for="id_business_permit"
+                    class="form-label"
+                >
+                    Business Permit
+                </label>
+
+
+                {% if is_edit and client.business_permit %}
+
+                    <div class="current-file">
+
+                        <div class="current-file-info">
+
+                            <div class="current-file-icon">
+
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    aria-hidden="true"
+                                >
+
+                                    <path
+                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                                    />
+
+                                    <polyline
+                                        points="14 2 14 8 20 8"
+                                    />
+
+                                    <line
+                                        x1="8"
+                                        y1="13"
+                                        x2="16"
+                                        y2="13"
+                                    />
+
+                                    <line
+                                        x1="8"
+                                        y1="17"
+                                        x2="14"
+                                        y2="17"
+                                    />
+
+                                </svg>
+
+                            </div>
+
+
+                            <div>
+
+                                <div class="current-file-label">
+                                    Current Business Permit
+                                </div>
+
+                                <div class="current-file-name">
+                                    {{ client.business_permit.name }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- VIEW BUTTON -->
+
+                        <button
+                            type="button"
+                            class="current-file-link"
+                            onclick="openPermitModal(
+                                '{{ client.business_permit.url|escapejs }}',
+                                '{{ client.business_permit.name|escapejs }}'
+                            )"
+                        >
+                            View
+                        </button>
+
+                    </div>
+
+                {% endif %}
+
+
+                <input
+                    type="file"
+                    name="business_permit"
+                    id="id_business_permit"
+                    class="form-file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                >
+
+
+                <span class="form-help">
+
+                    {% if is_edit and client.business_permit %}
+
+                        Select a new file only if you want to replace
+                        the existing business permit.
+
+                    {% else %}
+
+                        Attach the client's business permit.
+                        Accepted formats: PDF, JPG, JPEG, and PNG.
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 SALESPERSON
+            ================================================== -->
+
+            <div class="section-title">
+                Salesperson
+            </div>
+
+
+            <div class="form-group">
+
+                <label
+                    for="id_salesperson"
+                    class="form-label"
+                >
+                    Salesperson
+                </label>
+
+
+                <select
+                    name="salesperson"
+                    id="id_salesperson"
+                    class="form-select"
+                >
+
+                    <option value="">
+                        No Salesperson
+                    </option>
+
+
+                    {% for salesperson in salespersons %}
+
+                        <option
+                            value="{{ salesperson.id }}"
+                            {% if is_edit and client.salesperson_id == salesperson.id %}
+                                selected
+                            {% elif not is_edit and request.POST.salesperson == salesperson.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ salesperson.full_name }}
+
+                        </option>
+
+                    {% empty %}
+
+                        <option
+                            value=""
+                            disabled
+                        >
+                            No active salesperson available
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <span class="form-help">
+                    Select an active salesperson assigned
+                    to this client.
+                </span>
+
+            </div>
+
+
+            <!-- =================================================
+                 CLIENT STATUS
+            ================================================== -->
+
+            <div class="section-title">
+                Client Status
+            </div>
+
+
+            <label
+                class="checkbox-group"
+                for="id_is_active"
+            >
+
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    id="id_is_active"
+
+                    {% if is_edit %}
+
+                        {% if client.is_active %}
+                            checked
+                        {% endif %}
+
+                    {% else %}
+
+                        checked
+
+                    {% endif %}
+                >
+
+
+                <span class="checkbox-label">
+                    Active Client
+                </span>
+
+            </label>
+
+
+            <span class="form-help">
+                Inactive clients can remain in the system
+                but will be marked as inactive.
+            </span>
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+
+            <div class="form-actions">
+
+                <a
+                    href="{% url 'client-list' %}"
+                    class="btn-secondary"
+                >
+                    Cancel
+                </a>
+
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    {% if is_edit %}
+                        Save Changes
+                    {% else %}
+                        Create Client
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BUSINESS PERMIT MODAL
+========================================================= -->
+
+<div
+    id="permitModal"
+    class="permit-modal"
+    aria-hidden="true"
+>
+
+    <div
+        class="permit-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="permitModalTitle"
+    >
+
+        <!-- HEADER -->
+
+        <div class="permit-modal-header">
+
+            <div class="permit-modal-title">
+
+                <div class="permit-modal-title-label">
+                    Business Permit
+                </div>
+
+                <div
+                    id="permitModalTitle"
+                    class="permit-modal-title-name"
+                >
+                    Document Preview
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="permit-modal-close"
+                onclick="closePermitModal()"
+                aria-label="Close business permit preview"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+
+                    <line
+                        x1="18"
+                        y1="6"
+                        x2="6"
+                        y2="18"
+                    />
+
+                    <line
+                        x1="6"
+                        y1="6"
+                        x2="18"
+                        y2="18"
+                    />
+
+                </svg>
+
+            </button>
+
+        </div>
+
+
+        <!-- BODY -->
+
+        <div
+            id="permitModalBody"
+            class="permit-modal-body"
+        >
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BUSINESS PERMIT MODAL SCRIPT
+========================================================= -->
+
+<script>
+
+function openPermitModal(fileUrl, fileName) {
+
+    const modal = document.getElementById(
+        "permitModal"
+    );
+
+    const modalBody = document.getElementById(
+        "permitModalBody"
+    );
+
+    const modalTitle = document.getElementById(
+        "permitModalTitle"
+    );
+
+    if (!modal || !modalBody || !modalTitle) {
+        return;
+    }
+
+
+    modalTitle.textContent = fileName;
+
+
+    /*
+     * Get file extension
+     */
+
+    const cleanUrl = fileUrl
+        .split("?")[0]
+        .split("#")[0];
+
+    const extension = cleanUrl
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+
+    /*
+     * Clear previous preview
+     */
+
+    modalBody.innerHTML = "";
+
+
+    /*
+     * PDF
+     */
+
+    if (extension === "pdf") {
+
+        const iframe = document.createElement(
+            "iframe"
+        );
+
+        iframe.className =
+            "permit-preview-frame";
+
+        iframe.src = fileUrl;
+
+        iframe.title =
+            "Business Permit PDF Preview";
+
+        modalBody.appendChild(
+            iframe
+        );
+
+    }
+
+
+    /*
+     * IMAGE
+     */
+
+    else if (
+        extension === "jpg" ||
+        extension === "jpeg" ||
+        extension === "png"
+    ) {
+
+        const image = document.createElement(
+            "img"
+        );
+
+        image.className =
+            "permit-preview-image";
+
+        image.src = fileUrl;
+
+        image.alt =
+            "Business Permit";
+
+        modalBody.appendChild(
+            image
+        );
+
+    }
+
+
+    /*
+     * Unsupported file
+     */
+
+    else {
+
+        modalBody.innerHTML = `
+            <div style="
+                height:100%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:30px;
+                text-align:center;
+                box-sizing:border-box;
+            ">
+                <div>
+                    <div style="
+                        font-size:14px;
+                        font-weight:600;
+                        color:#222;
+                        margin-bottom:6px;
+                    ">
+                        Preview not available
+                    </div>
+
+                    <div style="
+                        font-size:12px;
+                        color:#777;
+                    ">
+                        This file type cannot be previewed.
+                    </div>
+                </div>
+            </div>
+        `;
+
+    }
+
+
+    /*
+     * Show modal
+     */
+
+    modal.classList.add(
+        "show"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.style.overflow =
+        "hidden";
+
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closePermitModal() {
+
+    const modal = document.getElementById(
+        "permitModal"
+    );
+
+    const modalBody = document.getElementById(
+        "permitModalBody"
+    );
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "show"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    if (modalBody) {
+
+        modalBody.innerHTML =
+            "";
+
+    }
+
+
+    document.body.style.overflow =
+        "";
+
+}
+
+
+/* =========================================================
+   CLOSE WHEN CLICKING OUTSIDE
+========================================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        const modal =
+            document.getElementById(
+                "permitModal"
+            );
+
+        if (!modal) {
+            return;
+        }
+
+
+        if (
+            event.target === modal
+        ) {
+
+            closePermitModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLOSE WITH ESCAPE
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            const modal =
+                document.getElementById(
+                    "permitModal"
+                );
+
+            if (
+                modal &&
+                modal.classList.contains(
+                    "show"
+                )
+            ) {
+
+                closePermitModal();
+
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

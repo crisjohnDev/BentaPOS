@@ -1,0 +1,1750 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+
+    BentaPOS - Sale #{{ sale.id }}
+
+{% endblock %}
+
+
+{% block page_title %}
+
+    Sale #{{ sale.id }}
+
+{% endblock %}
+
+
+{% block page_subtitle %}
+
+    Complete transaction details
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.sale-detail {
+
+    width: 100%;
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.back-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 18px;
+
+    color: #555;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    text-decoration: none;
+
+}
+
+.back-button:hover {
+
+    color: #000;
+
+}
+
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+
+.detail-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        350px;
+
+    gap: 18px;
+
+    align-items: start;
+
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.detail-card {
+
+    background: #fff;
+
+    border: 1px solid #e5e5e5;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    margin-bottom: 18px;
+
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.detail-header {
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #e8e8e8;
+
+}
+
+.detail-title {
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    color: #111;
+
+}
+
+.detail-subtitle {
+
+    margin-top: 4px;
+
+    color: #888;
+
+    font-size: 11px;
+
+}
+
+
+/* =========================================================
+   ITEMS WRAPPER
+========================================================= */
+
+.items-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+}
+
+
+/* =========================================================
+   ITEMS TABLE
+========================================================= */
+
+.items-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 950px;
+
+}
+
+.items-table th {
+
+    padding: 11px 18px;
+
+    background: #fafafa;
+
+    border-bottom: 1px solid #e8e8e8;
+
+    text-align: left;
+
+    color: #777;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+
+}
+
+.items-table td {
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+
+    color: #333;
+
+    vertical-align: top;
+
+}
+
+.items-table tbody tr:last-child td {
+
+    border-bottom: none;
+
+}
+
+
+/* =========================================================
+   PRODUCT
+========================================================= */
+
+.product-name {
+
+    font-weight: 700;
+
+    color: #222;
+
+}
+
+.product-description {
+
+    margin-top: 4px;
+
+    max-width: 300px;
+
+    color: #888;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+}
+
+.product-category {
+
+    display: inline-block;
+
+    margin-top: 5px;
+
+    padding: 3px 7px;
+
+    background: #f2f2f2;
+
+    color: #666;
+
+    border-radius: 4px;
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+}
+
+.item-subtotal {
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+.item-total {
+
+    font-weight: 800;
+
+    color: #111;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.summary {
+
+    padding: 20px;
+
+}
+
+.summary-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 12px;
+
+    font-size: 12px;
+
+}
+
+.summary-label {
+
+    color: #888;
+
+}
+
+.summary-value {
+
+    font-weight: 600;
+
+    text-align: right;
+
+}
+
+.total-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 15px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #ddd;
+
+}
+
+.total-label {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+}
+
+.total-value {
+
+    font-size: 21px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================================
+   INFORMATION
+========================================================= */
+
+.info-list {
+
+    padding: 20px;
+
+}
+
+.info-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid #f0f0f0;
+
+    font-size: 12px;
+
+}
+
+.info-row:last-child {
+
+    border-bottom: none;
+
+}
+
+.info-label {
+
+    color: #888;
+
+    flex-shrink: 0;
+
+}
+
+.info-value {
+
+    text-align: right;
+
+    font-weight: 600;
+
+    color: #222;
+
+    max-width: 230px;
+
+    word-break: break-word;
+
+}
+
+
+/* =========================================================
+   CLIENT DETAILS
+========================================================= */
+
+.client-name {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+
+}
+
+.client-organization {
+
+    margin-top: 3px;
+
+    color: #888;
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+}
+
+
+/* =========================================================
+   PAYMENT STATUS
+========================================================= */
+
+.payment-status {
+
+    display: inline-flex;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+}
+
+.status-paid {
+
+    background: #e8f7ee;
+
+    color: #16803c;
+
+}
+
+.status-partial {
+
+    background: #fff5df;
+
+    color: #a56a00;
+
+}
+
+.status-unpaid {
+
+    background: #fdecec;
+
+    color: #c62828;
+
+}
+
+
+/* =========================================================
+   AMOUNT
+========================================================= */
+
+.amount-due {
+
+    color: #c62828;
+
+    font-weight: 700;
+
+}
+
+.no-due {
+
+    color: #16803c;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section-space {
+
+    margin-top: 18px;
+
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty-row {
+
+    padding: 30px !important;
+
+    text-align: center !important;
+
+    color: #888 !important;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 950px) {
+
+    .detail-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .sale-detail {
+
+        width: 100%;
+
+    }
+
+    .detail-card {
+
+        border-radius: 7px;
+
+    }
+
+    .info-row {
+
+        flex-direction: column;
+
+        gap: 4px;
+
+    }
+
+    .info-value {
+
+        max-width: none;
+
+        text-align: left;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="sale-detail">
+
+
+    <!-- =====================================================
+         BACK
+    ===================================================== -->
+
+    <a
+        href="{% url 'sales' %}"
+        class="back-button"
+    >
+
+        ← Back to Sales
+
+    </a>
+
+
+
+    <!-- =====================================================
+         MAIN GRID
+    ===================================================== -->
+
+    <div class="detail-grid">
+
+
+        <!-- =================================================
+             LEFT COLUMN
+        ================================================= -->
+
+        <div>
+
+
+            <!-- =============================================
+                 PURCHASED PRODUCTS
+            ============================================== -->
+
+            <div class="detail-card">
+
+                <div class="detail-header">
+
+                    <div class="detail-title">
+
+                        Purchased Products
+
+                    </div>
+
+                    <div class="detail-subtitle">
+
+                        Sale #{{ sale.id }} ·
+                        {{ sale.items.count }} item{{ sale.items.count|pluralize }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="items-wrapper">
+
+                    <table class="items-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Product
+                                </th>
+
+                                <th>
+                                    Qty
+                                </th>
+
+                                <th>
+                                    Price
+                                </th>
+
+                                <th>
+                                    Item Discount %
+                                </th>
+
+                                <th>
+                                    Item Discount
+                                </th>
+
+                                <th>
+                                    Subtotal
+                                </th>
+
+                                <th>
+                                    Total
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for item in sale.items.all %}
+
+                            <tr>
+
+
+                                <!-- PRODUCT -->
+
+                                <td>
+
+                                    <div class="product-name">
+
+                                        {{ item.product.product_model }}
+
+                                    </div>
+
+
+                                    {% if item.product.description %}
+
+                                    <div class="product-description">
+
+                                        {{ item.product.description }}
+
+                                    </div>
+
+                                    {% endif %}
+
+
+                                    {% if item.product.category %}
+
+                                    <span class="product-category">
+
+                                        {{ item.product.category }}
+
+                                    </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- QUANTITY -->
+
+                                <td>
+
+                                    {{ item.quantity }}
+
+                                </td>
+
+
+
+                                <!-- PRICE -->
+
+                                <td>
+
+                                    ₱{{ item.price|floatformat:2 }}
+
+                                </td>
+
+
+
+                                <!-- ITEM DISCOUNT PERCENT -->
+
+                                <td>
+
+                                    {% if item.discount_percent %}
+
+                                        {{ item.discount_percent|floatformat:2 }}%
+
+                                    {% else %}
+
+                                        0.00%
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- ITEM DISCOUNT -->
+
+                                <td>
+
+                                    {% if item.discount_amount %}
+
+                                        -₱{{ item.discount_amount|floatformat:2 }}
+
+                                    {% else %}
+
+                                        ₱0.00
+
+                                    {% endif %}
+
+                                </td>
+
+
+
+                                <!-- ITEM SUBTOTAL -->
+
+                                <td>
+
+                                    <span class="item-subtotal">
+
+                                        ₱{{ item.subtotal|floatformat:2 }}
+
+                                    </span>
+
+                                </td>
+
+
+
+                                <!-- ITEM TOTAL -->
+
+                                <td>
+
+                                    <span class="item-total">
+
+                                        ₱{{ item.total|floatformat:2 }}
+
+                                    </span>
+
+                                </td>
+
+
+                            </tr>
+
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td
+                                    colspan="7"
+                                    class="empty-row"
+                                >
+
+                                    No products recorded for this sale.
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 CLIENT INFORMATION
+            ============================================== -->
+
+            <div class="detail-card">
+
+                <div class="detail-header">
+
+                    <div class="detail-title">
+
+                        Client Information
+
+                    </div>
+
+                    <div class="detail-subtitle">
+
+                        Customer information associated with this transaction
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+
+                    {% if sale.client %}
+
+
+                    <!-- CLIENT NAME -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Client Name
+
+                        </span>
+
+                        <span class="info-value">
+
+                            <div class="client-name">
+
+                                {{ sale.client.full_name }}
+
+                            </div>
+
+                            {% if sale.client.organization %}
+
+                            <div class="client-organization">
+
+                                {{ sale.client.organization }}
+
+                            </div>
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- FIRST NAME -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            First Name
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {{ sale.client.first_name }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- MIDDLE NAME -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Middle Name
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.middle_name %}
+
+                                {{ sale.client.middle_name }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- LAST NAME -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Last Name
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {{ sale.client.last_name }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- ORGANIZATION -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Organization
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.organization %}
+
+                                {{ sale.client.organization }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- ADDRESS -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Address
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.address %}
+
+                                {{ sale.client.address }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- CONTACT -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Contact Number
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.contact_number %}
+
+                                {{ sale.client.contact_number }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- EMAIL -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Email Address
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.email_address %}
+
+                                {{ sale.client.email_address }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- SALESPERSON -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Salesperson
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.salesperson %}
+
+                                {{ sale.client.salesperson.full_name }}
+
+                            {% else %}
+
+                                No salesperson assigned
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- DISCOUNT CLASS -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Client Discount Class
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.client.discount_class %}
+
+                                {{ sale.client.discount_class.name }}
+
+                            {% else %}
+
+                                None
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    {% else %}
+
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Client
+
+                        </span>
+
+                        <span class="info-value">
+
+                            Walk-in Customer
+
+                        </span>
+
+                    </div>
+
+
+                    {% endif %}
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 TRANSACTION SUMMARY
+            ============================================== -->
+
+            <div class="detail-card">
+
+                <div class="detail-header">
+
+                    <div class="detail-title">
+
+                        Transaction Summary
+
+                    </div>
+
+                    <div class="detail-subtitle">
+
+                        Complete financial breakdown
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary">
+
+
+                    <!-- SUBTOTAL -->
+
+                    <div class="summary-row">
+
+                        <span class="summary-label">
+
+                            Subtotal
+
+                        </span>
+
+                        <span class="summary-value">
+
+                            ₱{{ sale.subtotal|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- DISCOUNT PERCENT -->
+
+                    <div class="summary-row">
+
+                        <span class="summary-label">
+
+                            Discount %
+
+                        </span>
+
+                        <span class="summary-value">
+
+                            {{ sale.discount_percent|floatformat:2 }}%
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- DISCOUNT AMOUNT -->
+
+                    <div class="summary-row">
+
+                        <span class="summary-label">
+
+                            Discount Amount
+
+                        </span>
+
+                        <span class="summary-value">
+
+                            -₱{{ sale.discount_amount|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- TOTAL -->
+
+                    <div class="total-row">
+
+                        <span class="total-label">
+
+                            Total
+
+                        </span>
+
+                        <span class="total-value">
+
+                            ₱{{ sale.total|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             RIGHT COLUMN
+        ================================================= -->
+
+        <div>
+
+
+            <!-- =============================================
+                 PAYMENT INFORMATION
+            ============================================== -->
+
+            <div class="detail-card">
+
+                <div class="detail-header">
+
+                    <div class="detail-title">
+
+                        Payment Information
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+
+                    <!-- PAYMENT STATUS -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Status
+
+                        </span>
+
+                        <span class="info-value">
+
+
+                            {% if payment_status == "PAID" %}
+
+                                <span class="payment-status status-paid">
+
+                                    PAID
+
+                                </span>
+
+
+                            {% elif payment_status == "PARTIAL" %}
+
+                                <span class="payment-status status-partial">
+
+                                    PARTIALLY PAID
+
+                                </span>
+
+
+                            {% else %}
+
+                                <span class="payment-status status-unpaid">
+
+                                    UNPAID
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- TOTAL -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Sale Total
+
+                        </span>
+
+                        <span class="info-value">
+
+                            ₱{{ sale.total|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- PAYMENT -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Payment
+
+                        </span>
+
+                        <span class="info-value">
+
+                            ₱{{ sale.payment|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- CHANGE -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Change
+
+                        </span>
+
+                        <span class="info-value">
+
+                            ₱{{ sale.change|floatformat:2 }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- AMOUNT DUE -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Amount Due
+
+                        </span>
+
+                        <span class="info-value">
+
+
+                            {% if amount_due > 0 %}
+
+                                <span class="amount-due">
+
+                                    ₱{{ amount_due|floatformat:2 }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="no-due">
+
+                                    ₱0.00
+
+                                </span>
+
+                            {% endif %}
+
+
+                        </span>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =============================================
+                 SALES INFORMATION
+            ============================================== -->
+
+            <div class="detail-card">
+
+                <div class="detail-header">
+
+                    <div class="detail-title">
+
+                        Sales Information
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-list">
+
+
+                    <!-- SALE ID -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Sale ID
+
+                        </span>
+
+                        <span class="info-value">
+
+                            #{{ sale.id }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- SALESPERSON -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Salesperson
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.salesperson %}
+
+                                {{ sale.salesperson.full_name }}
+
+                            {% else %}
+
+                                No salesperson
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- SALESPERSON CONTACT -->
+
+                    {% if sale.salesperson %}
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Salesperson Contact
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.salesperson.contact_number %}
+
+                                {{ sale.salesperson.contact_number }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- SALESPERSON EMAIL -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Salesperson Email
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.salesperson.email_address %}
+
+                                {{ sale.salesperson.email_address }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+
+
+                    <!-- STAFF -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Processed By
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.staff %}
+
+                                {% if sale.staff.get_full_name %}
+
+                                    {{ sale.staff.get_full_name }}
+
+                                {% else %}
+
+                                    {{ sale.staff.username }}
+
+                                {% endif %}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- DISCOUNT CLASS -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Discount Class
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.discount_class %}
+
+                                {{ sale.discount_class.code }}
+
+                                -
+
+                                {{ sale.discount_class.name }}
+
+                            {% else %}
+
+                                None
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- MAX DISCOUNT -->
+
+                    {% if sale.discount_class %}
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Class Max Discount
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {{ sale.discount_class.max_discount|floatformat:2 }}%
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- OPEN DISCOUNT -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Open Discount
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {% if sale.discount_class.open_discount %}
+
+                                Allowed
+
+                            {% else %}
+
+                                Not Allowed
+
+                            {% endif %}
+
+                        </span>
+
+                    </div>
+
+                    {% endif %}
+
+
+
+                    <!-- DATE -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Date
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {{ sale.created_at|date:"M d, Y" }}
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- TIME -->
+
+                    <div class="info-row">
+
+                        <span class="info-label">
+
+                            Time
+
+                        </span>
+
+                        <span class="info-value">
+
+                            {{ sale.created_at|date:"h:i A" }}
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

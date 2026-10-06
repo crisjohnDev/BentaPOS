@@ -1,0 +1,1741 @@
+{% extends "base.html" %}
+
+{% block title %}
+    BentaPOS - Transactions
+{% endblock %}
+
+{% block page_title %}
+    Transactions
+{% endblock %}
+
+{% block page_subtitle %}
+    View and monitor all sales transactions
+{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.transactions-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    border: none;
+    border-radius: 14px;
+    padding: 20px;
+    min-height: 125px;
+    box-sizing: border-box;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #ffffff;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+/* =========================================================
+   SOLID SUMMARY CARD COLORS
+========================================================= */
+
+/* TOTAL TRANSACTIONS */
+.summary-card:nth-child(1) {
+    background: #1f4e79;
+    border-color: #1f4e79;
+}
+
+/* TOTAL SALES */
+.summary-card:nth-child(2) {
+    background: #237a57;
+    border-color: #237a57;
+}
+
+/* TOTAL PAID */
+.summary-card:nth-child(3) {
+    background: #176b87;
+    border-color: #176b87;
+}
+
+/* TOTAL DUE */
+.summary-card:nth-child(4) {
+    background: #b86b00;
+    border-color: #b86b00;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.summary-card-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.90);
+}
+
+.summary-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-card-icon svg {
+    width: 20px;
+    height: 20px;
+    color: #ffffff;
+}
+
+.summary-card-value {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #ffffff;
+}
+
+.summary-card-subtitle {
+    margin-top: 6px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+
+/* =========================================================
+   FILTER CARD
+========================================================= */
+
+.filter-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.filter-header {
+    margin-bottom: 18px;
+}
+
+.filter-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.filter-form {
+    display: grid;
+    grid-template-columns:
+        2fr
+        1fr
+        1fr
+        1fr
+        1fr
+        auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    border-color: #6b7280;
+    box-shadow:
+        0 0 0 3px
+        rgba(107, 114, 128, 0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-filter {
+    height: 42px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-filter:hover {
+    background: #1f2937;
+}
+
+.btn-clear {
+    height: 42px;
+    padding: 0 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-clear:hover {
+    background: #f9fafb;
+}
+
+
+/* =========================================================
+   TABLE CARD
+========================================================= */
+
+.table-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.04);
+}
+
+.table-header {
+    padding: 18px 20px;
+    border-bottom:
+        1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.table-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.table-count {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1380px;
+}
+
+.transactions-table th {
+    background: #f9fafb;
+    padding: 13px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom:
+        1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.transactions-table td {
+    padding: 16px 14px;
+    border-bottom:
+        1px solid #f1f5f9;
+    font-size: 13px;
+    color: #374151;
+    vertical-align: top;
+}
+
+.transactions-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.transactions-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   TRANSACTION
+========================================================= */
+
+.transaction-id {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.transaction-date {
+    margin-top: 5px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   PERSON
+========================================================= */
+
+.person-name {
+    font-weight: 600;
+    color: #111827;
+}
+
+.person-secondary {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   CLIENT / ORGANIZATION
+========================================================= */
+
+.client-organization {
+    min-width: 180px;
+}
+
+.client-organization-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.4;
+}
+
+.client-organization-empty {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   ALL PURCHASED ITEMS
+========================================================= */
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 380px;
+}
+
+.item-purchase {
+    padding: 11px 12px;
+    background: #fafafa;
+    border:
+        1px solid #eef0f2;
+    border-radius: 9px;
+}
+
+.item-purchase-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.item-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.item-description {
+    max-width: 350px;
+    font-size: 11px;
+    color: #9ca3af;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.item-purchase-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.item-detail-label {
+    color: #9ca3af;
+}
+
+.item-detail-value {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.item-detail-total {
+    font-weight: 700;
+    color: #111827;
+}
+
+
+/* =========================================================
+   MONEY
+========================================================= */
+
+.money {
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.money-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+}
+
+.money-due {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   DISCOUNT
+========================================================= */
+
+.discount-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.discount-amount {
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.discount-percent {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-unpaid {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-partial {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-unknown {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+    padding: 70px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 14px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-icon svg {
+    width: 28px;
+    height: 28px;
+    color: #9ca3af;
+}
+
+.empty-title {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.empty-text {
+    margin: 0;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-container {
+    padding: 18px 20px;
+    border-top:
+        1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.pagination-info {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination a,
+.pagination span {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    box-sizing: border-box;
+}
+
+.pagination a {
+    color: #374151;
+    border:
+        1px solid #d1d5db;
+    background: #ffffff;
+}
+
+.pagination a:hover {
+    background: #f9fafb;
+}
+
+.pagination .current {
+    background: #111827;
+    color: #ffffff;
+}
+
+.pagination .disabled {
+    color: #d1d5db;
+    border:
+        1px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1500px) {
+
+    .filter-form {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+    .filter-group.search-group {
+        grid-column: span 2;
+    }
+
+    .filter-actions {
+        grid-column: span 1;
+    }
+}
+
+
+@media (max-width: 1100px) {
+
+    .summary-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .filter-form {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .filter-group.search-group {
+        grid-column: span 2;
+    }
+
+    .filter-actions {
+        grid-column: span 2;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-group.search-group {
+        grid-column: auto;
+    }
+
+    .filter-actions {
+        grid-column: auto;
+    }
+
+    .pagination-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="transactions-page">
+
+    <!-- =====================================================
+         SUMMARY CARDS
+    ====================================================== -->
+
+    <div class="summary-grid">
+
+        <!-- TOTAL TRANSACTIONS -->
+
+        <div class="summary-card">
+
+            <div class="summary-card-header">
+
+                <div class="summary-card-label">
+                    Total Transactions
+                </div>
+
+                <div class="summary-card-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="16"
+                            rx="2"
+                        />
+
+                        <path d="M7 8h10"/>
+                        <path d="M7 12h10"/>
+                        <path d="M7 16h6"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="summary-card-value">
+                {{ total_transactions }}
+            </div>
+
+            <div class="summary-card-subtitle">
+                Recorded sales
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL SALES -->
+
+        <div class="summary-card">
+
+            <div class="summary-card-header">
+
+                <div class="summary-card-label">
+                    Total Sales
+                </div>
+
+                <div class="summary-card-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M12 1v22"/>
+
+                        <path
+                            d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"
+                        />
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="summary-card-value">
+                ₱{{ total_sales|floatformat:2 }}
+            </div>
+
+            <div class="summary-card-subtitle">
+                Total transaction value
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL PAID -->
+
+        <div class="summary-card">
+
+            <div class="summary-card-header">
+
+                <div class="summary-card-label">
+                    Total Paid
+                </div>
+
+                <div class="summary-card-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <path d="M20 6L9 17l-5-5"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="summary-card-value">
+                ₱{{ total_paid|floatformat:2 }}
+            </div>
+
+            <div class="summary-card-subtitle">
+
+                {{ paid_count }}
+                paid transaction{{ paid_count|pluralize }}
+
+            </div>
+
+        </div>
+
+
+        <!-- TOTAL DUE -->
+
+        <div class="summary-card">
+
+            <div class="summary-card-header">
+
+                <div class="summary-card-label">
+                    Total Due
+                </div>
+
+                <div class="summary-card-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="9"
+                        />
+
+                        <path d="M12 7v5l3 2"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="summary-card-value">
+                ₱{{ total_due|floatformat:2 }}
+            </div>
+
+            <div class="summary-card-subtitle">
+
+                {{ unpaid_count }} unpaid ·
+                {{ partial_count }} partial
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FILTERS
+    ====================================================== -->
+
+    <div class="filter-card">
+
+        <div class="filter-header">
+
+            <h3 class="filter-title">
+                Transaction Filters
+            </h3>
+
+        </div>
+
+
+        <form
+            method="get"
+            class="filter-form"
+        >
+
+            <!-- SEARCH -->
+
+            <div
+                class="filter-group search-group"
+            >
+
+                <label class="filter-label">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    class="filter-input"
+                    placeholder="Transaction ID, salesperson, organization, staff..."
+                    value="{{ search }}"
+                >
+
+            </div>
+
+
+            <!-- SALESPERSON -->
+
+            <div class="filter-group">
+
+                <label class="filter-label">
+                    Salesperson
+                </label>
+
+                <select
+                    name="salesperson"
+                    class="filter-select"
+                >
+
+                    <option value="">
+                        All Salespersons
+                    </option>
+
+                    {% for salesperson in salespersons %}
+
+                        <option
+                            value="{{ salesperson.id }}"
+                            {% if selected_salesperson == salesperson.id|stringformat:"s" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            {{ salesperson.last_name }},
+                            {{ salesperson.first_name }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <!-- PAYMENT -->
+
+            <div class="filter-group">
+
+                <label class="filter-label">
+                    Payment
+                </label>
+
+                <select
+                    name="payment_status"
+                    class="filter-select"
+                >
+
+                    <option value="">
+                        All Status
+                    </option>
+
+                    <option
+                        value="PAID"
+                        {% if selected_payment_status == "PAID" %}
+                            selected
+                        {% endif %}
+                    >
+                        Paid
+                    </option>
+
+                    <option
+                        value="UNPAID"
+                        {% if selected_payment_status == "UNPAID" %}
+                            selected
+                        {% endif %}
+                    >
+                        Unpaid
+                    </option>
+
+                    <option
+                        value="PARTIAL"
+                        {% if selected_payment_status == "PARTIAL" %}
+                            selected
+                        {% endif %}
+                    >
+                        Partial
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- DATE FROM -->
+
+            <div class="filter-group">
+
+                <label class="filter-label">
+                    From
+                </label>
+
+                <input
+                    type="date"
+                    name="date_from"
+                    class="filter-input"
+                    value="{{ date_from }}"
+                >
+
+            </div>
+
+
+            <!-- DATE TO -->
+
+            <div class="filter-group">
+
+                <label class="filter-label">
+                    To
+                </label>
+
+                <input
+                    type="date"
+                    name="date_to"
+                    class="filter-input"
+                    value="{{ date_to }}"
+                >
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
+            <div class="filter-actions">
+
+                <button
+                    type="submit"
+                    class="btn-filter"
+                >
+                    Filter
+                </button>
+
+                <a
+                    href="{% url 'transactions' %}"
+                    class="btn-clear"
+                >
+                    Clear
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         TRANSACTIONS
+    ====================================================== -->
+
+    <div class="table-card">
+
+
+        <!-- TABLE HEADER -->
+
+        <div class="table-header">
+
+            <h3 class="table-title">
+                Sales Transactions
+            </h3>
+
+            <div class="table-count">
+
+                {% if page_obj.paginator.count == 1 %}
+
+                    1 transaction
+
+                {% else %}
+
+                    {{ page_obj.paginator.count }}
+                    transactions
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        {% if transactions %}
+
+
+            <!-- =================================================
+                 TABLE
+            ================================================== -->
+
+            <div class="table-wrapper">
+
+                <table class="transactions-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Transaction
+                            </th>
+
+                            <th>
+                                Salesperson
+                            </th>
+
+                            <th>
+                                Client / Organization
+                            </th>
+
+                            <th>
+                                All Items Purchased
+                            </th>
+
+                            <th>
+                                Subtotal
+                            </th>
+
+                            <th>
+                                Discount
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                            <th>
+                                Payment
+                            </th>
+
+                            <th>
+                                Due
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for transaction in transactions %}
+
+                        <tr>
+
+
+                            <!-- TRANSACTION -->
+
+                            <td>
+
+                                <div class="transaction-id">
+                                    #{{ transaction.id }}
+                                </div>
+
+                                <div class="transaction-date">
+
+                                    {{ transaction.created_at|date:"M d, Y" }}
+
+                                    <br>
+
+                                    {{ transaction.created_at|date:"h\:i A" }}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- SALESPERSON -->
+
+                            <td>
+
+                                {% if transaction.salesperson %}
+
+                                    <div class="person-name">
+
+                                        {{ transaction.salesperson.first_name }}
+
+                                        {% if transaction.salesperson.middle_name %}
+
+                                            {{ transaction.salesperson.middle_name }}
+
+                                        {% endif %}
+
+                                        {{ transaction.salesperson.last_name }}
+
+                                    </div>
+
+
+                                    {% if transaction.salesperson.contact_number %}
+
+                                        <div class="person-secondary">
+
+                                            {{ transaction.salesperson.contact_number }}
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                {% else %}
+
+                                    <span class="person-secondary">
+                                        No salesperson
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- CLIENT / ORGANIZATION -->
+
+                            <td class="client-organization">
+
+                                {% if transaction.client %}
+
+                                    {% if transaction.client.organization %}
+
+                                        <div class="client-organization-name">
+
+                                            {{ transaction.client.organization }}
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <span class="client-organization-empty">
+                                            Walk-in Customer
+                                        </span>
+
+                                    {% endif %}
+
+                                {% else %}
+
+                                    <span class="client-organization-empty">
+                                        Walk-in Customer
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ALL PURCHASED ITEMS -->
+
+                            <td>
+
+                                <div class="item-list">
+
+
+                                    {% for item in transaction.items.all %}
+
+                                        <div class="item-purchase">
+
+
+                                            <!-- PRODUCT -->
+
+                                            <div class="item-purchase-main">
+
+                                                <div class="item-name">
+
+                                                    {{ item.product.product_model }}
+
+                                                </div>
+
+
+                                                {% if item.product.description %}
+
+                                                    <div class="item-description">
+
+                                                        {{ item.product.description }}
+
+                                                    </div>
+
+                                                {% endif %}
+
+                                            </div>
+
+
+                                            <!-- ITEM DETAILS -->
+
+                                            <div class="item-purchase-details">
+
+
+                                                <span>
+
+                                                    <span class="item-detail-label">
+                                                        Qty:
+                                                    </span>
+
+                                                    <span class="item-detail-value">
+                                                        {{ item.quantity }}
+                                                    </span>
+
+                                                </span>
+
+
+                                                <span>
+
+                                                    <span class="item-detail-label">
+                                                        Price:
+                                                    </span>
+
+                                                    <span class="item-detail-value">
+                                                        ₱{{ item.price|floatformat:2 }}
+                                                    </span>
+
+                                                </span>
+
+
+                                                {% if item.discount_percent %}
+
+                                                    <span>
+
+                                                        <span class="item-detail-label">
+                                                            Discount:
+                                                        </span>
+
+                                                        <span class="item-detail-value">
+                                                            {{ item.discount_percent|floatformat:2 }}%
+                                                        </span>
+
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                <span>
+
+                                                    <span class="item-detail-label">
+                                                        Subtotal:
+                                                    </span>
+
+                                                    <span class="item-detail-value">
+                                                        ₱{{ item.subtotal|floatformat:2 }}
+                                                    </span>
+
+                                                </span>
+
+
+                                                {% if item.discount_amount %}
+
+                                                    <span>
+
+                                                        <span class="item-detail-label">
+                                                            Less:
+                                                        </span>
+
+                                                        <span class="item-detail-value">
+                                                            ₱{{ item.discount_amount|floatformat:2 }}
+                                                        </span>
+
+                                                    </span>
+
+                                                {% endif %}
+
+
+                                                <span>
+
+                                                    <span class="item-detail-label">
+                                                        Total:
+                                                    </span>
+
+                                                    <span class="item-detail-total">
+                                                        ₱{{ item.total|floatformat:2 }}
+                                                    </span>
+
+                                                </span>
+
+
+                                            </div>
+
+                                        </div>
+
+                                    {% empty %}
+
+                                        <span class="person-secondary">
+                                            No items purchased
+                                        </span>
+
+                                    {% endfor %}
+
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- SUBTOTAL -->
+
+                            <td>
+
+                                <span class="money">
+                                    ₱{{ transaction.subtotal|floatformat:2 }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- DISCOUNT -->
+
+                            <td>
+
+                                <div class="discount-info">
+
+                                    <span class="discount-amount">
+                                        ₱{{ transaction.discount_amount|floatformat:2 }}
+                                    </span>
+
+
+                                    {% if transaction.discount_percent %}
+
+                                        <span class="discount-percent">
+
+                                            {{ transaction.discount_percent|floatformat:2 }}%
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- TOTAL -->
+
+                            <td>
+
+                                <span class="money-total">
+                                    ₱{{ transaction.total|floatformat:2 }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- PAYMENT -->
+
+                            <td>
+
+                                <span class="money">
+                                    ₱{{ transaction.payment|floatformat:2 }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- DUE -->
+
+                            <td>
+
+                                <span class="money-due">
+                                    ₱{{ transaction.amount_due|floatformat:2 }}
+                                </span>
+
+                            </td>
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if transaction.payment_status == "PAID" %}
+
+                                    <span class="status-badge status-paid">
+                                        Paid
+                                    </span>
+
+                                {% elif transaction.payment_status == "UNPAID" %}
+
+                                    <span class="status-badge status-unpaid">
+                                        Unpaid
+                                    </span>
+
+                                {% elif transaction.payment_status == "PARTIAL" %}
+
+                                    <span class="status-badge status-partial">
+                                        Partial
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status-badge status-unknown">
+                                        {{ transaction.get_payment_status_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAGINATION
+            ================================================== -->
+
+            <div class="pagination-container">
+
+
+                <div class="pagination-info">
+
+                    Showing
+                    {{ page_obj.start_index }}
+                    to
+                    {{ page_obj.end_index }}
+                    of
+                    {{ page_obj.paginator.count }}
+                    transactions
+
+                </div>
+
+
+                {% if page_obj.paginator.num_pages > 1 %}
+
+                    <div class="pagination">
+
+
+                        <!-- FIRST -->
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page=1"
+                            >
+                                «
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+                                «
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- PREVIOUS -->
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                            >
+                                ‹
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+                                ‹
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- PAGE NUMBERS -->
+
+                        {% for page_number in page_obj.paginator.page_range %}
+
+                            {% if page_number == page_obj.number %}
+
+                                <span class="current">
+                                    {{ page_number }}
+                                </span>
+
+                            {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
+
+                                <a
+                                    href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_number }}"
+                                >
+                                    {{ page_number }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        <!-- NEXT -->
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.next_page_number }}"
+                            >
+                                ›
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+                                ›
+                            </span>
+
+                        {% endif %}
+
+
+                        <!-- LAST -->
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.paginator.num_pages }}"
+                            >
+                                »
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+                                »
+                            </span>
+
+                        {% endif %}
+
+
+                    </div>
+
+                {% endif %}
+
+
+            </div>
+
+
+        {% else %}
+
+
+            <!-- =================================================
+                 EMPTY
+            ================================================== -->
+
+            <div class="empty-state">
+
+
+                <div class="empty-icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+
+                        <rect
+                            x="3"
+                            y="4"
+                            width="18"
+                            height="16"
+                            rx="2"
+                        />
+
+                        <path d="M7 8h10"/>
+                        <path d="M7 12h10"/>
+                        <path d="M7 16h6"/>
+
+                    </svg>
+
+                </div>
+
+
+                <h3 class="empty-title">
+                    No transactions found
+                </h3>
+
+
+                <p class="empty-text">
+                    No sales transactions match your current filters.
+                </p>
+
+
+            </div>
+
+        {% endif %}
+
+
+    </div>
+
+</div>
+
+{% endblock %}

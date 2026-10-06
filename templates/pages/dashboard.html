@@ -1,0 +1,3014 @@
+{% extends "base.html" %}
+
+{% block title %}
+    BentaPOS - Dashboard
+{% endblock %}
+
+{% block page_title %}
+    Dashboard
+{% endblock %}
+
+{% block page_subtitle %}
+    Overview of your sales and inventory
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   MAIN STATISTICS
+========================================================= */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card {
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 135px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform .18s ease, box-shadow .18s ease;
+    color: #fff;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.dashboard-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dashboard-card-label {
+    color: rgba(255,255,255,.88);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.dashboard-card-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+}
+
+.dashboard-card-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.dashboard-card-value {
+    margin-top: 14px;
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.dashboard-card-description {
+    margin-top: 7px;
+    color: rgba(255,255,255,.78);
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   MAIN CARD COLORS
+========================================================= */
+
+.dashboard-stats .dashboard-card:nth-child(1) {
+    background: #16803c;
+}
+
+.dashboard-stats .dashboard-card:nth-child(2) {
+    background: #1769aa;
+}
+
+.dashboard-stats .dashboard-card:nth-child(3) {
+    background: #6d3dcc;
+}
+
+.dashboard-stats .dashboard-card:nth-child(4) {
+    background: #c56a00;
+}
+
+
+/* =========================================================
+   SECONDARY STATISTICS
+========================================================= */
+
+.dashboard-secondary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.secondary-card {
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    min-height: 115px;
+    color: #fff;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.secondary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.secondary-title {
+    color: rgba(255,255,255,.88);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.secondary-value {
+    margin-top: 11px;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.secondary-description {
+    margin-top: 5px;
+    color: rgba(255,255,255,.78);
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   SECONDARY COLORS
+========================================================= */
+
+.dashboard-secondary .secondary-card:nth-child(1) {
+    background: #1e3a8a;
+}
+
+.dashboard-secondary .secondary-card:nth-child(2) {
+    background: #b7791f;
+}
+
+.dashboard-secondary .secondary-card:nth-child(3) {
+    background: #c53030;
+}
+
+.dashboard-secondary .secondary-card:nth-child(4) {
+    background: #087f8c;
+}
+
+
+/* =========================================================
+   PAYMENT SUMMARY
+========================================================= */
+
+.payment-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.payment-summary-card {
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    min-height: 120px;
+    color: #fff;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.payment-summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+.payment-summary-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.payment-summary-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,.88);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.payment-summary-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+}
+
+.payment-summary-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.payment-summary .payment-summary-card:nth-child(1) {
+    background: #16803c;
+}
+
+.payment-summary .payment-summary-card:nth-child(2) {
+    background: #d93025;
+}
+
+.payment-summary .payment-summary-card:nth-child(3) {
+    background: #c56a00;
+}
+
+.payment-summary .payment-summary-card:nth-child(4) {
+    background: #6d3dcc;
+}
+
+.payment-summary-value {
+    margin-top: 12px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.payment-summary-count {
+    margin-top: 5px;
+    color: rgba(255,255,255,.78);
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   CHART
+========================================================= */
+
+.sales-chart-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.sales-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.sales-chart-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.sales-chart-subtitle {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #999;
+}
+
+.chart-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chart-filter {
+    height: 34px;
+    padding: 0 11px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    background: #fff;
+    color: #333;
+    font-size: 10px;
+    outline: none;
+    cursor: pointer;
+}
+
+.chart-filter:focus {
+    border-color: #111;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 350px;
+}
+
+
+/* =========================================================
+   CHART SUMMARY
+========================================================= */
+
+.chart-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.chart-summary-item {
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.chart-summary-label {
+    color: #888;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.chart-summary-value {
+    margin-top: 5px;
+    color: #111;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   SALES COMPARISON
+========================================================= */
+
+.comparison-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.comparison-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.comparison-subtitle {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #999;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 17px;
+}
+
+.comparison-item {
+    background: #f8f8f8;
+    border-radius: 9px;
+    padding: 16px;
+}
+
+.comparison-item-label {
+    color: #888;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.comparison-item-value {
+    margin-top: 7px;
+    color: #111;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLE CARDS
+========================================================= */
+
+.payment-table-card,
+.recent-sales-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.payment-table-header,
+.recent-sales-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.payment-table-title,
+.recent-sales-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.payment-table-subtitle,
+.recent-sales-subtitle {
+    margin-top: 3px;
+    color: #999;
+    font-size: 10px;
+}
+
+.payment-table-total {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+}
+
+.sales-table th {
+    padding: 12px 18px;
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+    color: #777;
+    font-size: 10px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+}
+
+.sales-table td {
+    padding: 13px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.sales-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.sales-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sale-id {
+    color: #111;
+    font-weight: 700;
+}
+
+.sale-total {
+    color: #16803c;
+    font-weight: 700;
+}
+
+.sale-payment {
+    color: #1769aa;
+    font-weight: 600;
+}
+
+.sale-due {
+    color: #d93025;
+    font-weight: 700;
+}
+
+.sale-staff {
+    color: #666;
+}
+
+.sale-salesperson {
+    color: #444;
+    font-weight: 600;
+}
+
+.sale-client {
+    color: #333;
+    font-weight: 600;
+}
+
+.sale-discount {
+    color: #c56a00;
+    font-weight: 600;
+}
+
+.sale-subtotal {
+    color: #555;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-paid {
+    background: #e9f8ef;
+    color: #16803c;
+}
+
+.status-unpaid {
+    background: #ffeded;
+    color: #d93025;
+}
+
+.status-partial {
+    background: #fff3e6;
+    color: #c56a00;
+}
+
+.empty-sales {
+    padding: 40px !important;
+    text-align: center;
+    color: #999 !important;
+    font-size: 12px !important;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-container {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: #888;
+    font-size: 10px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.pagination a,
+.pagination span {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 9px;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #444;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.pagination a:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+.pagination .active {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+}
+
+.pagination .disabled {
+    color: #bbb;
+    background: #f8f8f8;
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RECENT SALES
+========================================================= */
+
+.recent-sales-link {
+    color: #111;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.recent-sales-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.quick-actions-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.quick-actions-title {
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.quick-actions-subtitle {
+    margin-top: 4px;
+    color: #999;
+    font-size: 10px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 17px;
+}
+
+.quick-action {
+    min-height: 70px;
+    padding: 13px;
+    border: 1px solid #e5e5e5;
+    border-radius: 9px;
+    background: #fff;
+    color: #222;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    transition: .18s ease;
+    text-decoration: none;
+}
+
+.quick-action:hover {
+    background: #f8f8f8;
+    border-color: #d5d5d5;
+    transform: translateY(-1px);
+}
+
+.quick-action-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #f1f1f1;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.quick-action-icon svg {
+    width: 17px;
+    height: 17px;
+}
+
+.quick-action-title {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.quick-action-description {
+    margin-top: 3px;
+    color: #999;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .dashboard-stats,
+    .dashboard-secondary,
+    .payment-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .dashboard-stats,
+    .dashboard-secondary,
+    .payment-summary,
+    .comparison-grid,
+    .chart-summary,
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-chart-header,
+    .payment-table-header,
+    .recent-sales-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .chart-filters {
+        width: 100%;
+    }
+
+    .chart-filter {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .chart-container {
+        height: 280px;
+    }
+
+    .pagination-container {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard-page">
+
+
+    <!-- =====================================================
+         MAIN STATISTICS
+    ====================================================== -->
+
+    <div class="dashboard-stats">
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-top">
+
+                <div class="dashboard-card-label">
+                    Today's Sales
+                </div>
+
+                <div class="dashboard-card-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round">
+
+                        <path d="M12 1v22"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="dashboard-card-value">
+                ₱{{ total_sales|default:0|floatformat:2 }}
+            </div>
+
+            <div class="dashboard-card-description">
+                Total sales recorded today
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-top">
+
+                <div class="dashboard-card-label">
+                    Transactions
+                </div>
+
+                <div class="dashboard-card-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <path d="M7 8h10"/>
+                        <path d="M7 12h4"/>
+                        <path d="M7 16h7"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="dashboard-card-value">
+                {{ total_transactions|default:0 }}
+            </div>
+
+            <div class="dashboard-card-description">
+                Completed transactions today
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-top">
+
+                <div class="dashboard-card-label">
+                    Items Sold
+                </div>
+
+                <div class="dashboard-card-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+                        <path d="M3 8v8l9 5 9-5V8"/>
+                        <path d="M12 13v8"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="dashboard-card-value">
+                {{ total_items|default:0 }}
+            </div>
+
+            <div class="dashboard-card-description">
+                Total products sold today
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-card">
+
+            <div class="dashboard-card-top">
+
+                <div class="dashboard-card-label">
+                    Discounts
+                </div>
+
+                <div class="dashboard-card-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M20 12v7a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2h8"/>
+                        <path d="M16 3h5v5"/>
+                        <path d="M21 3l-9 9"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="dashboard-card-value">
+                ₱{{ total_discount|default:0|floatformat:2 }}
+            </div>
+
+            <div class="dashboard-card-description">
+                Discounts given today
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INVENTORY
+    ====================================================== -->
+
+    <div class="dashboard-secondary">
+
+        <div class="secondary-card">
+
+            <div class="secondary-title">
+                Total Products
+            </div>
+
+            <div class="secondary-value">
+                {{ total_products|default:0 }}
+            </div>
+
+            <div class="secondary-description">
+                Products currently registered
+            </div>
+
+        </div>
+
+
+        <div class="secondary-card">
+
+            <div class="secondary-title">
+                Low Stock
+            </div>
+
+            <div class="secondary-value">
+                {{ low_stock|default:0 }}
+            </div>
+
+            <div class="secondary-description">
+                At or below low stock threshold
+            </div>
+
+        </div>
+
+
+        <div class="secondary-card">
+
+            <div class="secondary-title">
+                Out of Stock
+            </div>
+
+            <div class="secondary-value">
+                {{ out_of_stock|default:0 }}
+            </div>
+
+            <div class="secondary-description">
+                Products with zero quantity
+            </div>
+
+        </div>
+
+
+        <div class="secondary-card">
+
+            <div class="secondary-title">
+                This Month
+            </div>
+
+            <div class="secondary-value">
+                ₱{{ monthly_sales|default:0|floatformat:2 }}
+            </div>
+
+            <div class="secondary-description">
+                {{ monthly_transactions|default:0 }}
+                transactions this month
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAYMENT SUMMARY
+    ====================================================== -->
+
+    <div class="payment-summary">
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Paid Sales
+                </div>
+
+                <div class="payment-summary-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M20 6L9 17l-5-5"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value">
+                ₱{{ paid_total|default:0|floatformat:2 }}
+            </div>
+
+            <div class="payment-summary-count">
+                {{ paid_count|default:0 }} paid transactions
+            </div>
+
+        </div>
+
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Unpaid Sales
+                </div>
+
+                <div class="payment-summary-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M9 9l6 6"/>
+                        <path d="M15 9l-6 6"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value">
+                ₱{{ unpaid_total|default:0|floatformat:2 }}
+            </div>
+
+            <div class="payment-summary-count">
+                {{ unpaid_count|default:0 }} unpaid transactions
+            </div>
+
+        </div>
+
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Partially Paid
+                </div>
+
+                <div class="payment-summary-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <circle cx="12" cy="12" r="9"/>
+                        <path d="M12 7v5l3 2"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value">
+                ₱{{ partial_total|default:0|floatformat:2 }}
+            </div>
+
+            <div class="payment-summary-count">
+                {{ partial_count|default:0 }} partially paid
+            </div>
+
+        </div>
+
+
+        <div class="payment-summary-card">
+
+            <div class="payment-summary-top">
+
+                <div class="payment-summary-label">
+                    Amount Due
+                </div>
+
+                <div class="payment-summary-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M12 1v22"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H7"/>
+
+                    </svg>
+
+                </div>
+
+            </div>
+
+            <div class="payment-summary-value">
+                ₱{{ total_amount_due|default:0|floatformat:2 }}
+            </div>
+
+            <div class="payment-summary-count">
+                Unpaid and partially paid balance
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CHART
+    ====================================================== -->
+
+    <div class="sales-chart-card">
+
+        <div class="sales-chart-header">
+
+            <div>
+
+                <div class="sales-chart-title">
+                    Sales Performance
+                </div>
+
+                <div class="sales-chart-subtitle">
+                    Filter sales and transaction performance
+                </div>
+
+            </div>
+
+
+            <div class="chart-filters">
+
+                <select id="chartPeriod"
+                        class="chart-filter">
+
+                    <option value="7">
+                        Last 7 Days
+                    </option>
+
+                    <option value="14">
+                        Last 14 Days
+                    </option>
+
+                    <option value="30">
+                        Last 30 Days
+                    </option>
+
+                </select>
+
+
+                <select id="chartMetric"
+                        class="chart-filter">
+
+                    <option value="both">
+                        Sales + Transactions
+                    </option>
+
+                    <option value="sales">
+                        Sales Only
+                    </option>
+
+                    <option value="transactions">
+                        Transactions Only
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+            <canvas id="dashboardSalesChart"></canvas>
+        </div>
+
+
+        <div class="chart-summary">
+
+            <div class="chart-summary-item">
+
+                <div class="chart-summary-label">
+                    Total Sales
+                </div>
+
+                <div class="chart-summary-value"
+                     id="chartTotalSales">
+                    ₱0.00
+                </div>
+
+            </div>
+
+
+            <div class="chart-summary-item">
+
+                <div class="chart-summary-label">
+                    Transactions
+                </div>
+
+                <div class="chart-summary-value"
+                     id="chartTotalTransactions">
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="chart-summary-item">
+
+                <div class="chart-summary-label">
+                    Average Sale
+                </div>
+
+                <div class="chart-summary-value"
+                     id="chartAverageSale">
+                    ₱0.00
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SALES COMPARISON
+    ====================================================== -->
+
+    <div class="comparison-card">
+
+        <div class="comparison-title">
+            Sales Overview
+        </div>
+
+        <div class="comparison-subtitle">
+            Quick sales performance summary
+        </div>
+
+
+        <div class="comparison-grid">
+
+            <div class="comparison-item">
+
+                <div class="comparison-item-label">
+                    TODAY
+                </div>
+
+                <div class="comparison-item-value">
+                    ₱{{ total_sales|default:0|floatformat:2 }}
+                </div>
+
+            </div>
+
+
+            <div class="comparison-item">
+
+                <div class="comparison-item-label">
+                    YESTERDAY
+                </div>
+
+                <div class="comparison-item-value">
+                    ₱{{ yesterday_sales|default:0|floatformat:2 }}
+                </div>
+
+            </div>
+
+
+            <div class="comparison-item">
+
+                <div class="comparison-item-label">
+                    THIS MONTH
+                </div>
+
+                <div class="comparison-item-value">
+                    ₱{{ monthly_sales|default:0|floatformat:2 }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAID SALES
+    ====================================================== -->
+
+    <div class="payment-table-card">
+
+        <div class="payment-table-header">
+
+            <div>
+
+                <div class="payment-table-title">
+                    Paid Sales
+                </div>
+
+                <div class="payment-table-subtitle">
+                    Latest fully paid transactions
+                </div>
+
+            </div>
+
+            <div class="payment-table-total">
+                {{ paid_count|default:0 }} Paid
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sale #</th>
+                        <th>Client / Organization</th>
+                        <th>Salesperson</th>
+                        <th>Items</th>
+                        <th>Subtotal</th>
+                        <th>Discount %</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Change</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in paid_page_obj %}
+
+                    <tr>
+
+                        <td class="sale-id">
+                            #{{ sale.id }}
+                        </td>
+
+
+                        <td class="sale-client">
+
+                            {% if sale.client %}
+
+                                {% if sale.client.organization %}
+                                    {{ sale.client.organization }}
+                                {% else %}
+                                    {{ sale.client.full_name }}
+                                {% endif %}
+
+                            {% else %}
+
+                                Walk-in Customer
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+                                {{ sale.salesperson.full_name }}
+                            {% else %}
+                                No Salesperson
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ sale.items.count }}
+                        </td>
+
+
+                        <td class="sale-subtotal">
+                            ₱{{ sale.subtotal|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+                            {{ sale.discount_percent|default:0|floatformat:2 }}%
+                        </td>
+
+
+                        <td class="sale-discount">
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-total">
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-payment">
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+                            ₱{{ sale.change|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-paid">
+                                PAID
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="13"
+                            class="empty-sales">
+
+                            No paid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% if paid_page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination-container">
+
+            <div class="pagination-info">
+
+                Showing
+                {{ paid_page_obj.start_index }}
+                –
+                {{ paid_page_obj.end_index }}
+                of
+                {{ paid_page_obj.paginator.count }}
+                paid sales
+
+            </div>
+
+
+            <div class="pagination">
+
+                {% if paid_page_obj.has_previous %}
+
+                    <a href="?paid_page={{ paid_page_obj.previous_page_number }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ‹
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">‹</span>
+
+                {% endif %}
+
+
+                {% for page_num in paid_page_obj.paginator.page_range %}
+
+                    {% if page_num == paid_page_obj.number %}
+
+                        <span class="active">
+                            {{ page_num }}
+                        </span>
+
+                    {% elif page_num >= paid_page_obj.number|add:"-2" and page_num <= paid_page_obj.number|add:"2" %}
+
+                        <a href="?paid_page={{ page_num }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                            {{ page_num }}
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if paid_page_obj.has_next %}
+
+                    <a href="?paid_page={{ paid_page_obj.next_page_number }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ›
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">›</span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         UNPAID SALES
+    ====================================================== -->
+
+    <div class="payment-table-card">
+
+        <div class="payment-table-header">
+
+            <div>
+
+                <div class="payment-table-title">
+                    Unpaid Sales
+                </div>
+
+                <div class="payment-table-subtitle">
+                    Sales that still require full payment
+                </div>
+
+            </div>
+
+            <div class="payment-table-total">
+                {{ unpaid_count|default:0 }} Unpaid
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sale #</th>
+                        <th>Client / Organization</th>
+                        <th>Salesperson</th>
+                        <th>Items</th>
+                        <th>Subtotal</th>
+                        <th>Discount %</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Amount Due</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in unpaid_page_obj %}
+
+                    <tr>
+
+                        <td class="sale-id">
+                            #{{ sale.id }}
+                        </td>
+
+
+                        <td class="sale-client">
+
+                            {% if sale.client %}
+
+                                {% if sale.client.organization %}
+                                    {{ sale.client.organization }}
+                                {% else %}
+                                    {{ sale.client.full_name }}
+                                {% endif %}
+
+                            {% else %}
+
+                                Walk-in Customer
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+                                {{ sale.salesperson.full_name }}
+                            {% else %}
+                                No Salesperson
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ sale.items.count }}
+                        </td>
+
+
+                        <td class="sale-subtotal">
+                            ₱{{ sale.subtotal|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+                            {{ sale.discount_percent|default:0|floatformat:2 }}%
+                        </td>
+
+
+                        <td class="sale-discount">
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-total">
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-payment">
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-due">
+                            ₱{{ sale.amount_due|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-unpaid">
+                                UNPAID
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="13"
+                            class="empty-sales">
+
+                            No unpaid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% if unpaid_page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination-container">
+
+            <div class="pagination-info">
+
+                Showing
+                {{ unpaid_page_obj.start_index }}
+                –
+                {{ unpaid_page_obj.end_index }}
+                of
+                {{ unpaid_page_obj.paginator.count }}
+                unpaid sales
+
+            </div>
+
+
+            <div class="pagination">
+
+                {% if unpaid_page_obj.has_previous %}
+
+                    <a href="?unpaid_page={{ unpaid_page_obj.previous_page_number }}&paid_page={{ paid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ‹
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">‹</span>
+
+                {% endif %}
+
+
+                {% for page_num in unpaid_page_obj.paginator.page_range %}
+
+                    {% if page_num == unpaid_page_obj.number %}
+
+                        <span class="active">
+                            {{ page_num }}
+                        </span>
+
+                    {% elif page_num >= unpaid_page_obj.number|add:"-2" and page_num <= unpaid_page_obj.number|add:"2" %}
+
+                        <a href="?unpaid_page={{ page_num }}&paid_page={{ paid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                            {{ page_num }}
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if unpaid_page_obj.has_next %}
+
+                    <a href="?unpaid_page={{ unpaid_page_obj.next_page_number }}&paid_page={{ paid_page_obj.number }}&partial_page={{ partial_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ›
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">›</span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         PARTIALLY PAID SALES
+    ====================================================== -->
+
+    <div class="payment-table-card">
+
+        <div class="payment-table-header">
+
+            <div>
+
+                <div class="payment-table-title">
+                    Partially Paid Sales
+                </div>
+
+                <div class="payment-table-subtitle">
+                    Sales with an outstanding balance
+                </div>
+
+            </div>
+
+            <div class="payment-table-total">
+                {{ partial_count|default:0 }} Partial
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sale #</th>
+                        <th>Client / Organization</th>
+                        <th>Salesperson</th>
+                        <th>Items</th>
+                        <th>Subtotal</th>
+                        <th>Discount %</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Amount Due</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in partial_page_obj %}
+
+                    <tr>
+
+                        <td class="sale-id">
+                            #{{ sale.id }}
+                        </td>
+
+
+                        <td class="sale-client">
+
+                            {% if sale.client %}
+
+                                {% if sale.client.organization %}
+                                    {{ sale.client.organization }}
+                                {% else %}
+                                    {{ sale.client.full_name }}
+                                {% endif %}
+
+                            {% else %}
+
+                                Walk-in Customer
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+                                {{ sale.salesperson.full_name }}
+                            {% else %}
+                                No Salesperson
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ sale.items.count }}
+                        </td>
+
+
+                        <td class="sale-subtotal">
+                            ₱{{ sale.subtotal|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+                            {{ sale.discount_percent|default:0|floatformat:2 }}%
+                        </td>
+
+
+                        <td class="sale-discount">
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-total">
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-payment">
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-due">
+                            ₱{{ sale.amount_due|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-partial">
+                                PARTIAL
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="13"
+                            class="empty-sales">
+
+                            No partially paid sales found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% if partial_page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination-container">
+
+            <div class="pagination-info">
+
+                Showing
+                {{ partial_page_obj.start_index }}
+                –
+                {{ partial_page_obj.end_index }}
+                of
+                {{ partial_page_obj.paginator.count }}
+                partially paid sales
+
+            </div>
+
+
+            <div class="pagination">
+
+                {% if partial_page_obj.has_previous %}
+
+                    <a href="?partial_page={{ partial_page_obj.previous_page_number }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ‹
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">‹</span>
+
+                {% endif %}
+
+
+                {% for page_num in partial_page_obj.paginator.page_range %}
+
+                    {% if page_num == partial_page_obj.number %}
+
+                        <span class="active">
+                            {{ page_num }}
+                        </span>
+
+                    {% elif page_num >= partial_page_obj.number|add:"-2" and page_num <= partial_page_obj.number|add:"2" %}
+
+                        <a href="?partial_page={{ page_num }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                            {{ page_num }}
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if partial_page_obj.has_next %}
+
+                    <a href="?partial_page={{ partial_page_obj.next_page_number }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&recent_page={{ recent_page_obj.number }}">
+                        ›
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">›</span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT SALES
+    ====================================================== -->
+
+    <div class="recent-sales-card">
+
+        <div class="recent-sales-header">
+
+            <div>
+
+                <div class="recent-sales-title">
+                    Recent Sales
+                </div>
+
+                <div class="recent-sales-subtitle">
+                    Latest transactions
+                </div>
+
+            </div>
+
+
+            <a href="{% url 'sales' %}"
+               class="recent-sales-link">
+
+                View All →
+
+            </a>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="sales-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sale #</th>
+                        <th>Client / Organization</th>
+                        <th>Salesperson</th>
+                        <th>Items</th>
+                        <th>Subtotal</th>
+                        <th>Discount %</th>
+                        <th>Discount</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Amount Due</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for sale in recent_page_obj %}
+
+                    <tr>
+
+                        <td class="sale-id">
+                            #{{ sale.id }}
+                        </td>
+
+
+                        <td class="sale-client">
+
+                            {% if sale.client %}
+
+                                {% if sale.client.organization %}
+                                    {{ sale.client.organization }}
+                                {% else %}
+                                    {{ sale.client.full_name }}
+                                {% endif %}
+
+                            {% else %}
+
+                                Walk-in Customer
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="sale-salesperson">
+
+                            {% if sale.salesperson %}
+                                {{ sale.salesperson.full_name }}
+                            {% else %}
+                                No Salesperson
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ sale.items.count }}
+                        </td>
+
+
+                        <td class="sale-subtotal">
+                            ₱{{ sale.subtotal|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+                            {{ sale.discount_percent|default:0|floatformat:2 }}%
+                        </td>
+
+
+                        <td class="sale-discount">
+                            ₱{{ sale.discount_amount|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-total">
+                            ₱{{ sale.total|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-payment">
+                            ₱{{ sale.payment|default:0|floatformat:2 }}
+                        </td>
+
+
+                        <td class="sale-due">
+
+                            {% if sale.amount_due > 0 %}
+                                ₱{{ sale.amount_due|floatformat:2 }}
+                            {% else %}
+                                ₱0.00
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if sale.payment_status == "PAID" %}
+
+                                <span class="status-badge status-paid">
+                                    PAID
+                                </span>
+
+                            {% elif sale.payment_status == "PARTIAL" %}
+
+                                <span class="status-badge status-partial">
+                                    PARTIAL
+                                </span>
+
+                            {% else %}
+
+                                <span class="status-badge status-unpaid">
+                                    UNPAID
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ sale.created_at|date:"M d, Y h:i A" }}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="13"
+                            class="empty-sales">
+
+                            No sales recorded yet.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% if recent_page_obj.paginator.num_pages > 1 %}
+
+        <div class="pagination-container">
+
+            <div class="pagination-info">
+
+                Showing
+                {{ recent_page_obj.start_index }}
+                –
+                {{ recent_page_obj.end_index }}
+                of
+                {{ recent_page_obj.paginator.count }}
+                recent sales
+
+            </div>
+
+
+            <div class="pagination">
+
+                {% if recent_page_obj.has_previous %}
+
+                    <a href="?recent_page={{ recent_page_obj.previous_page_number }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}">
+                        ‹
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">‹</span>
+
+                {% endif %}
+
+
+                {% for page_num in recent_page_obj.paginator.page_range %}
+
+                    {% if page_num == recent_page_obj.number %}
+
+                        <span class="active">
+                            {{ page_num }}
+                        </span>
+
+                    {% elif page_num >= recent_page_obj.number|add:"-2" and page_num <= recent_page_obj.number|add:"2" %}
+
+                        <a href="?recent_page={{ page_num }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}">
+                            {{ page_num }}
+                        </a>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                {% if recent_page_obj.has_next %}
+
+                    <a href="?recent_page={{ recent_page_obj.next_page_number }}&paid_page={{ paid_page_obj.number }}&unpaid_page={{ unpaid_page_obj.number }}&partial_page={{ partial_page_obj.number }}">
+                        ›
+                    </a>
+
+                {% else %}
+
+                    <span class="disabled">›</span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         QUICK ACTIONS
+    ====================================================== -->
+
+    <div class="quick-actions-card">
+
+        <div class="quick-actions-title">
+            Quick Actions
+        </div>
+
+        <div class="quick-actions-subtitle">
+            Frequently used management functions
+        </div>
+
+
+        <div class="quick-actions">
+
+            <a href="{% url 'admin-pos' %}"
+               class="quick-action">
+
+                <div class="quick-action-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <rect x="3" y="4"
+                              width="18"
+                              height="16"
+                              rx="2"/>
+
+                        <path d="M7 8h10"/>
+                        <path d="M7 12h2"/>
+                        <path d="M11 12h2"/>
+                        <path d="M15 12h2"/>
+
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <div class="quick-action-title">
+                        Point of Sale
+                    </div>
+
+                    <div class="quick-action-description">
+                        Open POS
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a href="{% url 'product_list' %}"
+               class="quick-action">
+
+                <div class="quick-action-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M21 8l-9-5-9 5 9 5 9-5z"/>
+                        <path d="M3 8v8l9 5 9-5V8"/>
+
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <div class="quick-action-title">
+                        Products
+                    </div>
+
+                    <div class="quick-action-description">
+                        Manage products
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a href="{% url 'inventory' %}"
+               class="quick-action">
+
+                <div class="quick-action-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M3 7h18"/>
+                        <path d="M5 7l1-4h12l1 4"/>
+                        <path d="M5 7v13h14V7"/>
+
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <div class="quick-action-title">
+                        Inventory
+                    </div>
+
+                    <div class="quick-action-description">
+                        Check stock
+                    </div>
+
+                </div>
+
+            </a>
+
+
+            <a href="{% url 'reports' %}"
+               class="quick-action">
+
+                <div class="quick-action-icon">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+
+                        <path d="M4 19V5"/>
+                        <path d="M4 19h16"/>
+
+                        <rect x="7"
+                              y="11"
+                              width="3"
+                              height="5"/>
+
+                        <rect x="12"
+                              y="8"
+                              width="3"
+                              height="8"/>
+
+                        <rect x="17"
+                              y="5"
+                              width="3"
+                              height="11"/>
+
+                    </svg>
+
+                </div>
+
+                <div>
+
+                    <div class="quick-action-title">
+                        Reports
+                    </div>
+
+                    <div class="quick-action-description">
+                        View reports
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const chartLabels =
+            {{ chart_labels|default:"[]"|safe }};
+
+        const chartSales =
+            {{ chart_sales|default:"[]"|safe }};
+
+        const chartTransactions =
+            {{ chart_transactions|default:"[]"|safe }};
+
+
+        const canvas =
+            document.getElementById(
+                "dashboardSalesChart"
+            );
+
+        if (!canvas) {
+            return;
+        }
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        const periodFilter =
+            document.getElementById(
+                "chartPeriod"
+            );
+
+        const metricFilter =
+            document.getElementById(
+                "chartMetric"
+            );
+
+
+        const totalSalesElement =
+            document.getElementById(
+                "chartTotalSales"
+            );
+
+        const totalTransactionsElement =
+            document.getElementById(
+                "chartTotalTransactions"
+            );
+
+        const averageSaleElement =
+            document.getElementById(
+                "chartAverageSale"
+            );
+
+
+        let salesChart = null;
+
+
+        function getFilteredData(days) {
+
+            const totalLength =
+                chartLabels.length;
+
+            const startIndex =
+                Math.max(
+                    0,
+                    totalLength - days
+                );
+
+
+            return {
+
+                labels:
+                    chartLabels.slice(
+                        startIndex
+                    ),
+
+                sales:
+                    chartSales.slice(
+                        startIndex
+                    ),
+
+                transactions:
+                    chartTransactions.slice(
+                        startIndex
+                    )
+
+            };
+
+        }
+
+
+        function updateSummary(
+            salesData,
+            transactionsData
+        ) {
+
+            const totalSales =
+                salesData.reduce(
+                    function (
+                        total,
+                        value
+                    ) {
+
+                        return (
+                            total +
+                            Number(value || 0)
+                        );
+
+                    },
+                    0
+                );
+
+
+            const totalTransactions =
+                transactionsData.reduce(
+                    function (
+                        total,
+                        value
+                    ) {
+
+                        return (
+                            total +
+                            Number(value || 0)
+                        );
+
+                    },
+                    0
+                );
+
+
+            const averageSale =
+                totalTransactions > 0
+                    ? totalSales /
+                      totalTransactions
+                    : 0;
+
+
+            totalSalesElement.textContent =
+                "₱" +
+                totalSales.toLocaleString(
+                    "en-PH",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+
+
+            totalTransactionsElement.textContent =
+                totalTransactions.toLocaleString(
+                    "en-PH"
+                );
+
+
+            averageSaleElement.textContent =
+                "₱" +
+                averageSale.toLocaleString(
+                    "en-PH",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+
+        }
+
+
+        function createChart() {
+
+            const days =
+                Number(
+                    periodFilter.value
+                );
+
+
+            const metric =
+                metricFilter.value;
+
+
+            const filtered =
+                getFilteredData(
+                    days
+                );
+
+
+            if (salesChart) {
+                salesChart.destroy();
+            }
+
+
+            const datasets = [];
+
+
+            if (
+                metric === "both" ||
+                metric === "sales"
+            ) {
+
+                datasets.push({
+
+                    label:
+                        "Sales",
+
+                    data:
+                        filtered.sales,
+
+                    backgroundColor:
+                        "#3b82f6",
+
+                    borderColor:
+                        "#3b82f6",
+
+                    borderWidth:
+                        1,
+
+                    borderRadius:
+                        5,
+
+                    borderSkipped:
+                        false,
+
+                    stack:
+                        "salesStack"
+
+                });
+
+            }
+
+
+            if (
+                metric === "both" ||
+                metric === "transactions"
+            ) {
+
+                datasets.push({
+
+                    label:
+                        "Transactions",
+
+                    data:
+                        filtered.transactions,
+
+                    backgroundColor:
+                        "#8b5cf6",
+
+                    borderColor:
+                        "#8b5cf6",
+
+                    borderWidth:
+                        1,
+
+                    borderRadius:
+                        5,
+
+                    borderSkipped:
+                        false,
+
+                    stack:
+                        "transactionStack"
+
+                });
+
+            }
+
+
+            salesChart =
+                new Chart(
+                    ctx,
+                    {
+
+                        type:
+                            "bar",
+
+                        data: {
+
+                            labels:
+                                filtered.labels,
+
+                            datasets:
+                                datasets
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            interaction: {
+
+                                intersect:
+                                    false,
+
+                                mode:
+                                    "index"
+
+                            },
+
+                            plugins: {
+
+                                legend: {
+
+                                    display:
+                                        true,
+
+                                    position:
+                                        "top",
+
+                                    align:
+                                        "end",
+
+                                    labels: {
+
+                                        usePointStyle:
+                                            true,
+
+                                        padding:
+                                            18,
+
+                                        font: {
+
+                                            size:
+                                                11
+
+                                        }
+
+                                    }
+
+                                },
+
+
+                                tooltip: {
+
+                                    backgroundColor:
+                                        "#111",
+
+                                    titleColor:
+                                        "#fff",
+
+                                    bodyColor:
+                                        "#fff",
+
+                                    padding:
+                                        12,
+
+                                    callbacks: {
+
+                                        label:
+                                            function (
+                                                context
+                                            ) {
+
+                                                const label =
+                                                    context.dataset.label ||
+                                                    "";
+
+                                                const value =
+                                                    Number(
+                                                        context.raw ||
+                                                        0
+                                                    );
+
+
+                                                if (
+                                                    label ===
+                                                    "Sales"
+                                                ) {
+
+                                                    return (
+                                                        " Sales: ₱" +
+                                                        value.toLocaleString(
+                                                            "en-PH",
+                                                            {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2
+                                                            }
+                                                        )
+                                                    );
+
+                                                }
+
+
+                                                return (
+                                                    " Transactions: " +
+                                                    value
+                                                );
+
+                                            }
+
+                                    }
+
+                                }
+
+                            },
+
+
+                            scales: {
+
+                                x: {
+
+                                    stacked:
+                                        true,
+
+                                    grid: {
+
+                                        display:
+                                            false
+
+                                    },
+
+                                    ticks: {
+
+                                        font: {
+
+                                            size:
+                                                10
+
+                                        }
+
+                                    }
+
+                                },
+
+
+                                y: {
+
+                                    stacked:
+                                        true,
+
+                                    beginAtZero:
+                                        true,
+
+                                    grid: {
+
+                                        color:
+                                            "rgba(0,0,0,.06)"
+
+                                    },
+
+                                    ticks: {
+
+                                        font: {
+
+                                            size:
+                                                10
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+                );
+
+
+            updateSummary(
+                filtered.sales,
+                filtered.transactions
+            );
+
+        }
+
+
+        if (periodFilter) {
+
+            periodFilter.addEventListener(
+                "change",
+                createChart
+            );
+
+        }
+
+
+        if (metricFilter) {
+
+            metricFilter.addEventListener(
+                "change",
+                createChart
+            );
+
+        }
+
+
+        createChart();
+
+    }
+
+);
+
+</script>
+
+{% endblock %}

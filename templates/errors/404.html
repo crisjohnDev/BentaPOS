@@ -1,0 +1,195 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <link
+        rel="icon"
+        type="image/png"
+        href="{% static 'images/bentaPOS_logo.png' %}"
+    >
+
+    <title>BentaPOS - Page Not Found</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #f5f6f8;
+            color: #1f2937;
+        }
+
+        .error-page {
+            width: 100%;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+        }
+
+        .error-container {
+            width: 100%;
+            max-width: 520px;
+
+            padding: 48px 40px;
+
+            text-align: center;
+
+            background: #ffffff;
+
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+
+            object-fit: contain;
+
+            margin-bottom: 25px;
+        }
+
+        .error-code {
+            margin-bottom: 15px;
+
+            font-size: 76px;
+            font-weight: 800;
+            line-height: 1;
+
+            color: #111827;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+
+            font-size: 28px;
+            font-weight: 700;
+
+            color: #111827;
+        }
+
+        p {
+            margin: 0 auto 30px;
+
+            max-width: 420px;
+
+            font-size: 15px;
+            line-height: 1.7;
+
+            color: #6b7280;
+        }
+
+        .btn {
+            display: inline-block;
+
+            padding: 13px 24px;
+
+            background: #111827;
+            color: #ffffff;
+
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            border: 1px solid #111827;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #000000;
+            border-color: #000000;
+        }
+
+        .footer {
+            margin-top: 28px;
+
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <main class="error-page">
+
+        <section class="error-container">
+
+            <img
+                src="{% static 'images/bentaPOS_logo.png' %}"
+                alt="BentaPOS"
+                class="logo"
+            >
+
+            <div class="error-code">
+                404
+            </div>
+
+            <h1>
+                Page Not Found
+            </h1>
+
+            <p>
+                The page you are looking for does not exist,
+                has been moved, or the URL may be incorrect.
+            </p>
+
+            <a
+                href="/"
+                class="btn"
+            >
+                Return to Dashboard
+            </a>
+
+            <div class="footer">
+                BentaPOS
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

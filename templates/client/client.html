@@ -1,0 +1,3359 @@
+{% extends 'base.html' %}
+
+{% block title %}
+BentaPOS - Clients
+{% endblock %}
+
+{% block page_title %}
+Clients
+{% endblock %}
+
+{% block page_subtitle %}
+Manage client accounts and information
+{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   CLIENT PAGE
+========================================================= */
+
+.client-page {
+    width: 100%;
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.page-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-box input {
+    width: 280px;
+    height: 42px;
+    padding: 0 15px 0 42px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.search-box input:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.search-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.status-filter {
+    height: 42px;
+    padding: 0 35px 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.status-filter:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+}
+
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 42px;
+    padding: 0 18px;
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #111111;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btn-add svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.btn-add:hover {
+    background: #333333;
+    border-color: #333333;
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   TABLE CARD
+========================================================= */
+
+.table-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 58px;
+    padding: 0 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    box-sizing: border-box;
+}
+
+.client-count {
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.client-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+}
+
+.client-table th {
+    padding: 13px 18px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.client-table td {
+    padding: 15px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #374151;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.client-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.client-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.client-table tbody tr:hover {
+    background: #fafafa;
+}
+
+
+/* =========================================================
+   CLIENT NAME
+========================================================= */
+
+.client-name {
+    color: #111827;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.organization-name {
+    color: #374151;
+    font-weight: 500;
+}
+
+.text-muted {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.active {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #d1d5db;
+}
+
+.status-badge.inactive {
+    background: #ffffff;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 55px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.btn-action svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+
+/* VIEW */
+
+.btn-action.view {
+    color: #111827;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+.btn-action.view:hover {
+    background: #f3f4f6;
+}
+
+
+/* EDIT */
+
+.btn-action.edit {
+    color: #111827;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+.btn-action.edit:hover {
+    background: #f3f4f6;
+}
+
+
+/* DELETE */
+
+.btn-action.delete {
+    color: #ffffff;
+    background: #111111;
+    border: 1px solid #111111;
+}
+
+.btn-action.delete:hover {
+    background: #333333;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination a,
+.pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    color: #374151;
+    background: #ffffff;
+    text-decoration: none;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.pagination a:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.pagination .current {
+    background: #111111;
+    border-color: #111111;
+    color: #ffffff;
+}
+
+.pagination .disabled {
+    color: #9ca3af;
+    background: #f9fafb;
+    cursor: not-allowed;
+}
+
+.pagination-arrow {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    color: #6b7280;
+}
+
+.empty-state-icon svg {
+    width: 25px;
+    height: 25px;
+}
+
+.empty-state h3 {
+    margin: 0 0 7px;
+    color: #111827;
+    font-size: 16px;
+}
+
+.empty-state p {
+    margin: 0 0 20px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   CLIENT DETAILS MODAL
+========================================================= */
+
+.client-details-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.50);
+    box-sizing: border-box;
+}
+
+.client-details-modal.show {
+    display: flex;
+}
+
+.client-details-content {
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.client-details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.client-details-title-wrap {
+    min-width: 0;
+}
+
+.client-details-title {
+    margin: 0;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.client-details-subtitle {
+    margin-top: 4px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.client-details-close {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    color: #374151;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.client-details-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.client-details-close svg {
+    width: 17px;
+    height: 17px;
+}
+
+.client-details-body {
+    padding: 22px;
+    overflow-y: auto;
+}
+
+.client-details-section {
+    margin-bottom: 22px;
+}
+
+.client-details-section:last-child {
+    margin-bottom: 0;
+}
+
+.client-details-section-title {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.client-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: #e5e7eb;
+    border: 1px solid #e5e7eb;
+}
+
+.client-detail-item {
+    min-width: 0;
+    padding: 14px 15px;
+    background: #ffffff;
+}
+
+.client-detail-label {
+    margin-bottom: 5px;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.client-detail-value {
+    color: #111827;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.client-detail-value.muted {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+
+/* =========================================================
+   CLIENT DETAILS FOOTER
+========================================================= */
+
+.client-details-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 22px;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.details-footer-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.details-footer-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.details-footer-btn.secondary {
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.details-footer-btn.secondary:hover {
+    background: #f3f4f6;
+}
+
+.details-footer-btn.primary {
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #111111;
+}
+
+.details-footer-btn.primary:hover {
+    background: #333333;
+}
+
+
+/* =========================================================
+   VIEW PERMIT
+========================================================= */
+
+.view-permit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 34px;
+    padding: 0 12px;
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.view-permit-btn:hover {
+    background: #f3f4f6;
+}
+
+.view-permit-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+
+/* =========================================================
+   PERMIT PREVIEW MODAL
+========================================================= */
+
+.permit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.70);
+    box-sizing: border-box;
+}
+
+.permit-modal.show {
+    display: flex;
+}
+
+.permit-modal-content {
+    width: min(100%, 1100px);
+    height: min(90vh, 850px);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.30);
+    display: flex;
+    flex-direction: column;
+}
+
+.permit-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.permit-modal-title-wrap {
+    min-width: 0;
+}
+
+.permit-modal-title {
+    margin: 0;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.permit-modal-file-name {
+    margin-top: 3px;
+    max-width: 850px;
+    color: #6b7280;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.permit-modal-close {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.permit-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.permit-modal-close svg {
+    width: 18px;
+    height: 18px;
+}
+
+.permit-modal-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background: #f3f4f6;
+}
+
+.permit-preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #ffffff;
+}
+
+.permit-preview-image {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.permit-preview-empty {
+    padding: 30px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.permit-preview-empty strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #111827;
+    font-size: 15px;
+}
+
+.permit-preview-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   DEACTIVATE MODAL
+========================================================= */
+
+.delete-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+}
+
+.delete-modal.show {
+    display: flex;
+}
+
+.delete-modal-content {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: 25px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+.delete-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    color: #111827;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.delete-modal-title svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.delete-modal-text {
+    margin: 0 0 22px;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.delete-client-name {
+    color: #111827;
+    font-weight: 600;
+}
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.modal-btn.cancel {
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.modal-btn.cancel:hover {
+    background: #f3f4f6;
+}
+
+.modal-btn.confirm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: #111111;
+    color: #ffffff;
+    border: 1px solid #111111;
+}
+
+.modal-btn.confirm:hover {
+    background: #333333;
+}
+
+.modal-btn.confirm:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.modal-btn.confirm svg {
+    width: 14px;
+    height: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .page-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .toolbar-left {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .status-filter {
+        width: 100%;
+    }
+
+    .btn-add {
+        width: 100%;
+    }
+
+    .table-header {
+        padding: 0 15px;
+    }
+
+    .pagination-container {
+        padding: 15px;
+    }
+
+    .pagination-info {
+        width: 100%;
+    }
+
+    .pagination {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .client-details-modal {
+        padding: 10px;
+    }
+
+    .client-details-content {
+        max-height: 94vh;
+    }
+
+    .client-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .client-details-header {
+        padding: 15px;
+    }
+
+    .client-details-body {
+        padding: 15px;
+    }
+
+    .client-details-footer {
+        padding: 12px 15px;
+    }
+
+    .permit-modal {
+        padding: 10px;
+    }
+
+    .permit-modal-content {
+        width: 100%;
+        height: 94vh;
+        border-radius: 7px;
+    }
+
+    .permit-modal-file-name {
+        max-width: 250px;
+    }
+
+    .delete-modal-content {
+        padding: 20px;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .client-details-footer {
+        flex-direction: column;
+    }
+
+    .details-footer-btn {
+        width: 100%;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="client-page">
+
+    <!-- =====================================================
+         TOOLBAR
+    ====================================================== -->
+
+    <div class="page-toolbar">
+
+        <div class="toolbar-left">
+
+            <!-- SEARCH -->
+
+            <form method="GET" id="searchForm">
+
+                <div class="search-box">
+
+                    <span class="search-icon" aria-hidden="true">
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+
+                            <circle
+                                cx="11"
+                                cy="11"
+                                r="7"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            />
+
+                            <path
+                                d="M16.5 16.5L21 21"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+                    </span>
+
+                    <input
+                        type="text"
+                        name="search"
+                        id="searchInput"
+                        value="{{ search }}"
+                        placeholder="Search client or organization..."
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <input
+                    type="hidden"
+                    name="status"
+                    value="{{ status }}"
+                >
+
+            </form>
+
+
+            <!-- STATUS FILTER -->
+
+            <form method="GET" id="statusForm">
+
+                <input
+                    type="hidden"
+                    name="search"
+                    value="{{ search }}"
+                >
+
+                <select
+                    name="status"
+                    id="statusFilter"
+                    class="status-filter"
+                >
+
+                    <option
+                        value="all"
+                        {% if status == "all" %}selected{% endif %}
+                    >
+                        All Status
+                    </option>
+
+                    <option
+                        value="active"
+                        {% if status == "active" %}selected{% endif %}
+                    >
+                        Active
+                    </option>
+
+                    <option
+                        value="inactive"
+                        {% if status == "inactive" %}selected{% endif %}
+                    >
+                        Inactive
+                    </option>
+
+                </select>
+
+            </form>
+
+        </div>
+
+
+        <!-- ADD CLIENT -->
+
+        <a
+            href="{% url 'add-client' %}"
+            class="btn-add"
+        >
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+            >
+
+                <path
+                    d="M12 5V19"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                />
+
+                <path
+                    d="M5 12H19"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                />
+
+            </svg>
+
+            <span>Add Client</span>
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         TABLE CARD
+    ====================================================== -->
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <span>
+                Client Accounts
+            </span>
+
+            <span class="client-count">
+                {{ total_clients }}
+                client{{ total_clients|pluralize }}
+            </span>
+
+        </div>
+
+
+        {% if clients %}
+
+            <div class="table-wrapper">
+
+                <table
+                    class="client-table"
+                    id="clientTable"
+                >
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Client
+                            </th>
+
+                            <th>
+                                Organization
+                            </th>
+
+                            <th>
+                                Contact Number
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+
+                            <th>
+                                Address
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Created
+                            </th>
+
+                            <th>
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for client in clients %}
+
+                            <tr class="client-row">
+
+                                <!-- CLIENT -->
+
+                                <td>
+
+                                    <div class="client-name">
+
+                                        {{ client.first_name }}
+
+                                        {% if client.middle_name %}
+                                            {{ client.middle_name }}
+                                        {% endif %}
+
+                                        {{ client.last_name }}
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ORGANIZATION -->
+
+                                <td>
+
+                                    {% if client.organization %}
+
+                                        <span class="organization-name">
+                                            {{ client.organization }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            Not provided
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- CONTACT NUMBER -->
+
+                                <td>
+
+                                    {% if client.contact_number %}
+
+                                        {{ client.contact_number }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            Not provided
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- EMAIL -->
+
+                                <td>
+
+                                    {% if client.email_address %}
+
+                                        {{ client.email_address }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            Not provided
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ADDRESS -->
+
+                                <td>
+
+                                    {% if client.address %}
+
+                                        {{ client.address }}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            Not provided
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% if client.is_active %}
+
+                                        <span class="status-badge active">
+
+                                            <span
+                                                class="status-dot"
+                                                aria-hidden="true"
+                                            ></span>
+
+                                            Active
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-badge inactive">
+
+                                            <span
+                                                class="status-dot"
+                                                aria-hidden="true"
+                                            ></span>
+
+                                            Inactive
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- CREATED -->
+
+                                <td>
+
+                                    {{ client.created_at|date:"M d, Y" }}
+
+                                </td>
+
+
+                                <!-- ACTION -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <!-- VIEW -->
+
+                                        <button
+                                            type="button"
+                                            class="btn-action view"
+                                            onclick="openClientDetails(
+                                                '{{ client.id }}',
+                                                '{{ client.first_name|escapejs }}',
+                                                '{{ client.middle_name|default:""|escapejs }}',
+                                                '{{ client.last_name|escapejs }}',
+                                                '{{ client.organization|default:""|escapejs }}',
+                                                '{% if client.salesperson %}{{ client.salesperson.first_name|escapejs }}{% if client.salesperson.middle_name %} {{ client.salesperson.middle_name|escapejs }}{% endif %} {{ client.salesperson.last_name|escapejs }}{% endif %}',
+                                                '{{ client.contact_number|default:""|escapejs }}',
+                                                '{{ client.email_address|default:""|escapejs }}',
+                                                '{{ client.address|default:""|escapejs }}',
+                                                '{{ client.created_at|date:"M d, Y"|escapejs }}',
+                                                '{{ client.is_active|yesno:"Active,Inactive"|escapejs }}',
+                                                '{% if client.business_permit %}{{ client.business_permit.url|escapejs }}{% endif %}',
+                                                '{% if client.business_permit %}{{ client.business_permit.name|escapejs }}{% endif %}'
+                                            )"
+                                            aria-label="View {{ client.first_name }} {{ client.last_name }}"
+                                        >
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+
+                                                <path
+                                                    d="M2.5 12C2.5 12 6 5.5 12 5.5C18 5.5 21.5 12 21.5 12C21.5 12 18 18.5 12 18.5C6 18.5 2.5 12 2.5 12Z"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                    stroke-linejoin="round"
+                                                />
+
+                                                <circle
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="2.5"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                />
+
+                                            </svg>
+
+                                            View
+
+                                        </button>
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="{% url 'edit-client' client.id %}"
+                                            class="btn-action edit"
+                                            aria-label="Edit {{ client.first_name }} {{ client.last_name }}"
+                                        >
+
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+
+                                                <path
+                                                    d="M4 20H8L19 9C20.1 7.9 20.1 6.1 19 5C17.9 3.9 16.1 3.9 15 5L4 16V20Z"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                    stroke-linejoin="round"
+                                                />
+
+                                                <path
+                                                    d="M13.5 6.5L17.5 10.5"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.8"
+                                                    stroke-linecap="round"
+                                                />
+
+                                            </svg>
+
+                                            Edit
+
+                                        </a>
+
+
+                                        <!-- DEACTIVATE -->
+
+                                        {% if client.is_active %}
+
+                                            <button
+                                                type="button"
+                                                class="btn-action delete"
+                                                onclick="openDeleteModal(
+                                                    '{{ client.id }}',
+                                                    '{{ client.first_name|escapejs }} {{ client.last_name|escapejs }}'
+                                                )"
+                                                aria-label="Deactivate {{ client.first_name }} {{ client.last_name }}"
+                                            >
+
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    aria-hidden="true"
+                                                >
+
+                                                    <path
+                                                        d="M5 7H19"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                        stroke-linecap="round"
+                                                    />
+
+                                                    <path
+                                                        d="M10 11V17"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                        stroke-linecap="round"
+                                                    />
+
+                                                    <path
+                                                        d="M14 11V17"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                        stroke-linecap="round"
+                                                    />
+
+                                                    <path
+                                                        d="M6.5 7L7.2 19C7.25 19.55 7.7 20 8.25 20H15.75C16.3 20 16.75 19.55 16.8 19L17.5 7"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                        stroke-linejoin="round"
+                                                    />
+
+                                                    <path
+                                                        d="M9 7V4.5C9 4.22 9.22 4 9.5 4H14.5C14.78 4 15 4.22 15 4.5V7"
+                                                        stroke="currentColor"
+                                                        stroke-width="1.8"
+                                                        stroke-linejoin="round"
+                                                    />
+
+                                                </svg>
+
+                                                Deactivate
+
+                                            </button>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 PAGINATION
+            ================================================== -->
+
+            {% if page_obj.paginator.num_pages > 1 %}
+
+                <div class="pagination-container">
+
+                    <div class="pagination-info">
+
+                        Showing
+                        {{ page_obj.start_index }}
+                        -
+                        {{ page_obj.end_index }}
+                        of
+                        {{ paginator.count }}
+
+                    </div>
+
+
+                    <div class="pagination">
+
+                        {% if page_obj.has_previous %}
+
+                            <a
+                                href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&status={{ status|urlencode }}"
+                                aria-label="Previous page"
+                            >
+
+                                <svg
+                                    class="pagination-arrow"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+
+                                    <path
+                                        d="M15 18L9 12L15 6"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                </svg>
+
+                                Previous
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+
+                                <svg
+                                    class="pagination-arrow"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+
+                                    <path
+                                        d="M15 18L9 12L15 6"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                </svg>
+
+                                Previous
+
+                            </span>
+
+                        {% endif %}
+
+
+                        {% for num in page_obj.paginator.page_range %}
+
+                            {% if page_obj.number == num %}
+
+                                <span class="current">
+                                    {{ num }}
+                                </span>
+
+                            {% else %}
+
+                                <a
+                                    href="?page={{ num }}&search={{ search|urlencode }}&status={{ status|urlencode }}"
+                                >
+                                    {{ num }}
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        {% if page_obj.has_next %}
+
+                            <a
+                                href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&status={{ status|urlencode }}"
+                                aria-label="Next page"
+                            >
+
+                                Next
+
+                                <svg
+                                    class="pagination-arrow"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+
+                                    <path
+                                        d="M9 18L15 12L9 6"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                </svg>
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="disabled">
+
+                                Next
+
+                                <svg
+                                    class="pagination-arrow"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+
+                                    <path
+                                        d="M9 18L15 12L9 6"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+
+                                </svg>
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        {% else %}
+
+            <!-- =================================================
+                 EMPTY STATE
+            ================================================== -->
+
+            <div class="empty-state">
+
+                <div
+                    class="empty-state-icon"
+                    aria-hidden="true"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+
+                        <circle
+                            cx="12"
+                            cy="8"
+                            r="3.5"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        />
+
+                        <path
+                            d="M5 20C5.8 16.5 8.1 14.5 12 14.5C15.9 14.5 18.2 16.5 19 20"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                    </svg>
+
+                </div>
+
+
+                {% if search or status != "all" %}
+
+                    <h3>
+                        No clients found
+                    </h3>
+
+                    <p>
+                        No client accounts match your current search or filter.
+                    </p>
+
+                    <a
+                        href="{% url 'client-list' %}"
+                        class="btn-add"
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+
+                            <path
+                                d="M6 6L18 18"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+
+                            <path
+                                d="M18 6L6 18"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+                        Clear Filters
+
+                    </a>
+
+                {% else %}
+
+                    <h3>
+                        No clients yet
+                    </h3>
+
+                    <p>
+                        Start by adding your first client account.
+                    </p>
+
+                    <a
+                        href="{% url 'add-client' %}"
+                        class="btn-add"
+                    >
+
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+
+                            <path
+                                d="M12 5V19"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+
+                            <path
+                                d="M5 12H19"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+                        Add Client
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     CLIENT DETAILS MODAL
+========================================================= -->
+
+<div
+    id="clientDetailsModal"
+    class="client-details-modal"
+    aria-hidden="true"
+>
+
+    <div class="client-details-content">
+
+        <div class="client-details-header">
+
+            <div class="client-details-title-wrap">
+
+                <h3
+                    id="clientDetailsTitle"
+                    class="client-details-title"
+                >
+                    Client Details
+                </h3>
+
+                <div
+                    id="clientDetailsSubtitle"
+                    class="client-details-subtitle"
+                >
+                    Client information
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="client-details-close"
+                onclick="closeClientDetails()"
+                aria-label="Close client details"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M6 6L18 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+
+                    <path
+                        d="M18 6L6 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+
+                </svg>
+
+            </button>
+
+        </div>
+
+
+        <div class="client-details-body">
+
+            <!-- PERSONAL INFORMATION -->
+
+            <div class="client-details-section">
+
+                <h4 class="client-details-section-title">
+                    Personal Information
+                </h4>
+
+                <div class="client-details-grid">
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            First Name
+                        </div>
+
+                        <div
+                            id="detailFirstName"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Middle Name
+                        </div>
+
+                        <div
+                            id="detailMiddleName"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Last Name
+                        </div>
+
+                        <div
+                            id="detailLastName"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Organization
+                        </div>
+
+                        <div
+                            id="detailOrganization"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Salesperson
+                        </div>
+
+                        <div
+                            id="detailSalesperson"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTACT INFORMATION -->
+
+            <div class="client-details-section">
+
+                <h4 class="client-details-section-title">
+                    Contact Information
+                </h4>
+
+                <div class="client-details-grid">
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Contact Number
+                        </div>
+
+                        <div
+                            id="detailContact"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Email Address
+                        </div>
+
+                        <div
+                            id="detailEmail"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Status
+                        </div>
+
+                        <div
+                            id="detailStatus"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Created
+                        </div>
+
+                        <div
+                            id="detailCreated"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ADDRESS -->
+
+            <div class="client-details-section">
+
+                <h4 class="client-details-section-title">
+                    Address
+                </h4>
+
+                <div class="client-details-grid">
+
+                    <div class="client-detail-item">
+
+                        <div
+                            id="detailAddress"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUSINESS PERMIT -->
+
+            <div class="client-details-section">
+
+                <h4 class="client-details-section-title">
+                    Business Permit
+                </h4>
+
+                <div class="client-details-grid">
+
+                    <div class="client-detail-item">
+
+                        <div class="client-detail-label">
+                            Document
+                        </div>
+
+                        <div
+                            id="detailPermit"
+                            class="client-detail-value"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="client-details-footer">
+
+            <button
+                type="button"
+                class="details-footer-btn secondary"
+                onclick="closeClientDetails()"
+            >
+                Close
+            </button>
+
+
+            <a
+                id="clientDetailsEdit"
+                href="#"
+                class="details-footer-btn primary"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M4 20H8L19 9C20.1 7.9 20.1 6.1 19 5C17.9 3.9 16.1 3.9 15 5L4 16V20Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                    />
+
+                    <path
+                        d="M13.5 6.5L17.5 10.5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                    />
+
+                </svg>
+
+                Edit Client
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     BUSINESS PERMIT PREVIEW MODAL
+========================================================= -->
+
+<div
+    id="permitModal"
+    class="permit-modal"
+    aria-hidden="true"
+>
+
+    <div class="permit-modal-content">
+
+        <div class="permit-modal-header">
+
+            <div class="permit-modal-title-wrap">
+
+                <h3 class="permit-modal-title">
+                    Business Permit
+                </h3>
+
+                <div
+                    id="permitModalFileName"
+                    class="permit-modal-file-name"
+                >
+                    Document Preview
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="permit-modal-close"
+                onclick="closePermitModal()"
+                aria-label="Close permit preview"
+            >
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M6 6L18 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+
+                    <path
+                        d="M18 6L6 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+
+                </svg>
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="permitModalBody"
+            class="permit-modal-body"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     DEACTIVATE MODAL
+========================================================= -->
+
+<div
+    id="deleteModal"
+    class="delete-modal"
+    aria-hidden="true"
+>
+
+    <div class="delete-modal-content">
+
+        <h3 class="delete-modal-title">
+
+            <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+            >
+
+                <path
+                    d="M12 3L21 20H3L12 3Z"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linejoin="round"
+                />
+
+                <path
+                    d="M12 9V13"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                />
+
+                <circle
+                    cx="12"
+                    cy="16.5"
+                    r="0.8"
+                    fill="currentColor"
+                />
+
+            </svg>
+
+            Deactivate Client
+
+        </h3>
+
+
+        <p class="delete-modal-text">
+
+            Are you sure you want to deactivate
+
+            <span
+                id="deleteClientName"
+                class="delete-client-name"
+            ></span>?
+
+            The client will be marked as inactive and existing sales
+            records will remain in the system.
+
+        </p>
+
+
+        <div class="delete-modal-actions">
+
+            <button
+                type="button"
+                class="modal-btn cancel"
+                onclick="closeDeleteModal()"
+            >
+                Cancel
+            </button>
+
+
+            <form
+                method="POST"
+                id="deleteForm"
+            >
+
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="modal-btn confirm"
+                    id="confirmDeleteButton"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                    >
+
+                        <path
+                            d="M5 7H19"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M10 11V17"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M14 11V17"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M6.5 7L7.2 19C7.25 19.55 7.7 20 8.25 20H15.75C16.3 20 16.75 19.55 16.8 19L17.5 7"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linejoin="round"
+                        />
+
+                        <path
+                            d="M9 7V4.5C9 4.22 9.22 4 9.5 4H14.5C14.78 4 15 4.22 15 4.5V7"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linejoin="round"
+                        />
+
+                    </svg>
+
+                    Deactivate
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+(function () {
+
+    "use strict";
+
+
+    /* =========================================================
+       SEARCH
+    ========================================================= */
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+    const searchForm =
+        document.getElementById("searchForm");
+
+
+    if (searchInput && searchForm) {
+
+        let searchTimeout;
+
+
+        searchInput.addEventListener(
+            "input",
+            function () {
+
+                clearTimeout(searchTimeout);
+
+
+                searchTimeout = setTimeout(
+                    function () {
+
+                        searchForm.submit();
+
+                    },
+                    500
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       STATUS FILTER
+    ========================================================= */
+
+    const statusFilter =
+        document.getElementById("statusFilter");
+
+    const statusForm =
+        document.getElementById("statusForm");
+
+
+    if (statusFilter && statusForm) {
+
+        statusFilter.addEventListener(
+            "change",
+            function () {
+
+                statusForm.submit();
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       CLIENT DETAILS MODAL
+    ========================================================= */
+
+    window.openClientDetails = function (
+        clientId,
+        firstName,
+        middleName,
+        lastName,
+        organization,
+        salesperson,
+        contact,
+        email,
+        address,
+        created,
+        status,
+        permitUrl,
+        permitName
+    ) {
+
+        const modal =
+            document.getElementById(
+                "clientDetailsModal"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        const fullName = [
+            firstName,
+            middleName,
+            lastName
+        ]
+        .filter(Boolean)
+        .join(" ");
+
+
+        document.getElementById(
+            "clientDetailsTitle"
+        ).textContent =
+            fullName || "Client Details";
+
+
+        document.getElementById(
+            "clientDetailsSubtitle"
+        ).textContent =
+            organization ||
+            "Client account information";
+
+
+        document.getElementById(
+            "detailFirstName"
+        ).textContent =
+            firstName || "Not provided";
+
+
+        document.getElementById(
+            "detailMiddleName"
+        ).textContent =
+            middleName || "Not provided";
+
+
+        document.getElementById(
+            "detailLastName"
+        ).textContent =
+            lastName || "Not provided";
+
+
+        document.getElementById(
+            "detailOrganization"
+        ).textContent =
+            organization || "Not provided";
+
+
+        document.getElementById(
+            "detailSalesperson"
+        ).textContent =
+            salesperson || "Not assigned";
+
+
+        document.getElementById(
+            "detailContact"
+        ).textContent =
+            contact || "Not provided";
+
+
+        document.getElementById(
+            "detailEmail"
+        ).textContent =
+            email || "Not provided";
+
+
+        document.getElementById(
+            "detailAddress"
+        ).textContent =
+            address || "Not provided";
+
+
+        document.getElementById(
+            "detailCreated"
+        ).textContent =
+            created || "Not provided";
+
+
+        document.getElementById(
+            "detailStatus"
+        ).textContent =
+            status || "Not provided";
+
+
+        /* =====================================================
+           BUSINESS PERMIT
+        ===================================================== */
+
+        const permitContainer =
+            document.getElementById(
+                "detailPermit"
+            );
+
+
+        permitContainer.innerHTML = "";
+
+
+        if (permitUrl) {
+
+            const permitButton =
+                document.createElement("button");
+
+
+            permitButton.type = "button";
+
+
+            permitButton.className =
+                "view-permit-btn";
+
+
+            permitButton.innerHTML = `
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+
+                    <path
+                        d="M2.5 12C2.5 12 6 5.5 12 5.5C18 5.5 21.5 12 21.5 12C21.5 12 18 18.5 12 18.5C6 18.5 2.5 12 2.5 12Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                    />
+
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="2.5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                    />
+
+                </svg>
+
+                View Permit
+
+            `;
+
+
+            permitButton.addEventListener(
+                "click",
+                function () {
+
+                    window.openPermitModal(
+                        permitUrl,
+                        permitName
+                    );
+
+                }
+            );
+
+
+            permitContainer.appendChild(
+                permitButton
+            );
+
+        } else {
+
+            const text =
+                document.createElement("span");
+
+
+            text.className =
+                "client-detail-value muted";
+
+
+            text.textContent =
+                "No business permit uploaded.";
+
+
+            permitContainer.appendChild(
+                text
+            );
+
+        }
+
+
+        /* =====================================================
+           EDIT LINK
+        ===================================================== */
+
+        const editButton =
+            document.getElementById(
+                "clientDetailsEdit"
+            );
+
+
+        const editUrl =
+            "{% url 'edit-client' 0 %}";
+
+
+        editButton.href =
+            editUrl.replace(
+                "/0/",
+                "/" + clientId + "/"
+            );
+
+
+        /* =====================================================
+           SHOW MODAL
+        ===================================================== */
+
+        modal.classList.add("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        document.body.style.overflow =
+            "hidden";
+
+    };
+
+
+    /* =========================================================
+       CLOSE CLIENT DETAILS
+    ========================================================= */
+
+    window.closeClientDetails = function () {
+
+        const modal =
+            document.getElementById(
+                "clientDetailsModal"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.remove("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        document.body.style.overflow =
+            "";
+
+    };
+
+
+    /* =========================================================
+       OPEN PERMIT PREVIEW
+    ========================================================= */
+
+    window.openPermitModal = function (
+        permitUrl,
+        permitName
+    ) {
+
+        const modal =
+            document.getElementById(
+                "permitModal"
+            );
+
+
+        const body =
+            document.getElementById(
+                "permitModalBody"
+            );
+
+
+        const fileNameElement =
+            document.getElementById(
+                "permitModalFileName"
+            );
+
+
+        if (
+            !modal ||
+            !body ||
+            !fileNameElement
+        ) {
+
+            return;
+
+        }
+
+
+        fileNameElement.textContent =
+            permitName ||
+            "Business Permit";
+
+
+        body.innerHTML = "";
+
+
+        const cleanUrl =
+            (permitUrl || "")
+                .split("?")[0]
+                .toLowerCase();
+
+
+        /* =====================================================
+           IMAGE PREVIEW
+        ===================================================== */
+
+        if (
+            /\.(jpg|jpeg|png|gif|webp|bmp)$/i
+                .test(cleanUrl)
+        ) {
+
+            const image =
+                document.createElement("img");
+
+
+            image.src =
+                permitUrl;
+
+
+            image.alt =
+                permitName ||
+                "Business Permit";
+
+
+            image.className =
+                "permit-preview-image";
+
+
+            body.appendChild(
+                image
+            );
+
+        }
+
+
+        /* =====================================================
+           PDF PREVIEW
+        ===================================================== */
+
+        else if (
+            /\.pdf$/i.test(cleanUrl)
+        ) {
+
+            const iframe =
+                document.createElement("iframe");
+
+
+            iframe.src =
+                permitUrl;
+
+
+            iframe.title =
+                permitName ||
+                "Business Permit";
+
+
+            iframe.className =
+                "permit-preview-frame";
+
+
+            body.appendChild(
+                iframe
+            );
+
+        }
+
+
+        /* =====================================================
+           UNSUPPORTED FILE
+        ===================================================== */
+
+        else {
+
+            const container =
+                document.createElement("div");
+
+
+            container.className =
+                "permit-preview-empty";
+
+
+            container.innerHTML = `
+
+                <strong>
+                    Preview unavailable
+                </strong>
+
+                <p>
+                    This file type cannot be previewed in the browser.
+                </p>
+
+            `;
+
+
+            body.appendChild(
+                container
+            );
+
+        }
+
+
+        modal.classList.add("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        document.body.style.overflow =
+            "hidden";
+
+    };
+
+
+    /* =========================================================
+       CLOSE PERMIT PREVIEW
+    ========================================================= */
+
+    window.closePermitModal = function () {
+
+        const modal =
+            document.getElementById(
+                "permitModal"
+            );
+
+
+        const body =
+            document.getElementById(
+                "permitModalBody"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.remove("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        if (body) {
+            body.innerHTML = "";
+        }
+
+
+        const detailsModal =
+            document.getElementById(
+                "clientDetailsModal"
+            );
+
+
+        if (
+            detailsModal &&
+            detailsModal.classList.contains("show")
+        ) {
+
+            document.body.style.overflow =
+                "hidden";
+
+        } else {
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+    };
+
+
+    /* =========================================================
+       CLIENT DETAILS BACKDROP
+    ========================================================= */
+
+    const clientDetailsModal =
+        document.getElementById(
+            "clientDetailsModal"
+        );
+
+
+    if (clientDetailsModal) {
+
+        clientDetailsModal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    clientDetailsModal
+                ) {
+
+                    window.closeClientDetails();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       PERMIT MODAL BACKDROP
+    ========================================================= */
+
+    const permitModal =
+        document.getElementById(
+            "permitModal"
+        );
+
+
+    if (permitModal) {
+
+        permitModal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    permitModal
+                ) {
+
+                    window.closePermitModal();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       DEACTIVATE MODAL
+    ========================================================= */
+
+    window.openDeleteModal = function (
+        clientId,
+        clientName
+    ) {
+
+        const modal =
+            document.getElementById(
+                "deleteModal"
+            );
+
+
+        const nameElement =
+            document.getElementById(
+                "deleteClientName"
+            );
+
+
+        const deleteForm =
+            document.getElementById(
+                "deleteForm"
+            );
+
+
+        if (
+            !modal ||
+            !nameElement ||
+            !deleteForm
+        ) {
+
+            return;
+
+        }
+
+
+        nameElement.textContent =
+            clientName;
+
+
+        const deleteUrl =
+            "{% url 'delete-client' 0 %}";
+
+
+        deleteForm.action =
+            deleteUrl.replace(
+                "/0/",
+                "/" + clientId + "/"
+            );
+
+
+        modal.classList.add("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+
+        document.body.style.overflow =
+            "hidden";
+
+    };
+
+
+    /* =========================================================
+       CLOSE DEACTIVATE MODAL
+    ========================================================= */
+
+    window.closeDeleteModal = function () {
+
+        const modal =
+            document.getElementById(
+                "deleteModal"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.remove("show");
+
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+
+        document.body.style.overflow =
+            "";
+
+    };
+
+
+    /* =========================================================
+       DEACTIVATE BACKDROP
+    ========================================================= */
+
+    const deleteModal =
+        document.getElementById(
+            "deleteModal"
+        );
+
+
+    if (deleteModal) {
+
+        deleteModal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    deleteModal
+                ) {
+
+                    window.closeDeleteModal();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       ESCAPE KEY
+    ========================================================= */
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+
+            const permit =
+                document.getElementById(
+                    "permitModal"
+                );
+
+
+            const details =
+                document.getElementById(
+                    "clientDetailsModal"
+                );
+
+
+            const deleteModal =
+                document.getElementById(
+                    "deleteModal"
+                );
+
+
+            /* CLOSE TOPMOST MODAL FIRST */
+
+            if (
+                permit &&
+                permit.classList.contains("show")
+            ) {
+
+                window.closePermitModal();
+
+                return;
+
+            }
+
+
+            if (
+                details &&
+                details.classList.contains("show")
+            ) {
+
+                window.closeClientDetails();
+
+                return;
+
+            }
+
+
+            if (
+                deleteModal &&
+                deleteModal.classList.contains("show")
+            ) {
+
+                window.closeDeleteModal();
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       PREVENT DOUBLE SUBMISSION
+    ========================================================= */
+
+    const deleteForm =
+        document.getElementById(
+            "deleteForm"
+        );
+
+
+    const confirmDeleteButton =
+        document.getElementById(
+            "confirmDeleteButton"
+        );
+
+
+    if (
+        deleteForm &&
+        confirmDeleteButton
+    ) {
+
+        deleteForm.addEventListener(
+            "submit",
+            function () {
+
+                confirmDeleteButton.disabled =
+                    true;
+
+
+                confirmDeleteButton.innerHTML = `
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                    >
+
+                        <path
+                            d="M12 4V8"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M12 16V20"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M4 12H8"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M16 12H20"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                    </svg>
+
+                    Deactivating...
+
+                `;
+
+            }
+        );
+
+    }
+
+})();
+
+</script>
+
+{% endblock %}

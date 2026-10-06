@@ -1,0 +1,1314 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BentaPOS - Login</title>
+
+
+    <!-- =========================================================
+         FAVICON
+    ========================================================== -->
+
+    <link
+        rel="icon"
+        type="image/png"
+        sizes="32x32"
+        href="{% static 'images/bentaPOS_logo.png' %}"
+    >
+
+    <link
+        rel="icon"
+        type="image/png"
+        sizes="192x192"
+        href="{% static 'images/bentaPOS_logo.png' %}"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="{% static 'images/bentaPOS_logo.png' %}"
+    >
+
+
+    <style>
+
+        /* =========================================================
+           RESET
+        ========================================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #000;
+
+            color: #fff;
+        }
+
+
+        /* =========================================================
+           MAIN LOGIN PAGE
+        ========================================================= */
+
+        .login-page {
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #000;
+
+            padding: 30px;
+        }
+
+
+        .login-container {
+
+            width: 100%;
+
+            max-width: 1000px;
+
+            min-height: 560px;
+
+            display: grid;
+
+            grid-template-columns:
+                0.95fr 1.05fr;
+
+            gap: 70px;
+
+            align-items: center;
+        }
+
+
+        /* =========================================================
+           BRANDING
+        ========================================================= */
+
+        .brand-section {
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 20px;
+        }
+
+
+        .logo-wrapper {
+
+            width: 300px;
+
+            height: 300px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin-bottom: 18px;
+        }
+
+
+        .logo {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: contain;
+        }
+
+
+        .brand-title {
+
+            margin: 0;
+
+            font-size: 38px;
+
+            font-weight: 700;
+
+            letter-spacing: -1px;
+
+            color: #fff;
+        }
+
+
+        .brand-description {
+
+            margin: 10px 0 0;
+
+            max-width: 320px;
+
+            color: #888;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================================================
+           LOGIN SECTION
+        ========================================================= */
+
+        .login-section {
+
+            width: 100%;
+
+            max-width: 430px;
+
+            justify-self: center;
+        }
+
+
+        .login-header {
+
+            margin-bottom: 30px;
+        }
+
+
+        .login-header h1 {
+
+            margin: 0;
+
+            font-size: 34px;
+
+            font-weight: 700;
+
+            letter-spacing: -0.8px;
+
+            color: #fff;
+        }
+
+
+        .login-header p {
+
+            margin: 8px 0 0;
+
+            font-size: 14px;
+
+            color: #777;
+        }
+
+
+        /* =========================================================
+           ERROR MESSAGE
+        ========================================================= */
+
+        .error {
+
+            margin-bottom: 20px;
+
+            padding: 12px 14px;
+
+            border: 1px solid #3d1717;
+
+            border-radius: 8px;
+
+            background: #170909;
+
+            color: #ff7070;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+        }
+
+
+        /* =========================================================
+           FORM
+        ========================================================= */
+
+        .form-group {
+
+            margin-bottom: 18px;
+        }
+
+
+        .form-group label {
+
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #ddd;
+        }
+
+
+        .input-wrapper {
+
+            position: relative;
+
+            width: 100%;
+        }
+
+
+        .form-group input {
+
+            width: 100%;
+
+            height: 50px;
+
+            padding: 0 15px;
+
+            border: 1px solid #292929;
+
+            border-radius: 9px;
+
+            background: #0d0d0d;
+
+            color: #fff;
+
+            font-size: 14px;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .form-group input::placeholder {
+
+            color: #555;
+        }
+
+
+        .form-group input:hover {
+
+            border-color: #3a3a3a;
+        }
+
+
+        .form-group input:focus {
+
+            border-color: #777;
+
+            background: #111;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(255, 255, 255, 0.05);
+        }
+
+
+        /* =========================================================
+           PASSWORD INPUT
+        ========================================================= */
+
+        .password-input {
+
+            padding-right: 52px !important;
+        }
+
+
+        /* =========================================================
+           PASSWORD TOGGLE
+        ========================================================= */
+
+        .password-toggle {
+
+            position: absolute;
+
+            top: 50%;
+
+            right: 12px;
+
+            transform: translateY(-50%);
+
+            width: 32px;
+
+            height: 32px;
+
+            padding: 0;
+
+            border: none;
+
+            background: transparent;
+
+            color: #777;
+
+            cursor: pointer;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 6px;
+
+            transition:
+                color 0.2s ease,
+                background 0.2s ease;
+        }
+
+
+        .password-toggle:hover {
+
+            color: #fff;
+
+            background: #1a1a1a;
+        }
+
+
+        .password-toggle:focus {
+
+            outline: none;
+
+            color: #fff;
+
+            background: #1a1a1a;
+        }
+
+
+        .password-toggle svg {
+
+            width: 18px;
+
+            height: 18px;
+
+            pointer-events: none;
+        }
+
+
+        /* =========================================================
+           LOGIN BUTTON
+        ========================================================= */
+
+        .login-button {
+
+            width: 100%;
+
+            height: 50px;
+
+            margin-top: 7px;
+
+            padding: 0;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: #fff;
+
+            color: #000;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+
+        .login-button:hover {
+
+            background: #e7e7e7;
+        }
+
+
+        .login-button:active {
+
+            transform: scale(0.985);
+        }
+
+
+        /* =========================================================
+           LOGIN BUTTON LOADING STATE
+        ========================================================= */
+
+        .login-button.loading {
+
+            cursor: wait;
+
+            background: #fff;
+
+            color: #000;
+
+            opacity: 0.75;
+
+            transform: none;
+
+        }
+
+
+        .login-button:disabled {
+
+            cursor: wait;
+        }
+
+
+        /* =========================================================
+           BUTTON CONTENT
+        ========================================================= */
+
+        .button-content {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 9px;
+        }
+
+
+        /* =========================================================
+           SPINNER
+        ========================================================= */
+
+        .button-spinner {
+
+            display: none;
+
+            width: 17px;
+
+            height: 17px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            border: 2px solid
+                rgba(0, 0, 0, 0.20);
+
+            border-top-color: #000;
+
+            animation:
+                bentapos-spinner
+                0.65s
+                linear
+                infinite;
+        }
+
+
+        /*
+         * IMPORTANT:
+         * Spinner becomes visible only when
+         * the button has the .loading class.
+         */
+
+        .login-button.loading .button-spinner {
+
+            display: block;
+        }
+
+
+        /* =========================================================
+           SPINNER ANIMATION
+        ========================================================= */
+
+        @keyframes bentapos-spinner {
+
+            0% {
+
+                transform: rotate(0deg);
+
+            }
+
+            100% {
+
+                transform: rotate(360deg);
+
+            }
+
+        }
+
+
+        /* =========================================================
+           FOOTER
+        ========================================================= */
+
+        .login-footer {
+
+            margin-top: 25px;
+
+            text-align: center;
+
+            color: #555;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================================================
+           TABLET
+        ========================================================= */
+
+        @media (max-width: 850px) {
+
+            .login-container {
+
+                gap: 35px;
+            }
+
+
+            .logo-wrapper {
+
+                width: 240px;
+
+                height: 240px;
+            }
+
+
+            .brand-title {
+
+                font-size: 32px;
+            }
+
+        }
+
+
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+
+        @media (max-width: 700px) {
+
+            .login-page {
+
+                padding: 25px 20px;
+            }
+
+
+            .login-container {
+
+                display: flex;
+
+                flex-direction: column;
+
+                gap: 25px;
+
+                min-height: auto;
+            }
+
+
+            .brand-section {
+
+                padding: 0;
+
+                width: 100%;
+            }
+
+
+            .logo-wrapper {
+
+                width: 170px;
+
+                height: 170px;
+
+                margin-bottom: 8px;
+            }
+
+
+            .brand-title {
+
+                font-size: 28px;
+            }
+
+
+            .brand-description {
+
+                display: none;
+            }
+
+
+            .login-section {
+
+                max-width: 430px;
+
+                width: 100%;
+            }
+
+
+            .login-header {
+
+                margin-bottom: 25px;
+            }
+
+
+            .login-header h1 {
+
+                font-size: 28px;
+            }
+
+
+            .login-footer {
+
+                margin-top: 20px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         LOGIN PAGE
+    ========================================================== -->
+
+    <main class="login-page">
+
+
+        <div class="login-container">
+
+
+            <!-- =====================================================
+                 BENTAPOS BRANDING
+            ====================================================== -->
+
+            <section class="brand-section">
+
+
+                <div class="logo-wrapper">
+
+                    <img
+                        src="{% static 'images/bentaPOS_logo.png' %}"
+                        alt="BentaPOS Logo"
+                        class="logo"
+                    >
+
+                </div>
+
+
+                <h2 class="brand-title">
+
+                    BentaPOS
+
+                </h2>
+
+
+                <p class="brand-description">
+
+                    Sales and Point of Sale Management System
+
+                </p>
+
+
+            </section>
+
+
+
+            <!-- =====================================================
+                 LOGIN
+            ====================================================== -->
+
+            <section class="login-section">
+
+
+                <!-- =================================================
+                     LOGIN HEADER
+                ================================================== -->
+
+                <div class="login-header">
+
+                    <h1>
+
+                        Welcome back
+
+                    </h1>
+
+
+                    <p>
+
+                        Sign in to continue to BentaPOS
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- =================================================
+                     ERROR MESSAGE
+                ================================================== -->
+
+                {% if error %}
+
+                    <div class="error">
+
+                        {{ error }}
+
+                    </div>
+
+                {% endif %}
+
+
+
+                <!-- =================================================
+                     LOGIN FORM
+                ================================================== -->
+
+                <form
+                    method="POST"
+                    id="loginForm"
+                    novalidate
+                >
+
+                    {% csrf_token %}
+
+
+                    <!-- =================================================
+                         USERNAME
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label for="username">
+
+                            Username
+
+                        </label>
+
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Enter your username"
+                                autocomplete="username"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         PASSWORD
+                    ================================================== -->
+
+                    <div class="form-group">
+
+                        <label for="password">
+
+                            Password
+
+                        </label>
+
+
+                        <div class="input-wrapper">
+
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="password-input"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+
+                            <!-- =========================================
+                                 SHOW / HIDE PASSWORD
+                            ========================================== -->
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="passwordToggle"
+                                aria-label="Show password"
+                                title="Show password"
+                            >
+
+                                <svg
+                                    id="eyeIcon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+
+                                    <path
+                                        d="M2 12s3.5-7 10-7
+                                           10 7 10 7-3.5 7-10 7
+                                           S2 12 2 12z"
+                                    />
+
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="3"
+                                    />
+
+                                </svg>
+
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                         LOGIN BUTTON
+                    ================================================== -->
+
+                    <button
+                        type="submit"
+                        class="login-button"
+                        id="loginButton"
+                    >
+
+                        <span class="button-content">
+
+                            <!-- Spinner -->
+
+                            <span
+                                class="button-spinner"
+                                id="buttonSpinner"
+                                aria-hidden="true"
+                            ></span>
+
+
+                            <!-- Button Text -->
+
+                            <span id="buttonText">
+
+                                Sign In
+
+                            </span>
+
+                        </span>
+
+                    </button>
+
+
+                </form>
+
+
+
+                <!-- =================================================
+                     FOOTER
+                ================================================== -->
+
+                <div class="login-footer">
+
+                    MR Circuits and Security Inc |
+                    BentaPOS &copy; 2026
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script>
+
+
+        /* =========================================================
+           ELEMENTS
+        ========================================================= */
+
+        const loginForm =
+            document.getElementById("loginForm");
+
+        const loginButton =
+            document.getElementById("loginButton");
+
+        const buttonText =
+            document.getElementById("buttonText");
+
+        const buttonSpinner =
+            document.getElementById("buttonSpinner");
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordToggle =
+            document.getElementById("passwordToggle");
+
+        const eyeIcon =
+            document.getElementById("eyeIcon");
+
+
+
+        /* =========================================================
+           PASSWORD SHOW / HIDE
+        ========================================================== */
+
+        passwordToggle.addEventListener(
+            "click",
+            function () {
+
+                const isPassword =
+                    passwordInput.type === "password";
+
+
+                passwordInput.type =
+                    isPassword
+                        ? "text"
+                        : "password";
+
+
+                passwordToggle.setAttribute(
+                    "aria-label",
+                    isPassword
+                        ? "Hide password"
+                        : "Show password"
+                );
+
+
+                passwordToggle.setAttribute(
+                    "title",
+                    isPassword
+                        ? "Hide password"
+                        : "Show password"
+                );
+
+
+                /* =============================================
+                   HIDDEN EYE
+                ============================================== */
+
+                if (isPassword) {
+
+                    eyeIcon.innerHTML = `
+
+                        <path
+                            d="M3 3l18 18"
+                        />
+
+                        <path
+                            d="M10.6 10.6
+                               a2 2 0 0 0 2.8 2.8"
+                        />
+
+                        <path
+                            d="M9.9 5.1
+                               A10.8 10.8 0 0 1 12 5
+                               c6.5 0 10 7 10 7
+                               a18.7 18.7 0 0 1-3.2 4.2"
+                        />
+
+                        <path
+                            d="M6.6 6.6
+                               C3.7 8.6 2 12 2 12
+                               s3.5 7 10 7
+                               c1.1 0 2.1-.2 3-.5"
+                        />
+
+                    `;
+
+
+                /* =============================================
+                   NORMAL EYE
+                ============================================== */
+
+                } else {
+
+                    eyeIcon.innerHTML = `
+
+                        <path
+                            d="M2 12s3.5-7 10-7
+                               10 7 10 7-3.5 7-10 7
+                               S2 12 2 12z"
+                        />
+
+                        <circle
+                            cx="12"
+                            cy="12"
+                            r="3"
+                        />
+
+                    `;
+
+                }
+
+            }
+        );
+
+
+
+        /* =========================================================
+           LOGIN SUBMIT / LOADING
+        ========================================================== */
+
+        let loginSubmitting = false;
+
+
+        loginForm.addEventListener(
+            "submit",
+            function (event) {
+
+
+                /* =============================================
+                   PREVENT DOUBLE CLICK
+                ============================================== */
+
+                if (loginSubmitting) {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /* =============================================
+                   MANUAL VALIDATION
+                ============================================== */
+
+                const username =
+                    document.getElementById("username");
+
+                const password =
+                    document.getElementById("password");
+
+
+                if (
+                    username.value.trim() === "" ||
+                    password.value.trim() === ""
+                ) {
+
+                    /*
+                     * Do NOT show loading if
+                     * fields are empty.
+                     */
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+
+                /* =============================================
+                   STOP NORMAL SUBMIT TEMPORARILY
+                ============================================== */
+
+                event.preventDefault();
+
+
+                /* =============================================
+                   SET LOADING STATE
+                ============================================== */
+
+                loginSubmitting = true;
+
+
+                loginButton.disabled = true;
+
+
+                loginButton.classList.add(
+                    "loading"
+                );
+
+
+                buttonText.textContent =
+                    "Signing in...";
+
+
+                /*
+                 * Force the browser to render the
+                 * spinner BEFORE Django navigation.
+                 */
+
+                requestAnimationFrame(function () {
+
+                    requestAnimationFrame(function () {
+
+                        /*
+                         * Submit the form normally.
+                         *
+                         * This sends the POST request
+                         * to Django.
+                         */
+
+                        loginForm.submit();
+
+                    });
+
+                });
+
+            }
+        );
+
+
+    </script>
+
+    {% if user.is_authenticated %}
+    {% if user.is_superuser or user.profile.role == "ADMIN" %}
+
+    <script>
+        /*
+        ============================================================
+        BentaPOS ADMIN SESSION HEARTBEAT
+        ============================================================
+
+        Sends a request every 10 seconds while the ADMIN portal
+        is open.
+
+        If the computer is shut down, browser is closed, or the
+        network disappears, the heartbeat stops.
+
+        The server will then allow the ADMIN lock to expire after
+        the configured timeout.
+        */
+
+        (function () {
+
+            const HEARTBEAT_INTERVAL = 10000;
+
+            function sendAdminHeartbeat() {
+
+                fetch("{% url 'admin_heartbeat' %}", {
+                    method: "GET",
+                    credentials: "same-origin",
+                    cache: "no-store",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(function (response) {
+
+                    /*
+                    ====================================================
+                    ADMIN SESSION IS NO LONGER VALID
+                    ====================================================
+                    */
+
+                    if (response.status === 403) {
+
+                        window.location.href = "{% url 'login' %}";
+
+                    }
+
+                })
+                .catch(function (error) {
+
+                    /*
+                    ====================================================
+                    NETWORK FAILURE
+                    ====================================================
+
+                    Do NOT immediately logout.
+
+                    The server will detect the missing heartbeat
+                    through last_activity and eventually release
+                    the ADMIN lock.
+                    */
+
+                    console.log(
+                        "BentaPOS admin heartbeat unavailable."
+                    );
+
+                });
+
+            }
+
+
+            /*
+            ========================================================
+            SEND FIRST HEARTBEAT
+            ========================================================
+            */
+
+            sendAdminHeartbeat();
+
+
+            /*
+            ========================================================
+            SEND HEARTBEAT EVERY 10 SECONDS
+            ========================================================
+            */
+
+            setInterval(
+                sendAdminHeartbeat,
+                HEARTBEAT_INTERVAL
+            );
+
+        })();
+
+    </script>
+
+    {% endif %}
+{% endif %}
+
+</body>
+
+</html>

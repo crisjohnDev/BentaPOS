@@ -2,7 +2,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from .utils import create_default_admin
-from core.models import UserProfile
+from core.models import UserProfile, AdminPortalLock
+from django.utils import timezone
 
 def login_view(request):
 
@@ -69,30 +70,15 @@ def login_view(request):
 
         elif role == "MANAGER":
 
-            # If you already have a manager dashboard,
-            # change this to:
-            #
-            # return redirect("manager-dashboard")
-
             return redirect("staff-dashboard")
 
 
         elif role == "CASHIER":
 
-            # If you already have a cashier dashboard,
-            # change this to:
-            #
-            # return redirect("cashier-dashboard")
-
             return redirect("staff-dashboard")
 
 
         elif role == "INVENTORY":
-
-            # If you already have an inventory dashboard,
-            # change this to:
-            #
-            # return redirect("inventory-dashboard")
 
             return redirect("staff-dashboard")
 
@@ -192,7 +178,58 @@ def login_view(request):
 
         if user.is_superuser:
 
-            login(request, user)
+            # --------------------------------------------------
+            # CHECK ADMIN PORTAL LOCK
+            # --------------------------------------------------
+
+            lock, created = AdminPortalLock.objects.get_or_create(
+                id=1
+            )
+
+
+            # --------------------------------------------------
+            # ADMIN PORTAL ALREADY IN USE
+            # --------------------------------------------------
+
+            if lock.locked:
+
+                return render(
+                    request,
+                    "login.html",
+                    {
+                        "error":
+                            "The administrator portal is currently "
+                            "being used on another computer."
+                    }
+                )
+
+
+            # --------------------------------------------------
+            # LOGIN SUPERUSER
+            # --------------------------------------------------
+
+            login(
+                request,
+                user
+            )
+
+
+            # --------------------------------------------------
+            # CREATE ADMIN LOCK
+            # --------------------------------------------------
+
+            lock.locked = True
+
+            lock.session_key = request.session.session_key
+
+            lock.ip_address = request.META.get(
+                "REMOTE_ADDR"
+            )
+
+            lock.last_activity = timezone.now()
+
+            lock.save()
+
 
             return redirect(
                 "admin-dashboard"
@@ -230,9 +267,6 @@ def login_view(request):
         # CHECK SYSTEM PERMISSION
         # ======================================================
 
-        # User must either be a Django staff account
-        # OR have an allowed BentaPOS role.
-
         allowed_roles = [
             "ADMIN",
             "MANAGER",
@@ -256,8 +290,86 @@ def login_view(request):
 
 
         # ======================================================
-        # LOGIN USER
+        # ADMIN ROLE
         # ======================================================
+
+        if role == "ADMIN":
+
+            # --------------------------------------------------
+            # CHECK ADMIN PORTAL LOCK
+            # --------------------------------------------------
+
+            lock, created = AdminPortalLock.objects.get_or_create(
+                id=1
+            )
+
+
+            # --------------------------------------------------
+            # ADMIN PORTAL ALREADY IN USE
+            # --------------------------------------------------
+
+            if lock.locked:
+
+                return render(
+                    request,
+                    "login.html",
+                    {
+                        "error":
+                            "The administrator portal is currently "
+                            "being used on another computer."
+                    }
+                )
+
+
+            # --------------------------------------------------
+            # LOGIN ADMIN
+            # --------------------------------------------------
+
+            login(
+                request,
+                user
+            )
+
+
+            # --------------------------------------------------
+            # CREATE ADMIN PORTAL LOCK
+            # --------------------------------------------------
+
+            lock.locked = True
+
+            lock.session_key = request.session.session_key
+
+            lock.ip_address = request.META.get(
+                "REMOTE_ADDR"
+            )
+
+            lock.last_activity = timezone.now()
+
+            lock.save()
+
+
+            return redirect(
+                "admin-dashboard"
+            )
+
+
+        # ======================================================
+        # NON-ADMIN USERS
+        # ======================================================
+
+        # ------------------------------------------------------
+        # LOGIN USER
+        #
+        # IMPORTANT:
+        # No AdminPortalLock is checked here.
+        #
+        # Therefore:
+        #
+        # MANAGER  -> normal login
+        # STAFF    -> normal login
+        # CASHIER  -> normal login
+        # INVENTORY -> normal login
+        # ------------------------------------------------------
 
         login(
             request,
@@ -270,24 +382,10 @@ def login_view(request):
         # ======================================================
 
         # ------------------------------------------------------
-        # ADMINISTRATOR
-        # ------------------------------------------------------
-
-        if role == "ADMIN":
-
-            return redirect(
-                "admin-dashboard"
-            )
-
-
-        # ------------------------------------------------------
         # MANAGER
         # ------------------------------------------------------
 
-        elif role == "MANAGER":
-
-            # Change to "manager-dashboard" later if you
-            # create a dedicated manager dashboard.
+        if role == "MANAGER":
 
             return redirect(
                 "staff-dashboard"
@@ -300,9 +398,6 @@ def login_view(request):
 
         elif role == "CASHIER":
 
-            # Change to "cashier-dashboard" later if you
-            # create a dedicated cashier dashboard.
-
             return redirect(
                 "staff-dashboard"
             )
@@ -313,9 +408,6 @@ def login_view(request):
         # ------------------------------------------------------
 
         elif role == "INVENTORY":
-
-            # Change to "inventory-dashboard" later if you
-            # create a dedicated inventory dashboard.
 
             return redirect(
                 "staff-dashboard"
@@ -357,9 +449,42 @@ def login_view(request):
         "login.html"
     )
 
-
 #logout
 def logout_view(request):
 
+    if request.user.is_authenticated:
+
+        profile = getattr(
+            request.user,
+            "profile",
+            None
+        )
+
+        is_admin = (
+            request.user.is_superuser
+            or (
+                profile is not None
+                and profile.role == "ADMIN"
+            )
+        )
+
+        if is_admin:
+
+            lock = AdminPortalLock.objects.filter(
+                id=1,
+                session_key=request.session.session_key,
+                locked=True
+            ).first()
+
+            if lock:
+
+                lock.locked = False
+                lock.session_key = None
+                lock.ip_address = None
+                lock.last_activity = None
+
+                lock.save()
+
     logout(request)
+
     return redirect("login")

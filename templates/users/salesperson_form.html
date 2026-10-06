@@ -1,0 +1,872 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+
+    {% if is_edit %}
+        BentaPOS - Edit Salesperson
+    {% else %}
+        BentaPOS - Add Salesperson
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_title %}
+
+    {% if is_edit %}
+        Edit Salesperson
+    {% else %}
+        Add New Salesperson
+    {% endif %}
+
+{% endblock %}
+
+
+{% block page_subtitle %}
+
+    {% if is_edit %}
+        Update salesperson information
+    {% else %}
+        Add a new salesperson to the system
+    {% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.salesperson-container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.salesperson-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 28px;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.02);
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+}
+
+
+.required {
+    color: #000;
+}
+
+
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.form-input,
+.form-textarea {
+
+    width: 100%;
+
+    border: 1px solid #d1d1d1;
+
+    border-radius: 8px;
+
+    background: #fff;
+
+    color: #111;
+
+    font-size: 13px;
+
+    font-family: inherit;
+
+    outline: none;
+
+    box-sizing: border-box;
+
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.form-input {
+
+    height: 42px;
+
+    padding: 0 14px;
+}
+
+
+.form-textarea {
+
+    min-height: 100px;
+
+    padding: 12px 14px;
+
+    resize: vertical;
+}
+
+
+.form-input:focus,
+.form-textarea:focus {
+
+    border-color: #000;
+
+    box-shadow:
+        0 0 0 3px rgba(0, 0, 0, .05);
+}
+
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+
+    color: #aaa;
+}
+
+
+/* =========================================================
+   HELP TEXT
+========================================================= */
+
+.form-help {
+
+    font-size: 11px;
+
+    color: #777;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   SECTION TITLE
+========================================================= */
+
+.section-title {
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    color: #111;
+
+    padding-bottom: 10px;
+
+    border-bottom: 1px solid #eee;
+
+    margin-bottom: 2px;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.form-error {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    background: #fdf2f2;
+
+    border: 1px solid #f8b4b4;
+
+    border-radius: 8px;
+
+    color: #9b1c1c;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    margin-bottom: 4px;
+}
+
+
+.form-error svg {
+
+    width: 18px;
+
+    height: 18px;
+
+    flex-shrink: 0;
+
+    margin-top: 1px;
+}
+
+
+/* =========================================================
+   STATUS CHECKBOX
+========================================================= */
+
+.checkbox-group {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 11px 12px;
+
+    background: #fafafa;
+
+    border: 1px solid #eaeaea;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+
+.checkbox-group input {
+
+    width: 16px;
+
+    height: 16px;
+
+    margin: 0;
+
+    accent-color: #000;
+
+    cursor: pointer;
+}
+
+
+.checkbox-label {
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    color: #333;
+
+    cursor: pointer;
+
+    user-select: none;
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.form-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    padding-top: 20px;
+
+    margin-top: 5px;
+
+    border-top: 1px solid #f0f0f0;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn-secondary,
+.btn-primary {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 40px;
+
+    padding: 10px 20px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    font-family: inherit;
+
+    text-decoration: none;
+
+    box-sizing: border-box;
+
+    cursor: pointer;
+
+    transition:
+        background .18s ease,
+        border-color .18s ease,
+        transform .1s ease;
+}
+
+
+.btn-secondary {
+
+    border: 1px solid #d1d1d1;
+
+    background: #fff;
+
+    color: #333;
+}
+
+
+.btn-secondary:hover {
+
+    background: #f5f5f5;
+
+    color: #000;
+}
+
+
+.btn-primary {
+
+    border: none;
+
+    background: #000;
+
+    color: #fff;
+}
+
+
+.btn-primary:hover {
+
+    background: #222;
+}
+
+
+.btn-primary:active {
+
+    transform: scale(.98);
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .salesperson-container {
+
+        width: 100%;
+    }
+
+
+    .salesperson-card {
+
+        padding: 20px;
+    }
+
+
+    .form-row {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .form-actions {
+
+        flex-direction: column-reverse;
+    }
+
+
+    .btn-primary,
+    .btn-secondary {
+
+        width: 100%;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="salesperson-container">
+
+    <div class="salesperson-card">
+
+
+        <!-- =================================================
+             FORM ERROR
+        ================================================== -->
+
+        {% if error %}
+
+            <div class="form-error">
+
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                >
+
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                    ></circle>
+
+                    <line
+                        x1="12"
+                        y1="8"
+                        x2="12"
+                        y2="12"
+                    ></line>
+
+                    <line
+                        x1="12"
+                        y1="16"
+                        x2="12.01"
+                        y2="16"
+                    ></line>
+
+                </svg>
+
+
+                <span>
+                    {{ error }}
+                </span>
+
+            </div>
+
+        {% endif %}
+
+
+
+        <!-- =================================================
+             FORM
+        ================================================== -->
+
+        <form
+            method="POST"
+            class="form-grid"
+            autocomplete="off"
+        >
+
+            {% csrf_token %}
+
+
+
+            <!-- =================================================
+                 PERSONAL INFORMATION
+            ================================================== -->
+
+            <div class="section-title">
+
+                Personal Information
+
+            </div>
+
+
+
+            <!-- =================================================
+                 LAST + FIRST NAME
+            ================================================== -->
+
+            <div class="form-row">
+
+
+                <!-- LAST NAME -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_last_name"
+                        class="form-label"
+                    >
+
+                        Last Name
+
+                        <span class="required">
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="last_name"
+                        id="id_last_name"
+                        class="form-input"
+
+                        required
+                        maxlength="100"
+
+                        {% if is_edit %}
+
+                            value="{{ salesperson.last_name|default:'' }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.last_name|default:'' }}"
+
+                        {% endif %}
+
+                        placeholder="e.g. Dela Cruz"
+                    >
+
+                </div>
+
+
+
+                <!-- FIRST NAME -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_first_name"
+                        class="form-label"
+                    >
+
+                        First Name
+
+                        <span class="required">
+                            *
+                        </span>
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="first_name"
+                        id="id_first_name"
+                        class="form-input"
+
+                        required
+                        maxlength="100"
+
+                        {% if is_edit %}
+
+                            value="{{ salesperson.first_name|default:'' }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.first_name|default:'' }}"
+
+                        {% endif %}
+
+                        placeholder="e.g. Juan"
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 MIDDLE NAME
+            ================================================== -->
+
+            <div class="form-group">
+
+                <label
+                    for="id_middle_name"
+                    class="form-label"
+                >
+
+                    Middle Name
+
+                </label>
+
+
+                <input
+                    type="text"
+                    name="middle_name"
+                    id="id_middle_name"
+                    class="form-input"
+
+                    maxlength="100"
+
+                    {% if is_edit %}
+
+                        value="{{ salesperson.middle_name|default:'' }}"
+
+                    {% else %}
+
+                        value="{{ request.POST.middle_name|default:'' }}"
+
+                    {% endif %}
+
+                    placeholder="e.g. Santos"
+                >
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CONTACT INFORMATION
+            ================================================== -->
+
+            <div class="section-title">
+
+                Contact Information
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CONTACT + EMAIL
+            ================================================== -->
+
+            <div class="form-row">
+
+
+                <!-- CONTACT NUMBER -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_contact_number"
+                        class="form-label"
+                    >
+
+                        Contact Number
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="contact_number"
+                        id="id_contact_number"
+                        class="form-input"
+
+                        maxlength="30"
+
+                        {% if is_edit %}
+
+                            value="{{ salesperson.contact_number|default:'' }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.contact_number|default:'' }}"
+
+                        {% endif %}
+
+                        placeholder="e.g. 09123456789"
+                    >
+
+                </div>
+
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label
+                        for="id_email_address"
+                        class="form-label"
+                    >
+
+                        Email Address
+
+                    </label>
+
+
+                    <input
+                        type="email"
+                        name="email_address"
+                        id="id_email_address"
+                        class="form-input"
+
+                        maxlength="254"
+
+                        {% if is_edit %}
+
+                            value="{{ salesperson.email_address|default:'' }}"
+
+                        {% else %}
+
+                            value="{{ request.POST.email_address|default:'' }}"
+
+                        {% endif %}
+
+                        placeholder="e.g. juan@example.com"
+                    >
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SALESPERSON STATUS
+            ================================================== -->
+
+            <div class="section-title">
+
+                Salesperson Status
+
+            </div>
+
+
+
+            <label
+                class="checkbox-group"
+                for="id_is_active"
+            >
+
+                <input
+                    type="checkbox"
+                    name="is_active"
+                    id="id_is_active"
+
+                    {% if is_edit %}
+
+                        {% if salesperson.is_active %}
+
+                            checked
+
+                        {% endif %}
+
+                    {% else %}
+
+                        checked
+
+                    {% endif %}
+                >
+
+
+                <span class="checkbox-label">
+
+                    Active Salesperson
+
+                </span>
+
+            </label>
+
+
+            <span class="form-help">
+
+                Inactive salespersons can remain in the system
+                but will be marked as inactive.
+
+            </span>
+
+
+
+            <!-- =================================================
+                 ACTIONS
+            ================================================== -->
+
+            <div class="form-actions">
+
+
+                <!-- CANCEL -->
+
+                <a
+                    href="{% url 'salesperson-list' %}"
+                    class="btn-secondary"
+                >
+
+                    Cancel
+
+                </a>
+
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="btn-primary"
+                >
+
+                    {% if is_edit %}
+
+                        Save Changes
+
+                    {% else %}
+
+                        Create Salesperson
+
+                    {% endif %}
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

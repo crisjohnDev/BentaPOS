@@ -25,4 +25,11 @@ urlpatterns = [
     path("salespersons/add/", views.add_salesperson, name="add-salesperson"),
     path("salespersons/<int:salesperson_id>/edit/", views.edit_salesperson, name="edit-salesperson"),
     path("salespersons/delete/<int:salesperson_id>/", views.delete_salesperson, name="delete-salesperson"),
+    path("clients/", views.client_list, name="client-list"),
+    path("clients/add/", views.add_client, name="add-client"),
+    path("clients/<int:client_id>/edit/", views.update_client, name="edit-client"),
+    path("clients/<int:client_id>/delete/", views.delete_client, name="delete-client"),
+    path("transactions/", views.transactions, name="transactions"),
+    # path("admin-portal-locked/", views.admin_portal_locked, name="admin_portal_locked"),
+    path("admin-heartbeat/", views.admin_heartbeat, name="admin_heartbeat"),
 ]

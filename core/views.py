@@ -3,131 +3,470 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from .models import Product, InventoryTransaction, Sale, SaleItem, UserProfile, Salesperson
+from .models import Product, InventoryTransaction, Sale, SaleItem, UserProfile, Salesperson, Client, DiscountClass, AdminPortalLock
 from openpyxl import load_workbook
 from django.db.models import Sum, Count, Avg, Q, F, DecimalField, ExpressionWrapper
 from django.db.models.functions import Coalesce
-from django.db.models import Q
+from django.db.models import (
+    Q,
+    Sum,
+    F,
+    Case,
+    When,
+    Value,
+    CharField,
+)
 from django.utils import timezone
 from datetime import datetime, time, timedelta
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
 from django.core.paginator import Paginator
 from decimal import Decimal
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+import os
+import json
+from django.db import models
+from django.http import JsonResponse
 
 
 def is_superuser(user):
     return user.is_authenticated and user.is_superuser
 
+# def admin_portal_locked(request):
+
+#     return render(
+#         request,
+#         "admin_portal_locked.html"
+#     )
+
+@login_required
+def admin_heartbeat(request):
+
+    user = request.user
+
+    # ==========================================================
+    # ONLY ADMIN CAN SEND HEARTBEAT
+    # ==========================================================
+
+    is_admin = False
+
+    if user.is_superuser:
+
+        is_admin = True
+
+    else:
+
+        profile = getattr(
+            user,
+            "profile",
+            None
+        )
+
+        if profile is not None:
+
+            if profile.role == "ADMIN":
+                is_admin = True
+
+
+    # ==========================================================
+    # NON-ADMIN
+    # ==========================================================
+
+    if not is_admin:
+
+        return JsonResponse({
+            "success": False,
+            "message": "Not an administrator."
+        }, status=403)
+
+
+    # ==========================================================
+    # GET SESSION
+    # ==========================================================
+
+    session_key = request.session.session_key
+
+
+    # ==========================================================
+    # FIND LOCK
+    # ==========================================================
+
+    lock = AdminPortalLock.objects.filter(
+        id=1,
+        locked=True,
+        session_key=session_key
+    ).first()
+
+
+    # ==========================================================
+    # LOCK DOES NOT BELONG TO THIS SESSION
+    # ==========================================================
+
+    if lock is None:
+
+        return JsonResponse({
+            "success": False,
+            "locked": True
+        }, status=403)
+
+
+    # ==========================================================
+    # UPDATE ACTIVITY
+    # ==========================================================
+
+    lock.last_activity = timezone.now()
+
+    lock.save(
+        update_fields=[
+            "last_activity",
+            "updated_at"
+        ]
+    )
+
+
+    return JsonResponse({
+        "success": True,
+        "locked": True
+    })
+
 @login_required(login_url="login")
 def dashboard(request):
 
     # =========================================================
-    # DATE
+    # LOCAL DATE / TIME
     # =========================================================
 
     today = timezone.localdate()
 
-    yesterday = today - timezone.timedelta(days=1)
+    yesterday = today - timedelta(days=1)
+
+    # ---------------------------------------------------------
+    # TODAY START
+    # ---------------------------------------------------------
+
+    today_start = timezone.make_aware(
+        datetime.combine(
+            today,
+            time.min
+        )
+    )
+
+    # ---------------------------------------------------------
+    # TOMORROW START
+    # ---------------------------------------------------------
+
+    tomorrow = today + timedelta(days=1)
+
+    tomorrow_start = timezone.make_aware(
+        datetime.combine(
+            tomorrow,
+            time.min
+        )
+    )
+
+    # ---------------------------------------------------------
+    # YESTERDAY START / END
+    # ---------------------------------------------------------
+
+    yesterday_start = timezone.make_aware(
+        datetime.combine(
+            yesterday,
+            time.min
+        )
+    )
+
+    yesterday_end = today_start
+
+    # =========================================================
+    # CURRENT MONTH
+    # =========================================================
 
     current_month = today.month
     current_year = today.year
 
+    # ---------------------------------------------------------
+    # MONTH START
+    # ---------------------------------------------------------
+
+    month_start_date = today.replace(
+        day=1
+    )
+
+    month_start = timezone.make_aware(
+        datetime.combine(
+            month_start_date,
+            time.min
+        )
+    )
+
+    # ---------------------------------------------------------
+    # NEXT MONTH
+    # ---------------------------------------------------------
+
+    if current_month == 12:
+
+        next_month_date = today.replace(
+            year=current_year + 1,
+            month=1,
+            day=1
+        )
+
+    else:
+
+        next_month_date = today.replace(
+            month=current_month + 1,
+            day=1
+        )
+
+    next_month_start = timezone.make_aware(
+        datetime.combine(
+            next_month_date,
+            time.min
+        )
+    )
 
     # =========================================================
     # TODAY'S SALES
     # =========================================================
 
     today_sales_qs = Sale.objects.filter(
-        created_at__date=today
+        created_at__gte=today_start,
+        created_at__lt=tomorrow_start
     )
+
+    # ---------------------------------------------------------
+    # Today's Sales
+    # ---------------------------------------------------------
 
     total_sales = (
         today_sales_qs.aggregate(
             total=Sum("total")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
 
-    total_transactions = today_sales_qs.count()
+    # ---------------------------------------------------------
+    # Today's Transactions
+    # ---------------------------------------------------------
 
+    total_transactions = (
+        today_sales_qs.count()
+    )
 
-    # =========================================================
-    # ITEMS SOLD TODAY
-    # =========================================================
+    # ---------------------------------------------------------
+    # Today's Items Sold
+    # ---------------------------------------------------------
 
     total_items = (
-        SaleItem.objects.filter(
-            sale__created_at__date=today
-        ).aggregate(
+        SaleItem.objects
+        .filter(
+            sale__created_at__gte=today_start,
+            sale__created_at__lt=tomorrow_start
+        )
+        .aggregate(
             total=Sum("quantity")
         )["total"]
         or 0
     )
 
-
-    # =========================================================
-    # DISCOUNTS TODAY
-    # =========================================================
+    # ---------------------------------------------------------
+    # Today's Discounts
+    # ---------------------------------------------------------
 
     total_discount = (
         today_sales_qs.aggregate(
             total=Sum("discount_amount")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
 
+    # =========================================================
+    # TODAY'S PAID / UNPAID / PARTIAL
+    # =========================================================
+
+    today_paid_sales = (
+        today_sales_qs
+        .filter(
+            payment_status="PAID"
+        )
+    )
+
+    today_unpaid_sales = (
+        today_sales_qs
+        .filter(
+            payment_status="UNPAID"
+        )
+    )
+
+    today_partial_sales = (
+        today_sales_qs
+        .filter(
+            payment_status="PARTIAL"
+        )
+    )
+
+    today_paid_total = (
+        today_paid_sales.aggregate(
+            total=Sum("total")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    today_unpaid_total = (
+        today_unpaid_sales.aggregate(
+            total=Sum("total")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    today_partial_total = (
+        today_partial_sales.aggregate(
+            total=Sum("total")
+        )["total"]
+        or Decimal("0.00")
+    )
 
     # =========================================================
-    # INVENTORY
+    # PRODUCTS / INVENTORY
     # =========================================================
+
+    # ---------------------------------------------------------
+    # Total Products
+    # ---------------------------------------------------------
 
     total_products = Product.objects.count()
 
+    # ---------------------------------------------------------
+    # Low Stock
+    #
+    # qty > 0
+    # qty <= low_stock_threshold
+    # ---------------------------------------------------------
+
     low_stock = Product.objects.filter(
         qty__gt=0,
-        qty__lte=10
+        qty__lte=F("low_stock_threshold")
     ).count()
+
+    # ---------------------------------------------------------
+    # Out of Stock
+    # ---------------------------------------------------------
 
     out_of_stock = Product.objects.filter(
         qty=0
     ).count()
 
+    # ---------------------------------------------------------
+    # Total Inventory Quantity
+    # ---------------------------------------------------------
+
+    total_inventory_quantity = (
+        Product.objects.aggregate(
+            total=Sum("qty")
+        )["total"]
+        or 0
+    )
+
+    # ---------------------------------------------------------
+    # Total Inventory Value
+    #
+    # price * qty
+    # ---------------------------------------------------------
+
+    inventory_value_expression = ExpressionWrapper(
+        F("price") * F("qty"),
+        output_field=DecimalField(
+            max_digits=14,
+            decimal_places=2
+        )
+    )
+
+    total_inventory_value = (
+        Product.objects.aggregate(
+            total=Sum(
+                inventory_value_expression
+            )
+        )["total"]
+        or Decimal("0.00")
+    )
 
     # =========================================================
     # MONTHLY SALES
     # =========================================================
 
     monthly_sales_qs = Sale.objects.filter(
-        created_at__year=current_year,
-        created_at__month=current_month
+        created_at__gte=month_start,
+        created_at__lt=next_month_start
     )
+
+    # ---------------------------------------------------------
+    # Monthly Sales
+    # ---------------------------------------------------------
 
     monthly_sales = (
         monthly_sales_qs.aggregate(
             total=Sum("total")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
 
-    monthly_transactions = monthly_sales_qs.count()
+    # ---------------------------------------------------------
+    # Monthly Transactions
+    # ---------------------------------------------------------
 
+    monthly_transactions = (
+        monthly_sales_qs.count()
+    )
 
-    # =========================================================
-    # YESTERDAY SALES
-    # =========================================================
+    # ---------------------------------------------------------
+    # Monthly Items Sold
+    # ---------------------------------------------------------
 
-    yesterday_sales = (
-        Sale.objects.filter(
-            created_at__date=yesterday
-        ).aggregate(
-            total=Sum("total")
+    monthly_items_sold = (
+        SaleItem.objects
+        .filter(
+            sale__created_at__gte=month_start,
+            sale__created_at__lt=next_month_start
+        )
+        .aggregate(
+            total=Sum("quantity")
         )["total"]
         or 0
     )
 
+    # ---------------------------------------------------------
+    # Monthly Discounts
+    # ---------------------------------------------------------
+
+    monthly_discount = (
+        monthly_sales_qs.aggregate(
+            total=Sum("discount_amount")
+        )["total"]
+        or Decimal("0.00")
+    )
 
     # =========================================================
-    # AVERAGE SALE TODAY
+    # YESTERDAY
+    # =========================================================
+
+    yesterday_sales_qs = Sale.objects.filter(
+        created_at__gte=yesterday_start,
+        created_at__lt=yesterday_end
+    )
+
+    yesterday_sales = (
+        yesterday_sales_qs.aggregate(
+            total=Sum("total")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    yesterday_transactions = (
+        yesterday_sales_qs.count()
+    )
+
+    # =========================================================
+    # AVERAGE SALE
     # =========================================================
 
     if total_transactions > 0:
@@ -139,16 +478,13 @@ def dashboard(request):
 
     else:
 
-        average_sale = 0
-
+        average_sale = Decimal("0.00")
 
     # =========================================================
-    # TODAY VS YESTERDAY
+    # SALES CHANGE
     # =========================================================
 
-    sales_change_percent = 0
-
-    if yesterday_sales:
+    if yesterday_sales > 0:
 
         sales_change_percent = (
             (
@@ -157,14 +493,21 @@ def dashboard(request):
             )
             /
             yesterday_sales
-        ) * 100
+        ) * Decimal("100")
 
+    else:
+
+        sales_change_percent = Decimal("0.00")
 
     # =========================================================
-    # PAYMENT STATUS
+    # PAYMENT SUMMARY
     # =========================================================
 
-    paid_sales = (
+    # ---------------------------------------------------------
+    # PAID
+    # ---------------------------------------------------------
+
+    paid_sales_qs = (
         Sale.objects
         .filter(
             payment_status="PAID"
@@ -172,6 +515,7 @@ def dashboard(request):
         .select_related(
             "staff",
             "salesperson",
+            "client",
             "discount_class"
         )
         .prefetch_related(
@@ -179,11 +523,14 @@ def dashboard(request):
         )
         .order_by(
             "-created_at"
-        )[:10]
+        )
     )
 
+    # ---------------------------------------------------------
+    # UNPAID
+    # ---------------------------------------------------------
 
-    unpaid_sales = (
+    unpaid_sales_qs = (
         Sale.objects
         .filter(
             payment_status="UNPAID"
@@ -191,6 +538,7 @@ def dashboard(request):
         .select_related(
             "staff",
             "salesperson",
+            "client",
             "discount_class"
         )
         .prefetch_related(
@@ -198,11 +546,14 @@ def dashboard(request):
         )
         .order_by(
             "-created_at"
-        )[:10]
+        )
     )
 
+    # ---------------------------------------------------------
+    # PARTIALLY PAID
+    # ---------------------------------------------------------
 
-    partial_sales = (
+    partial_sales_qs = (
         Sale.objects
         .filter(
             payment_status="PARTIAL"
@@ -210,6 +561,7 @@ def dashboard(request):
         .select_related(
             "staff",
             "salesperson",
+            "client",
             "discount_class"
         )
         .prefetch_related(
@@ -217,12 +569,11 @@ def dashboard(request):
         )
         .order_by(
             "-created_at"
-        )[:10]
+        )
     )
 
-
     # =========================================================
-    # PAYMENT SUMMARY
+    # PAYMENT TOTALS
     # =========================================================
 
     paid_total = (
@@ -233,9 +584,8 @@ def dashboard(request):
         .aggregate(
             total=Sum("total")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     unpaid_total = (
         Sale.objects
@@ -245,9 +595,8 @@ def dashboard(request):
         .aggregate(
             total=Sum("total")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     partial_total = (
         Sale.objects
@@ -257,24 +606,8 @@ def dashboard(request):
         .aggregate(
             total=Sum("total")
         )["total"]
-        or 0
+        or Decimal("0.00")
     )
-
-
-    total_amount_due = (
-        Sale.objects
-        .filter(
-            payment_status__in=[
-                "UNPAID",
-                "PARTIAL",
-            ]
-        )
-        .aggregate(
-            total=Sum("total")
-        )["total"]
-        or 0
-    )
-
 
     # =========================================================
     # PAYMENT COUNTS
@@ -304,70 +637,272 @@ def dashboard(request):
         .count()
     )
 
+    # =========================================================
+    # TOTAL AMOUNT DUE
+    #
+    # total - payment
+    #
+    # Correctly handles:
+    # UNPAID
+    # PARTIAL
+    # =========================================================
+
+    amount_due_expression = ExpressionWrapper(
+        F("total") - F("payment"),
+        output_field=DecimalField(
+            max_digits=14,
+            decimal_places=2
+        )
+    )
+
+    total_amount_due = (
+        Sale.objects
+        .filter(
+            payment_status__in=[
+                "UNPAID",
+                "PARTIAL"
+            ]
+        )
+        .aggregate(
+            total=Sum(
+                amount_due_expression
+            )
+        )["total"]
+        or Decimal("0.00")
+    )
 
     # =========================================================
-    # LAST 7 DAYS SALES DIAGRAM
+    # TOTAL PAYMENTS RECEIVED
+    # =========================================================
+
+    total_payments_received = (
+        Sale.objects.aggregate(
+            total=Sum("payment")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    # =========================================================
+    # TOTAL CHANGE GIVEN
+    # =========================================================
+
+    total_change = (
+        Sale.objects.aggregate(
+            total=Sum("change")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    # =========================================================
+    # ALL-TIME SALES
+    # =========================================================
+
+    all_time_sales = (
+        Sale.objects.aggregate(
+            total=Sum("total")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    # =========================================================
+    # ALL-TIME DISCOUNTS
+    # =========================================================
+
+    all_time_discount = (
+        Sale.objects.aggregate(
+            total=Sum("discount_amount")
+        )["total"]
+        or Decimal("0.00")
+    )
+
+    # =========================================================
+    # ALL-TIME ITEMS SOLD
+    # =========================================================
+
+    all_time_items_sold = (
+        SaleItem.objects.aggregate(
+            total=Sum("quantity")
+        )["total"]
+        or 0
+    )
+
+    # =========================================================
+    # SALESPEOPLE
+    # =========================================================
+
+    salesperson_count = (
+        Salesperson.objects
+        .filter(
+            is_active=True
+        )
+        .count()
+    )
+
+    # =========================================================
+    # CLIENTS
+    # =========================================================
+
+    total_clients = (
+        Client.objects.count()
+    )
+
+    active_clients = (
+        Client.objects
+        .filter(
+            is_active=True
+        )
+        .count()
+    )
+
+    # =========================================================
+    # DISCOUNT CLASSES
+    # =========================================================
+
+    total_discount_classes = (
+        DiscountClass.objects.count()
+    )
+
+    # =========================================================
+    # INVENTORY TRANSACTIONS
+    # =========================================================
+
+    total_inventory_transactions = (
+        InventoryTransaction.objects.count()
+    )
+
+    # ---------------------------------------------------------
+    # Today's Inventory Transactions
+    # ---------------------------------------------------------
+
+    today_inventory_transactions = (
+        InventoryTransaction.objects
+        .filter(
+            created_at__gte=today_start,
+            created_at__lt=tomorrow_start
+        )
+        .count()
+    )
+
+    # ---------------------------------------------------------
+    # Stock In Today
+    # ---------------------------------------------------------
+
+    stock_in_today = (
+        InventoryTransaction.objects
+        .filter(
+            transaction_type="IN",
+            created_at__gte=today_start,
+            created_at__lt=tomorrow_start
+        )
+        .aggregate(
+            total=Sum("quantity")
+        )["total"]
+        or 0
+    )
+
+    # ---------------------------------------------------------
+    # Stock Out Today
+    # ---------------------------------------------------------
+
+    stock_out_today = (
+        InventoryTransaction.objects
+        .filter(
+            transaction_type="OUT",
+            created_at__gte=today_start,
+            created_at__lt=tomorrow_start
+        )
+        .aggregate(
+            total=Sum("quantity")
+        )["total"]
+        or 0
+    )
+
+    # ---------------------------------------------------------
+    # Adjustments Today
+    # ---------------------------------------------------------
+
+    adjustments_today = (
+        InventoryTransaction.objects
+        .filter(
+            transaction_type="ADJUSTMENT",
+            created_at__gte=today_start,
+            created_at__lt=tomorrow_start
+        )
+        .aggregate(
+            total=Sum("quantity")
+        )["total"]
+        or 0
+    )
+
+    # =========================================================
+    # CHART - LAST 30 DAYS
     # =========================================================
 
     chart_labels = []
-
     chart_sales = []
-
     chart_transactions = []
 
-
-    for i in range(6, -1, -1):
+    for i in range(29, -1, -1):
 
         chart_date = (
             today -
-            timezone.timedelta(
-                days=i
+            timedelta(days=i)
+        )
+
+        chart_day_start = timezone.make_aware(
+            datetime.combine(
+                chart_date,
+                time.min
             )
         )
 
+        chart_next_day = chart_date + timedelta(days=1)
 
-        day_qs = Sale.objects.filter(
-            created_at__date=chart_date
+        chart_day_end = timezone.make_aware(
+            datetime.combine(
+                chart_next_day,
+                time.min
+            )
         )
 
+        day_qs = Sale.objects.filter(
+            created_at__gte=chart_day_start,
+            created_at__lt=chart_day_end
+        )
 
         day_total = (
             day_qs.aggregate(
                 total=Sum("total")
             )["total"]
-            or 0
+            or Decimal("0.00")
         )
 
-
-        day_transactions = day_qs.count()
-
+        day_transactions = (
+            day_qs.count()
+        )
 
         chart_labels.append(
-            chart_date.strftime(
-                "%b %d"
-            )
+            chart_date.strftime("%b %d")
         )
-
 
         chart_sales.append(
             float(day_total)
         )
 
-
         chart_transactions.append(
             day_transactions
         )
-
 
     # =========================================================
     # RECENT SALES
     # =========================================================
 
-    recent_sales = (
+    recent_sales_qs = (
         Sale.objects
         .select_related(
             "staff",
             "salesperson",
+            "client",
             "discount_class"
         )
         .prefetch_related(
@@ -375,9 +910,76 @@ def dashboard(request):
         )
         .order_by(
             "-created_at"
-        )[:5]
+        )
     )
 
+    recent_paginator = Paginator(
+        recent_sales_qs,
+        10
+    )
+
+    recent_page_obj = (
+        recent_paginator.get_page(
+            request.GET.get(
+                "recent_page",
+                1
+            )
+        )
+    )
+
+    # =========================================================
+    # PAID PAGINATION
+    # =========================================================
+
+    paid_paginator = Paginator(
+        paid_sales_qs,
+        10
+    )
+
+    paid_page_obj = (
+        paid_paginator.get_page(
+            request.GET.get(
+                "paid_page",
+                1
+            )
+        )
+    )
+
+    # =========================================================
+    # UNPAID PAGINATION
+    # =========================================================
+
+    unpaid_paginator = Paginator(
+        unpaid_sales_qs,
+        10
+    )
+
+    unpaid_page_obj = (
+        unpaid_paginator.get_page(
+            request.GET.get(
+                "unpaid_page",
+                1
+            )
+        )
+    )
+
+    # =========================================================
+    # PARTIAL PAGINATION
+    # =========================================================
+
+    partial_paginator = Paginator(
+        partial_sales_qs,
+        10
+    )
+
+    partial_page_obj = (
+        partial_paginator.get_page(
+            request.GET.get(
+                "partial_page",
+                1
+            )
+        )
+    )
 
     # =========================================================
     # CONTEXT
@@ -385,12 +987,17 @@ def dashboard(request):
 
     context = {
 
-        # -----------------------------
+        # =====================================================
         # TODAY
-        # -----------------------------
+        # =====================================================
 
-        "total_sales":
-            total_sales,
+        "today": today,
+
+        "today_start": today_start,
+
+        "today_end": tomorrow_start,
+
+        "total_sales": total_sales,
 
         "total_transactions":
             total_transactions,
@@ -401,13 +1008,31 @@ def dashboard(request):
         "total_discount":
             total_discount,
 
-        "average_sale":
-            average_sale,
+        # =====================================================
+        # TODAY PAYMENT BREAKDOWN
+        # =====================================================
 
+        "today_paid_total":
+            today_paid_total,
 
-        # -----------------------------
-        # INVENTORY
-        # -----------------------------
+        "today_unpaid_total":
+            today_unpaid_total,
+
+        "today_partial_total":
+            today_partial_total,
+
+        "today_paid_count":
+            today_paid_sales.count(),
+
+        "today_unpaid_count":
+            today_unpaid_sales.count(),
+
+        "today_partial_count":
+            today_partial_sales.count(),
+
+        # =====================================================
+        # PRODUCTS
+        # =====================================================
 
         "total_products":
             total_products,
@@ -418,10 +1043,15 @@ def dashboard(request):
         "out_of_stock":
             out_of_stock,
 
+        "total_inventory_quantity":
+            total_inventory_quantity,
 
-        # -----------------------------
-        # PERIOD SALES
-        # -----------------------------
+        "total_inventory_value":
+            total_inventory_value,
+
+        # =====================================================
+        # MONTH
+        # =====================================================
 
         "monthly_sales":
             monthly_sales,
@@ -429,89 +1059,147 @@ def dashboard(request):
         "monthly_transactions":
             monthly_transactions,
 
+        "monthly_items_sold":
+            monthly_items_sold,
+
+        "monthly_discount":
+            monthly_discount,
+
+        # =====================================================
+        # COMPARISON
+        # =====================================================
+
         "yesterday_sales":
             yesterday_sales,
+
+        "yesterday_transactions":
+            yesterday_transactions,
+
+        "average_sale":
+            average_sale,
 
         "sales_change_percent":
             sales_change_percent,
 
-
-        # -----------------------------
-        # PAYMENT SUMMARY
-        # -----------------------------
+        # =====================================================
+        # PAYMENT
+        # =====================================================
 
         "paid_total":
             paid_total,
 
-        "unpaid_total":
-            unpaid_total,
-
-        "partial_total":
-            partial_total,
-
-        "total_amount_due":
-            total_amount_due,
-
         "paid_count":
             paid_count,
+
+        "unpaid_total":
+            unpaid_total,
 
         "unpaid_count":
             unpaid_count,
 
+        "partial_total":
+            partial_total,
+
         "partial_count":
             partial_count,
 
+        "total_amount_due":
+            total_amount_due,
 
-        # -----------------------------
-        # PAYMENT TABLES
-        # -----------------------------
+        "total_payments_received":
+            total_payments_received,
 
-        "paid_sales":
-            paid_sales,
+        "total_change":
+            total_change,
 
-        "unpaid_sales":
-            unpaid_sales,
+        # =====================================================
+        # ALL TIME
+        # =====================================================
 
-        "partial_sales":
-            partial_sales,
+        "all_time_sales":
+            all_time_sales,
 
+        "all_time_discount":
+            all_time_discount,
 
-        # -----------------------------
+        "all_time_items_sold":
+            all_time_items_sold,
+
+        # =====================================================
+        # CLIENT / SALESPERSON
+        # =====================================================
+
+        "total_clients":
+            total_clients,
+
+        "active_clients":
+            active_clients,
+
+        "salesperson_count":
+            salesperson_count,
+
+        "total_discount_classes":
+            total_discount_classes,
+
+        # =====================================================
+        # INVENTORY TRANSACTIONS
+        # =====================================================
+
+        "total_inventory_transactions":
+            total_inventory_transactions,
+
+        "today_inventory_transactions":
+            today_inventory_transactions,
+
+        "stock_in_today":
+            stock_in_today,
+
+        "stock_out_today":
+            stock_out_today,
+
+        "adjustments_today":
+            adjustments_today,
+
+        # =====================================================
+        # PAGINATED SALES
+        # =====================================================
+
+        "paid_page_obj":
+            paid_page_obj,
+
+        "unpaid_page_obj":
+            unpaid_page_obj,
+
+        "partial_page_obj":
+            partial_page_obj,
+
+        "recent_page_obj":
+            recent_page_obj,
+
+        # =====================================================
         # CHART
-        # -----------------------------
+        # =====================================================
 
         "chart_labels":
-            chart_labels,
+            json.dumps(chart_labels),
 
         "chart_sales":
-            chart_sales,
+            json.dumps(chart_sales),
 
         "chart_transactions":
-            chart_transactions,
-
-
-        # -----------------------------
-        # RECENT SALES
-        # -----------------------------
-
-        "recent_sales":
-            recent_sales,
-
-
-        # -----------------------------
-        # DATE
-        # -----------------------------
-
-        "today":
-            today,
+            json.dumps(chart_transactions),
     }
 
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,
         "pages/dashboard.html",
         context
     )
+
 @login_required
 @user_passes_test(is_superuser)
 def staff_list(request):
@@ -544,6 +1232,18 @@ def staff_list(request):
 def add_staff(request):
 
     # ======================================================
+    # GET / DEFAULT DATA
+    # ======================================================
+
+    context = {
+        "is_edit": False,
+        "user": None,
+        "profile": None,
+        "roles": UserProfile.ROLE_CHOICES,
+        "error": None,
+    }
+
+    # ======================================================
     # POST
     # ======================================================
 
@@ -569,17 +1269,22 @@ def add_staff(request):
             ""
         )
 
-        # Checkbox
+        # ==================================================
+        # CHECKBOX
+        # ==================================================
+
         is_staff = (
             request.POST.get("is_staff") == "on"
         )
 
-        # Role
+        # ==================================================
+        # ROLE
+        # ==================================================
+
         role = request.POST.get(
             "role",
             "STAFF"
         ).strip().upper()
-
 
         # ==================================================
         # VALID ROLES
@@ -592,13 +1297,15 @@ def add_staff(request):
 
         if role not in valid_roles:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Invalid user role selected."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # VALIDATE NAME
@@ -606,13 +1313,15 @@ def add_staff(request):
 
         if not name:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Name is required."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # VALIDATE USERNAME
@@ -620,13 +1329,15 @@ def add_staff(request):
 
         if not username:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Username is required."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # VALIDATE PASSWORD
@@ -634,13 +1345,15 @@ def add_staff(request):
 
         if not password1:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Password is required."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # PASSWORD LENGTH
@@ -648,13 +1361,15 @@ def add_staff(request):
 
         if len(password1) < 8:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Password must be at least 8 characters."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # PASSWORD CONFIRMATION
@@ -662,13 +1377,15 @@ def add_staff(request):
 
         if password1 != password2:
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Passwords do not match."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # CHECK USERNAME
@@ -678,13 +1395,15 @@ def add_staff(request):
             username=username
         ).exists():
 
-            messages.error(
-                request,
+            context["error"] = (
                 "Username already exists."
             )
 
-            return redirect("add-user")
-
+            return render(
+                request,
+                "users/staff_form.html",
+                context
+            )
 
         # ==================================================
         # CREATE USER
@@ -702,7 +1421,6 @@ def add_staff(request):
 
         user.save()
 
-
         # ==================================================
         # CREATE USER PROFILE
         # ==================================================
@@ -712,28 +1430,11 @@ def add_staff(request):
             role=role
         )
 
-
         # ==================================================
-        # SUCCESS MESSAGE
-        # ==================================================
-
-        role_display = (
-            user.profile.get_role_display()
-        )
-
-        messages.success(
-            request,
-            f"Staff account '{user.username}' "
-            f"created successfully as {role_display}."
-        )
-
-
-        # ==================================================
-        # REDIRECT
-        # ==================================================
+        # REDIRECT AFTER SUCCESS
+        # ======================================================
 
         return redirect("staff_list")
-
 
     # ======================================================
     # GET
@@ -742,12 +1443,7 @@ def add_staff(request):
     return render(
         request,
         "users/staff_form.html",
-        {
-            "is_edit": False,
-            "user": None,
-            "profile": None,
-            "roles": UserProfile.ROLE_CHOICES,
-        }
+        context
     )
 
 
@@ -764,20 +1460,19 @@ def edit_user(request, user_id):
         id=user_id
     )
 
-
     # ======================================================
     # PROTECT SUPERUSER
     # ======================================================
 
     if user.is_superuser:
 
-        messages.error(
+        return render(
             request,
-            "The superuser account is protected."
+            "users/staff_list.html",
+            {
+                "error": "The superuser account is protected."
+            }
         )
-
-        return redirect("staff_list")
-
 
     # ======================================================
     # GET OR CREATE PROFILE
@@ -789,7 +1484,6 @@ def edit_user(request, user_id):
             "role": "STAFF"
         }
     )
-
 
     # ======================================================
     # POST
@@ -817,17 +1511,22 @@ def edit_user(request, user_id):
             ""
         )
 
-        # Checkbox
+        # ==================================================
+        # CHECKBOX
+        # ==================================================
+
         is_staff = (
             request.POST.get("is_staff") == "on"
         )
 
-        # Role
+        # ==================================================
+        # ROLE
+        # ==================================================
+
         role = request.POST.get(
             "role",
             "STAFF"
         ).strip().upper()
-
 
         # ==================================================
         # VALID ROLES
@@ -840,16 +1539,17 @@ def edit_user(request, user_id):
 
         if role not in valid_roles:
 
-            messages.error(
+            return render(
                 request,
-                "Invalid user role selected."
+                "users/staff_form.html",
+                {
+                    "is_edit": True,
+                    "user": user,
+                    "profile": profile,
+                    "roles": UserProfile.ROLE_CHOICES,
+                    "error": "Invalid user role selected."
+                }
             )
-
-            return redirect(
-                "edit-user",
-                user_id=user.id
-            )
-
 
         # ==================================================
         # VALIDATE NAME
@@ -857,16 +1557,17 @@ def edit_user(request, user_id):
 
         if not name:
 
-            messages.error(
+            return render(
                 request,
-                "Name is required."
+                "users/staff_form.html",
+                {
+                    "is_edit": True,
+                    "user": user,
+                    "profile": profile,
+                    "roles": UserProfile.ROLE_CHOICES,
+                    "error": "Name is required."
+                }
             )
-
-            return redirect(
-                "edit-user",
-                user_id=user.id
-            )
-
 
         # ==================================================
         # VALIDATE USERNAME
@@ -874,16 +1575,17 @@ def edit_user(request, user_id):
 
         if not username:
 
-            messages.error(
+            return render(
                 request,
-                "Username is required."
+                "users/staff_form.html",
+                {
+                    "is_edit": True,
+                    "user": user,
+                    "profile": profile,
+                    "roles": UserProfile.ROLE_CHOICES,
+                    "error": "Username is required."
+                }
             )
-
-            return redirect(
-                "edit-user",
-                user_id=user.id
-            )
-
 
         # ==================================================
         # CHECK USERNAME
@@ -895,16 +1597,17 @@ def edit_user(request, user_id):
             id=user.id
         ).exists():
 
-            messages.error(
+            return render(
                 request,
-                "Username already exists."
+                "users/staff_form.html",
+                {
+                    "is_edit": True,
+                    "user": user,
+                    "profile": profile,
+                    "roles": UserProfile.ROLE_CHOICES,
+                    "error": "Username already exists."
+                }
             )
-
-            return redirect(
-                "edit-user",
-                user_id=user.id
-            )
-
 
         # ==================================================
         # PASSWORD
@@ -918,16 +1621,20 @@ def edit_user(request, user_id):
 
             if not password1 or not password2:
 
-                messages.error(
+                return render(
                     request,
-                    "Please enter and confirm the new password."
+                    "users/staff_form.html",
+                    {
+                        "is_edit": True,
+                        "user": user,
+                        "profile": profile,
+                        "roles": UserProfile.ROLE_CHOICES,
+                        "error": (
+                            "Please enter and confirm "
+                            "the new password."
+                        )
+                    }
                 )
-
-                return redirect(
-                    "edit-user",
-                    user_id=user.id
-                )
-
 
             # ----------------------------------------------
             # MATCH
@@ -935,16 +1642,17 @@ def edit_user(request, user_id):
 
             if password1 != password2:
 
-                messages.error(
+                return render(
                     request,
-                    "Passwords do not match."
+                    "users/staff_form.html",
+                    {
+                        "is_edit": True,
+                        "user": user,
+                        "profile": profile,
+                        "roles": UserProfile.ROLE_CHOICES,
+                        "error": "Passwords do not match."
+                    }
                 )
-
-                return redirect(
-                    "edit-user",
-                    user_id=user.id
-                )
-
 
             # ----------------------------------------------
             # PASSWORD LENGTH
@@ -952,23 +1660,26 @@ def edit_user(request, user_id):
 
             if len(password1) < 8:
 
-                messages.error(
+                return render(
                     request,
-                    "Password must be at least 8 characters."
+                    "users/staff_form.html",
+                    {
+                        "is_edit": True,
+                        "user": user,
+                        "profile": profile,
+                        "roles": UserProfile.ROLE_CHOICES,
+                        "error": (
+                            "Password must be at least "
+                            "8 characters."
+                        )
+                    }
                 )
-
-                return redirect(
-                    "edit-user",
-                    user_id=user.id
-                )
-
 
             # ----------------------------------------------
             # SET PASSWORD
             # ----------------------------------------------
 
             user.set_password(password1)
-
 
         # ==================================================
         # UPDATE USER
@@ -983,7 +1694,6 @@ def edit_user(request, user_id):
 
         user.save()
 
-
         # ==================================================
         # UPDATE USER PROFILE
         # ==================================================
@@ -991,24 +1701,11 @@ def edit_user(request, user_id):
         profile.role = role
         profile.save()
 
-
-        # ==================================================
-        # SUCCESS
-        # ==================================================
-
-        messages.success(
-            request,
-            f"Staff account '{user.username}' "
-            f"updated successfully."
-        )
-
-
         # ==================================================
         # REDIRECT
         # ==================================================
 
         return redirect("staff_list")
-
 
     # ======================================================
     # DISPLAY FORM
@@ -1022,6 +1719,7 @@ def edit_user(request, user_id):
             "user": user,
             "profile": profile,
             "roles": UserProfile.ROLE_CHOICES,
+            "error": None,
         }
     )
 
@@ -1080,58 +1778,87 @@ def delete_user(request, user_id):
 # ==========================================================
 # SALESPERSON LIST
 # ==========================================================
+# ==========================================================
+# SALESPERSON LIST
+# ==========================================================
 
 @login_required
 @user_passes_test(is_superuser)
 def salesperson_list(request):
 
+    # ======================================================
+    # GET SALESPERSONS
+    # ======================================================
+
     salespersons = (
         Salesperson.objects
         .all()
-        .order_by("last_name", "first_name")
+        .order_by(
+            "last_name",
+            "first_name"
+        )
     )
 
-    # =========================================================
+    # ======================================================
     # SEARCH
-    # =========================================================
+    # ======================================================
 
-    search = request.GET.get("search", "").strip()
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
 
     if search:
+
         salespersons = salespersons.filter(
-            Q(last_name__icontains=search) |
-            Q(first_name__icontains=search) |
-            Q(middle_name__icontains=search) |
-            Q(employee_id__icontains=search) |
-            Q(contact_number__icontains=search) |
-            Q(email_address__icontains=search)
+            Q(last_name__icontains=search)
+            | Q(first_name__icontains=search)
+            | Q(middle_name__icontains=search)
+            | Q(contact_number__icontains=search)
+            | Q(email_address__icontains=search)
         )
 
-    # =========================================================
+    # ======================================================
     # STATUS FILTER
-    # =========================================================
+    # ======================================================
 
-    status = request.GET.get("status", "all")
+    status = request.GET.get(
+        "status",
+        "all"
+    )
 
     if status == "active":
-        salespersons = salespersons.filter(is_active=True)
+
+        salespersons = salespersons.filter(
+            is_active=True
+        )
 
     elif status == "inactive":
-        salespersons = salespersons.filter(is_active=False)
 
-    # =========================================================
+        salespersons = salespersons.filter(
+            is_active=False
+        )
+
+    # ======================================================
     # PAGINATION
-    # =========================================================
+    # ======================================================
 
-    paginator = Paginator(salespersons, 10)
+    paginator = Paginator(
+        salespersons,
+        10
+    )
 
-    page_number = request.GET.get("page")
+    page_number = request.GET.get(
+        "page"
+    )
 
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(
+        page_number
+    )
 
-    # =========================================================
+    # ======================================================
     # RENDER
-    # =========================================================
+    # ======================================================
 
     return render(
         request,
@@ -1142,8 +1869,10 @@ def salesperson_list(request):
             "paginator": paginator,
             "search": search,
             "status": status,
+            "total_salespersons": paginator.count,
         }
     )
+
 # ==========================================================
 # ADD SALESPERSON
 # ==========================================================
@@ -1152,16 +1881,15 @@ def salesperson_list(request):
 @user_passes_test(is_superuser)
 def add_salesperson(request):
 
+    # ======================================================
+    # POST
+    # ======================================================
+
     if request.method == "POST":
 
         # ==================================================
         # GET FORM DATA
         # ==================================================
-
-        employee_id = request.POST.get(
-            "employee_id",
-            ""
-        ).strip()
 
         last_name = request.POST.get(
             "last_name",
@@ -1192,7 +1920,6 @@ def add_salesperson(request):
             request.POST.get("is_active") == "on"
         )
 
-
         # ==================================================
         # VALIDATE LAST NAME
         # ==================================================
@@ -1205,10 +1932,9 @@ def add_salesperson(request):
                 {
                     "is_edit": False,
                     "salesperson": None,
-                    "error": "Last name is required."
+                    "error": "Last name is required.",
                 }
             )
-
 
         # ==================================================
         # VALIDATE FIRST NAME
@@ -1222,31 +1948,9 @@ def add_salesperson(request):
                 {
                     "is_edit": False,
                     "salesperson": None,
-                    "error": "First name is required."
+                    "error": "First name is required.",
                 }
             )
-
-
-        # ==================================================
-        # CHECK EMPLOYEE ID
-        # ==================================================
-
-        if employee_id:
-
-            if Salesperson.objects.filter(
-                employee_id=employee_id
-            ).exists():
-
-                return render(
-                    request,
-                    "users/salesperson_form.html",
-                    {
-                        "is_edit": False,
-                        "salesperson": None,
-                        "error": "Employee ID already exists."
-                    }
-                )
-
 
         # ==================================================
         # VALIDATE EMAIL
@@ -1254,12 +1958,11 @@ def add_salesperson(request):
 
         if email_address:
 
-            from django.core.validators import validate_email
-            from django.core.exceptions import ValidationError
-
             try:
 
-                validate_email(email_address)
+                validate_email(
+                    email_address
+                )
 
             except ValidationError:
 
@@ -1269,32 +1972,40 @@ def add_salesperson(request):
                     {
                         "is_edit": False,
                         "salesperson": None,
-                        "error": "Please enter a valid email address."
+                        "error": (
+                            "Please enter a valid "
+                            "email address."
+                        ),
                     }
                 )
-
 
         # ==================================================
         # CREATE SALESPERSON
         # ==================================================
 
-        salesperson = Salesperson.objects.create(
-
-            employee_id=employee_id or None,
+        Salesperson.objects.create(
 
             last_name=last_name,
 
             first_name=first_name,
 
-            middle_name=middle_name or None,
+            middle_name=(
+                middle_name
+                or None
+            ),
 
-            contact_number=contact_number or None,
+            contact_number=(
+                contact_number
+                or None
+            ),
 
-            email_address=email_address or None,
+            email_address=(
+                email_address
+                or None
+            ),
 
-            is_active=is_active
+            is_active=is_active,
         )
-
 
         # ==================================================
         # SUCCESS
@@ -1303,7 +2014,6 @@ def add_salesperson(request):
         return redirect(
             "salesperson-list"
         )
-
 
     # ======================================================
     # GET REQUEST
@@ -1315,7 +2025,7 @@ def add_salesperson(request):
         {
             "is_edit": False,
             "salesperson": None,
-            "error": None
+            "error": None,
         }
     )
 
@@ -1332,7 +2042,6 @@ def edit_salesperson(request, salesperson_id):
         id=salesperson_id
     )
 
-
     # ======================================================
     # POST
     # ======================================================
@@ -1342,11 +2051,6 @@ def edit_salesperson(request, salesperson_id):
         # ==================================================
         # GET FORM DATA
         # ==================================================
-
-        employee_id = request.POST.get(
-            "employee_id",
-            ""
-        ).strip()
 
         last_name = request.POST.get(
             "last_name",
@@ -1377,7 +2081,6 @@ def edit_salesperson(request, salesperson_id):
             request.POST.get("is_active") == "on"
         )
 
-
         # ==================================================
         # VALIDATE LAST NAME
         # ==================================================
@@ -1390,10 +2093,9 @@ def edit_salesperson(request, salesperson_id):
                 {
                     "is_edit": True,
                     "salesperson": salesperson,
-                    "error": "Last name is required."
+                    "error": "Last name is required.",
                 }
             )
-
 
         # ==================================================
         # VALIDATE FIRST NAME
@@ -1407,40 +2109,9 @@ def edit_salesperson(request, salesperson_id):
                 {
                     "is_edit": True,
                     "salesperson": salesperson,
-                    "error": "First name is required."
+                    "error": "First name is required.",
                 }
             )
-
-
-        # ==================================================
-        # CHECK EMPLOYEE ID
-        # ==================================================
-
-        if employee_id:
-
-            employee_exists = (
-                Salesperson.objects
-                .filter(
-                    employee_id=employee_id
-                )
-                .exclude(
-                    id=salesperson.id
-                )
-                .exists()
-            )
-
-            if employee_exists:
-
-                return render(
-                    request,
-                    "users/salesperson_form.html",
-                    {
-                        "is_edit": True,
-                        "salesperson": salesperson,
-                        "error": "Employee ID already exists."
-                    }
-                )
-
 
         # ==================================================
         # VALIDATE EMAIL
@@ -1448,12 +2119,11 @@ def edit_salesperson(request, salesperson_id):
 
         if email_address:
 
-            from django.core.validators import validate_email
-            from django.core.exceptions import ValidationError
-
             try:
 
-                validate_email(email_address)
+                validate_email(
+                    email_address
+                )
 
             except ValidationError:
 
@@ -1463,18 +2133,16 @@ def edit_salesperson(request, salesperson_id):
                     {
                         "is_edit": True,
                         "salesperson": salesperson,
-                        "error": "Please enter a valid email address."
+                        "error": (
+                            "Please enter a valid "
+                            "email address."
+                        ),
                     }
                 )
-
 
         # ==================================================
         # UPDATE SALESPERSON
         # ==================================================
-
-        salesperson.employee_id = (
-            employee_id or None
-        )
 
         salesperson.last_name = (
             last_name
@@ -1485,15 +2153,18 @@ def edit_salesperson(request, salesperson_id):
         )
 
         salesperson.middle_name = (
-            middle_name or None
+            middle_name
+            or None
         )
 
         salesperson.contact_number = (
-            contact_number or None
+            contact_number
+            or None
         )
 
         salesperson.email_address = (
-            email_address or None
+            email_address
+            or None
         )
 
         salesperson.is_active = (
@@ -1501,7 +2172,6 @@ def edit_salesperson(request, salesperson_id):
         )
 
         salesperson.save()
-
 
         # ==================================================
         # SUCCESS
@@ -1511,9 +2181,8 @@ def edit_salesperson(request, salesperson_id):
             "salesperson-list"
         )
 
-
     # ======================================================
-    # GET REQUEST
+    # GET
     # ======================================================
 
     return render(
@@ -1522,10 +2191,9 @@ def edit_salesperson(request, salesperson_id):
         {
             "is_edit": True,
             "salesperson": salesperson,
-            "error": None
+            "error": None,
         }
     )
-
 
 # ==========================================================
 # DELETE SALESPERSON
@@ -1558,17 +2226,42 @@ def delete_salesperson(request, salesperson_id):
 @user_passes_test(is_superuser)
 def product_list(request):
 
+    # -----------------------------------------------------
+    # GET SEARCH QUERY
+    # -----------------------------------------------------
+
+    search_query = request.GET.get("search", "").strip()
+
+    # -----------------------------------------------------
+    # PRODUCTS
+    # -----------------------------------------------------
+
     products = Product.objects.all().order_by("-id")
+
+    # -----------------------------------------------------
+    # LIVE SEARCH
+    # -----------------------------------------------------
+
+    if search_query:
+        products = products.filter(
+            Q(product_model__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(category__icontains=search_query)
+        )
 
     # -----------------------------------------------------
     # PAGINATION
     # -----------------------------------------------------
 
-    paginator = Paginator(products, 10)  # 10 products per page
+    paginator = Paginator(products, 10)
 
     page_number = request.GET.get("page")
 
     page_obj = paginator.get_page(page_number)
+
+    # -----------------------------------------------------
+    # RESPONSE
+    # -----------------------------------------------------
 
     return render(
         request,
@@ -1577,9 +2270,9 @@ def product_list(request):
             "products": page_obj.object_list,
             "page_obj": page_obj,
             "paginator": paginator,
+            "search_query": search_query,
         }
     )
-
 
 @login_required
 @user_passes_test(is_superuser)
@@ -1611,6 +2304,8 @@ def add_product(request):
             "qty",
             ""
         ).strip()
+
+        image = request.FILES.get("image")
 
 
         # ==========================================
@@ -1666,10 +2361,16 @@ def add_product(request):
 
             price=price,
 
-            qty=qty
+            qty=qty,
+
+            image=image
 
         )
 
+
+        # ==========================================
+        # SUCCESS
+        # ==========================================
 
         messages.success(
             request,
@@ -1726,6 +2427,8 @@ def edit_product(request, product_id):
             ""
         ).strip()
 
+        image = request.FILES.get("image")
+
 
         # ==========================================
         # VALIDATION
@@ -1776,7 +2479,7 @@ def edit_product(request, product_id):
 
 
         # ==========================================
-        # UPDATE
+        # UPDATE PRODUCT
         # ==========================================
 
         product.product_model = product_model
@@ -1789,8 +2492,26 @@ def edit_product(request, product_id):
 
         product.qty = qty
 
+
+        # ==========================================
+        # UPDATE IMAGE
+        # ==========================================
+
+        if image:
+
+            product.image = image
+
+
+        # ==========================================
+        # SAVE
+        # ==========================================
+
         product.save()
 
+
+        # ==========================================
+        # SUCCESS
+        # ==========================================
 
         messages.success(
             request,
@@ -1808,7 +2529,6 @@ def edit_product(request, product_id):
             "product": product,
         }
     )
-
 
 @login_required
 @user_passes_test(is_superuser)
@@ -1886,6 +2606,7 @@ def import_products(request):
 
             # ==========================================
             # EXPECTED HEADERS
+            # IMAGE IS LAST
             # ==========================================
 
             expected_headers = [
@@ -1894,6 +2615,7 @@ def import_products(request):
                 "category",
                 "price",
                 "qty",
+                "image",
             ]
 
 
@@ -1920,9 +2642,7 @@ def import_products(request):
             # ==========================================
 
             created_count = 0
-
             error_count = 0
-
             errors = []
 
 
@@ -1934,7 +2654,9 @@ def import_products(request):
                 start=2
             ):
 
-                # Skip completely empty rows
+                # ==========================================
+                # SKIP EMPTY ROW
+                # ==========================================
 
                 if not any(
                     value is not None
@@ -1942,6 +2664,10 @@ def import_products(request):
                 ):
                     continue
 
+
+                # ==========================================
+                # GET VALUES
+                # ==========================================
 
                 product_model = (
                     str(row[0]).strip()
@@ -1964,6 +2690,12 @@ def import_products(request):
                 price = row[3]
 
                 qty = row[4]
+
+                image_name = (
+                    str(row[5]).strip()
+                    if row[5] is not None
+                    else ""
+                )
 
 
                 # ==========================================
@@ -2012,7 +2744,6 @@ def import_products(request):
                     price = float(price)
 
                     if price < 0:
-
                         raise ValueError
 
                 except (ValueError, TypeError):
@@ -2039,7 +2770,6 @@ def import_products(request):
                     qty = int(qty)
 
                     if qty < 0:
-
                         raise ValueError
 
                 except (ValueError, TypeError):
@@ -2057,7 +2787,7 @@ def import_products(request):
                 # CREATE PRODUCT
                 # ==========================================
 
-                Product.objects.create(
+                product = Product.objects.create(
 
                     product_model=product_model,
 
@@ -2070,6 +2800,42 @@ def import_products(request):
                     qty=qty
 
                 )
+
+
+                # ==========================================
+                # IMAGE
+                # ==========================================
+                #
+                # IMPORTANT:
+                #
+                # The Excel image column only contains
+                # the filename.
+                #
+                # If an image filename exists, save it
+                # as the Product.image value.
+                #
+                # If empty, leave Product.image empty.
+                #
+                # The template will then show:
+                #
+                # static/images/defualt-product.png
+                #
+                # ==========================================
+
+                if image_name:
+
+                    image_filename = os.path.basename(
+                        image_name
+                    )
+
+                    product.image = (
+                        f"products/{image_filename}"
+                    )
+
+                    product.save(
+                        update_fields=["image"]
+                    )
+
 
                 created_count += 1
 
@@ -2114,21 +2880,24 @@ def import_products(request):
         "products/import_products.html"
     )
 
-
 # Inventory
 
 @login_required
 @user_passes_test(is_superuser)
 def inventory(request):
 
+    # =========================================================
+    # PRODUCTS
+    # =========================================================
+
     products = Product.objects.all().order_by(
         "product_model"
     )
 
 
-    # ==========================================
+    # =========================================================
     # SEARCH
-    # ==========================================
+    # =========================================================
 
     search = request.GET.get(
         "search",
@@ -2143,15 +2912,14 @@ def inventory(request):
         )
 
 
-    # ==========================================
+    # =========================================================
     # CATEGORY
-    # ==========================================
+    # =========================================================
 
     selected_category = request.GET.get(
         "category",
         ""
-    )
-
+    ).strip()
 
     if selected_category:
 
@@ -2160,50 +2928,81 @@ def inventory(request):
         )
 
 
-    # ==========================================
-    # STATUS
-    # ==========================================
+    # =========================================================
+    # STOCK STATUS
+    # =========================================================
 
     selected_status = request.GET.get(
         "stock_status",
         ""
-    )
+    ).strip()
 
 
-    if selected_status == "in":
-
-        products = products.filter(
-            qty__gt=10
-        )
-
-
-    elif selected_status == "low":
-
-        products = products.filter(
-            qty__gt=0,
-            qty__lte=10
-        )
-
-
-    elif selected_status == "out":
-
-        products = products.filter(
-            qty=0
-        )
-
-
-    # ==========================================
-    # STOCK VALUE
-    # ==========================================
+    # =========================================================
+    # ANNOTATE STOCK STATUS
+    #
+    # 0                       = Out of Stock
+    # 1 - threshold           = Low Stock
+    # above threshold         = In Stock
+    # =========================================================
 
     products = products.annotate(
-        stock_value=F("price") * F("qty")
+
+        stock_status_value=Case(
+
+            When(
+                qty=0,
+                then=Value("out")
+            ),
+
+            When(
+                qty__lte=F("low_stock_threshold"),
+                then=Value("low")
+            ),
+
+            default=Value("in"),
+
+            output_field=CharField()
+        )
     )
 
 
-    # ==========================================
+    # =========================================================
+    # FILTER BY STOCK STATUS
+    # =========================================================
+
+    if selected_status in [
+        "in",
+        "low",
+        "out"
+    ]:
+
+        products = products.filter(
+            stock_status_value=selected_status
+        )
+
+
+    # =========================================================
+    # PAGINATION
+    # =========================================================
+
+    paginator = Paginator(
+        products,
+        10
+    )
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+
+    # =========================================================
     # SUMMARY
-    # ==========================================
+    # =========================================================
 
     total_products = Product.objects.count()
 
@@ -2218,7 +3017,7 @@ def inventory(request):
 
     low_stock = Product.objects.filter(
         qty__gt=0,
-        qty__lte=10
+        qty__lte=F("low_stock_threshold")
     ).count()
 
 
@@ -2226,6 +3025,10 @@ def inventory(request):
         qty=0
     ).count()
 
+
+    # =========================================================
+    # CATEGORIES
+    # =========================================================
 
     categories = Product.objects.values_list(
         "category",
@@ -2235,11 +3038,19 @@ def inventory(request):
     )
 
 
+    # =========================================================
+    # RENDER
+    # =========================================================
+
     return render(
         request,
         "inventory/inventory.html",
         {
-            "products": products,
+            "products": page_obj,
+
+            "page_obj": page_obj,
+
+            "paginator": paginator,
 
             "total_products": total_products,
 
@@ -2422,7 +3233,6 @@ def inventory_history(request):
         ""
     ).strip()
 
-
     if search:
 
         transactions = transactions.filter(
@@ -2449,7 +3259,6 @@ def inventory_history(request):
         ""
     )
 
-
     if transaction_type:
 
         transactions = transactions.filter(
@@ -2466,13 +3275,16 @@ def inventory_history(request):
         ""
     )
 
-
     if product_id:
 
         transactions = transactions.filter(
             product_id=product_id
         )
 
+
+    # ==========================================
+    # PRODUCTS FOR FILTER
+    # ==========================================
 
     products = Product.objects.all().order_by(
         "product_model"
@@ -2501,6 +3313,30 @@ def inventory_history(request):
     ).count()
 
 
+    # ==========================================
+    # PAGINATION
+    # ==========================================
+
+    paginator = Paginator(
+        transactions,
+        10
+    )
+
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+
+    # ==========================================
+    # RENDER
+    # ==========================================
+
     return render(
 
         request,
@@ -2509,7 +3345,11 @@ def inventory_history(request):
 
         {
 
-            "transactions": transactions,
+            "transactions": page_obj,
+
+            "page_obj": page_obj,
+
+            "paginator": paginator,
 
             "products": products,
 
@@ -2662,6 +3502,7 @@ def admin_pos(request):
             "salesperson",
             "staff",
             "discount_class",
+            "client",
         )
         .prefetch_related(
             "items__product"
@@ -2678,94 +3519,67 @@ def admin_pos(request):
 
     def get_salesperson_name(sale):
 
-        try:
+        salesperson = getattr(
+            sale,
+            "salesperson",
+            None
+        )
 
-            salesperson = sale.salesperson
-
-        except Exception:
-
-            salesperson = None
-
-
-        if salesperson:
-
-            try:
-
-                full_name = salesperson.full_name
-
-                if full_name:
-
-                    return full_name.strip()
-
-            except Exception:
-
-                pass
+        if not salesperson:
+            return "No Salesperson"
 
 
-            # -------------------------------------------------
-            # Fallback to first + middle + last
-            # -------------------------------------------------
+        parts = [
+            salesperson.first_name,
+            salesperson.middle_name,
+            salesperson.last_name,
+        ]
 
-            try:
-
-                parts = [
-                    salesperson.first_name,
-                    salesperson.middle_name,
-                    salesperson.last_name,
-                ]
-
-                full_name = " ".join(
-                    str(part).strip()
-                    for part in parts
-                    if part
-                ).strip()
-
-                if full_name:
-
-                    return full_name
-
-            except Exception:
-
-                pass
+        full_name = " ".join(
+            str(part).strip()
+            for part in parts
+            if part
+        ).strip()
 
 
-            # -------------------------------------------------
-            # Fallback to employee ID
-            # -------------------------------------------------
-
-            try:
-
-                if salesperson.employee_id:
-
-                    return str(
-                        salesperson.employee_id
-                    ).strip()
-
-            except Exception:
-
-                pass
-
-
-            # -------------------------------------------------
-            # Final salesperson fallback
-            # -------------------------------------------------
-
-            try:
-
-                text = str(
-                    salesperson
-                ).strip()
-
-                if text:
-
-                    return text
-
-            except Exception:
-
-                pass
+        if full_name:
+            return full_name
 
 
         return "No Salesperson"
+
+
+    # =========================================================
+    # HELPER: GET CLIENT / ORGANIZATION
+    # =========================================================
+
+    def get_client_organization(sale):
+
+        client = getattr(
+            sale,
+            "client",
+            None
+        )
+
+        if not client:
+            return "Walk-in Customer"
+
+
+        organization = (
+            getattr(
+                client,
+                "organization",
+                ""
+            )
+            or ""
+        ).strip()
+
+
+        if organization:
+            return organization
+
+
+        return "Walk-in Customer"
 
 
     # =========================================================
@@ -2774,19 +3588,14 @@ def admin_pos(request):
 
     def get_payment_status(sale):
 
-        # -----------------------------------------------------
-        # Use the actual payment_status field first
-        # -----------------------------------------------------
-
-        try:
-
-            status = (
-                sale.payment_status or ""
-            ).strip().upper()
-
-        except Exception:
-
-            status = ""
+        status = (
+            getattr(
+                sale,
+                "payment_status",
+                ""
+            )
+            or ""
+        ).strip().upper()
 
 
         if status in [
@@ -2802,23 +3611,29 @@ def admin_pos(request):
         # Fallback calculation
         # -----------------------------------------------------
 
-        try:
+        total = (
+            getattr(
+                sale,
+                "total",
+                0
+            )
+            or 0
+        )
 
-            total = sale.total or 0
-            payment = sale.payment or 0
-
-        except Exception:
-
-            total = 0
-            payment = 0
+        payment = (
+            getattr(
+                sale,
+                "payment",
+                0
+            )
+            or 0
+        )
 
 
         if payment >= total:
-
             return "PAID"
 
         elif payment > 0:
-
             return "PARTIAL"
 
         return "UNPAID"
@@ -2830,22 +3645,32 @@ def admin_pos(request):
 
     def get_balance(sale):
 
-        try:
+        total = (
+            getattr(
+                sale,
+                "total",
+                0
+            )
+            or 0
+        )
 
-            total = sale.total or 0
-            payment = sale.payment or 0
+        payment = (
+            getattr(
+                sale,
+                "payment",
+                0
+            )
+            or 0
+        )
 
-            balance = total - payment
+        balance = total - payment
 
-            if balance < 0:
 
-                return 0
-
-            return balance
-
-        except Exception:
-
+        if balance < 0:
             return 0
+
+
+        return balance
 
 
     # =========================================================
@@ -2854,13 +3679,16 @@ def admin_pos(request):
 
     for sale in all_today_sales:
 
-        sale.display_salesman = (
+        sale.display_salesperson = (
             get_salesperson_name(sale)
         )
 
-        # Keep compatibility with template names
-        sale.display_salesperson = (
-            sale.display_salesman
+        sale.display_salesman = (
+            sale.display_salesperson
+        )
+
+        sale.display_client = (
+            get_client_organization(sale)
         )
 
         sale.display_payment_status = (
@@ -2877,7 +3705,10 @@ def admin_pos(request):
     # =========================================================
 
     total_sales = sum(
-        (sale.total or 0)
+        (
+            sale.total
+            or 0
+        )
         for sale in all_today_sales
     )
 
@@ -2892,27 +3723,28 @@ def admin_pos(request):
 
     for sale in all_today_sales:
 
-        try:
+        for item in sale.items.all():
 
-            for item in sale.items.all():
-
-                total_items += (
-                    item.quantity or 0
-                )
-
-        except Exception:
-
-            pass
+            total_items += (
+                item.quantity
+                or 0
+            )
 
 
     total_discount = sum(
-        (sale.discount_amount or 0)
+        (
+            sale.discount_amount
+            or 0
+        )
         for sale in all_today_sales
     )
 
 
     total_payment = sum(
-        (sale.payment or 0)
+        (
+            sale.payment
+            or 0
+        )
         for sale in all_today_sales
     )
 
@@ -2924,7 +3756,8 @@ def admin_pos(request):
     if total_transactions > 0:
 
         average_transaction = (
-            total_sales /
+            total_sales
+            /
             total_transactions
         )
 
@@ -2950,21 +3783,24 @@ def admin_pos(request):
     paid_transactions = sum(
         1
         for sale in all_today_sales
-        if sale.display_payment_status == "PAID"
+        if sale.display_payment_status
+        == "PAID"
     )
 
 
     partial_transactions = sum(
         1
         for sale in all_today_sales
-        if sale.display_payment_status == "PARTIAL"
+        if sale.display_payment_status
+        == "PARTIAL"
     )
 
 
     unpaid_transactions = sum(
         1
         for sale in all_today_sales
-        if sale.display_payment_status == "UNPAID"
+        if sale.display_payment_status
+        == "UNPAID"
     )
 
 
@@ -2976,8 +3812,12 @@ def admin_pos(request):
         {
             sale.display_salesperson
             for sale in all_today_sales
-            if sale.display_salesperson
-            and sale.display_salesperson != "No Salesperson"
+            if (
+                sale.display_salesperson
+                and
+                sale.display_salesperson
+                != "No Salesperson"
+            )
         },
         key=lambda name: name.lower()
     )
@@ -3000,8 +3840,7 @@ def admin_pos(request):
 
 
     # ---------------------------------------------------------
-    # Backwards compatibility if old template still sends
-    # "salesman"
+    # Support old "salesman" URL parameter
     # ---------------------------------------------------------
 
     if not salesperson_filter:
@@ -3042,15 +3881,23 @@ def admin_pos(request):
 
 
             salesperson_text = (
-                sale.display_salesperson or ""
+                sale.display_salesperson
+                or ""
+            ).lower()
+
+
+            client_text = (
+                sale.display_client
+                or ""
             ).lower()
 
 
             staff_text = ""
 
-            try:
 
-                if sale.staff:
+            if sale.staff:
+
+                try:
 
                     staff_text = (
                         sale.staff.get_full_name()
@@ -3058,17 +3905,30 @@ def admin_pos(request):
                         or ""
                     ).lower()
 
-            except Exception:
+                except Exception:
 
-                pass
+                    staff_text = (
+                        getattr(
+                            sale.staff,
+                            "username",
+                            ""
+                        )
+                        or ""
+                    ).lower()
 
 
             if (
-                search_lower not in sale_id_text
+                search_lower
+                not in sale_id_text
                 and
-                search_lower not in salesperson_text
+                search_lower
+                not in salesperson_text
                 and
-                search_lower not in staff_text
+                search_lower
+                not in client_text
+                and
+                search_lower
+                not in staff_text
             ):
 
                 continue
@@ -3123,8 +3983,10 @@ def admin_pos(request):
     )
 
 
-    sales_page_obj = sales_paginator.get_page(
-        sales_page_number
+    sales_page_obj = (
+        sales_paginator.get_page(
+            sales_page_number
+        )
     )
 
 
@@ -3185,7 +4047,8 @@ def admin_pos(request):
         salesperson_data[
             salesperson_name
         ]["total_sales"] += (
-            sale.total or 0
+            sale.total
+            or 0
         )
 
 
@@ -3196,7 +4059,8 @@ def admin_pos(request):
         salesperson_data[
             salesperson_name
         ]["total_paid"] += (
-            sale.payment or 0
+            sale.payment
+            or 0
         )
 
 
@@ -3204,19 +4068,14 @@ def admin_pos(request):
         # ITEMS SOLD
         # -----------------------------------------------------
 
-        try:
+        for item in sale.items.all():
 
-            for item in sale.items.all():
-
-                salesperson_data[
-                    salesperson_name
-                ]["items_sold"] += (
-                    item.quantity or 0
-                )
-
-        except Exception:
-
-            pass
+            salesperson_data[
+                salesperson_name
+            ]["items_sold"] += (
+                item.quantity
+                or 0
+            )
 
 
     # =========================================================
@@ -3279,8 +4138,10 @@ def admin_pos(request):
     )
 
 
-    unpaid_page_obj = unpaid_paginator.get_page(
-        unpaid_page_number
+    unpaid_page_obj = (
+        unpaid_paginator.get_page(
+            unpaid_page_number
+        )
     )
 
 
@@ -3289,10 +4150,6 @@ def admin_pos(request):
     # =========================================================
 
     context = {
-
-        # -----------------------------------------------------
-        # DATE
-        # -----------------------------------------------------
 
         "today":
             today,
@@ -3401,7 +4258,6 @@ def admin_pos(request):
 
         "payment_filter":
             payment_filter,
-
     }
 
 
@@ -3442,6 +4298,10 @@ def admin_pos_detail(
     )
 
 
+# ==========================================================
+# SALES
+# ==========================================================
+
 @login_required
 def sales(request):
 
@@ -3453,6 +4313,7 @@ def sales(request):
         Sale.objects
         .select_related(
             "staff",
+            "salesperson",
             "discount_class",
         )
         .prefetch_related(
@@ -3461,45 +4322,120 @@ def sales(request):
         .order_by("-created_at")
     )
 
-
     # =========================================================
     # SEARCH
     # =========================================================
 
-    search = request.GET.get("search", "").strip()
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
 
     if search:
 
         search_filter = (
-            Q(salesman__icontains=search)
+
+            # -------------------------------------------------
+            # SALESPERSON
+            # -------------------------------------------------
+
+            Q(
+                salesperson__first_name__icontains=search
+            )
+
             |
-            Q(created_at__icontains=search)
+
+            Q(
+                salesperson__middle_name__icontains=search
+            )
+
+            |
+
+            Q(
+                salesperson__last_name__icontains=search
+            )
+
+            |
+
+            Q(
+                salesperson__contact_number__icontains=search
+            )
+
+            |
+
+            Q(
+                salesperson__email_address__icontains=search
+            )
+
+            # -------------------------------------------------
+            # STAFF / USER
+            # -------------------------------------------------
+
+            |
+
+            Q(
+                staff__username__icontains=search
+            )
+
+            |
+
+            Q(
+                staff__first_name__icontains=search
+            )
+
+            |
+
+            Q(
+                staff__last_name__icontains=search
+            )
+
+            # -------------------------------------------------
+            # DATE SEARCH
+            # -------------------------------------------------
+
+            |
+
+            Q(
+                created_at__icontains=search
+            )
         )
 
-        # Sale ID search
+        # -----------------------------------------------------
+        # SALE ID SEARCH
+        # -----------------------------------------------------
+
         if search.isdigit():
 
-            search_filter |= Q(id=int(search))
+            search_filter |= Q(
+                id=int(search)
+            )
 
-        sales_queryset = sales_queryset.filter(search_filter)
-
-
-    # =========================================================
-    # SALESMAN FILTER
-    #
-    # IMPORTANT:
-    # salesman is treated as a normal field.
-    # We DO NOT use salesman__id or salesman__username.
-    # =========================================================
-
-    salesman_filter = request.GET.get("salesman", "").strip()
-
-    if salesman_filter:
-
-        sales_queryset = sales_queryset.filter(
-            salesman=salesman_filter
+        sales_queryset = (
+            sales_queryset
+            .filter(
+                search_filter
+            )
+            .distinct()
         )
 
+    # =========================================================
+    # SALESPERSON FILTER
+    # =========================================================
+
+    salesperson_filter = request.GET.get(
+        "salesperson",
+        ""
+    ).strip()
+
+    if salesperson_filter:
+
+        if salesperson_filter.isdigit():
+
+            sales_queryset = sales_queryset.filter(
+                salesperson_id=int(
+                    salesperson_filter
+                )
+            )
 
     # =========================================================
     # PAYMENT STATUS FILTER
@@ -3520,7 +4456,6 @@ def sales(request):
             payment_status=payment_status
         )
 
-
     # =========================================================
     # DATE FILTER
     # =========================================================
@@ -3536,30 +4471,27 @@ def sales(request):
             created_at__date=date_filter
         )
 
-
     # =========================================================
-    # SALESMAN OPTIONS
-    #
-    # Since salesman is not a ForeignKey,
-    # get unique values directly.
+    # SALESPERSON OPTIONS
     # =========================================================
 
-    salesman_options = (
-        Sale.objects
-        .exclude(
-            salesman__isnull=True
+    salesperson_options = (
+        Salesperson.objects
+        .filter(
+            sales__isnull=False
         )
-        .exclude(
-            salesman=""
-        )
-        .values_list(
-            "salesman",
-            flat=True
+        .values(
+            "id",
+            "first_name",
+            "middle_name",
+            "last_name",
         )
         .distinct()
-        .order_by("salesman")
+        .order_by(
+            "first_name",
+            "last_name",
+        )
     )
-
 
     # =========================================================
     # SUMMARY
@@ -3567,7 +4499,9 @@ def sales(request):
 
     summary = sales_queryset.aggregate(
 
-        total_sales=Sum("total"),
+        total_sales=Sum(
+            "total"
+        ),
 
         total_discount=Sum(
             "discount_amount"
@@ -3582,33 +4516,29 @@ def sales(request):
         ),
     )
 
-
-    total_transactions = sales_queryset.count()
-
+    total_transactions = (
+        sales_queryset.count()
+    )
 
     total_sales = (
         summary["total_sales"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     total_discount = (
         summary["total_discount"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     average_sale = (
         summary["average_sale"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     total_payment = (
         summary["total_payment"]
-        or 0
+        or Decimal("0.00")
     )
-
 
     # =========================================================
     # PAGINATION
@@ -3616,7 +4546,7 @@ def sales(request):
 
     paginator = Paginator(
         sales_queryset,
-        15
+        10
     )
 
     page_number = request.GET.get(
@@ -3627,17 +4557,15 @@ def sales(request):
         page_number
     )
 
-
     # =========================================================
     # CONTEXT
     # =========================================================
 
     context = {
 
+        # Sales
         "sales": page_obj,
-
         "page_obj": page_obj,
-
         "paginator": paginator,
 
         # Summary
@@ -3649,14 +4577,13 @@ def sales(request):
 
         # Filters
         "search": search,
-        "salesman_filter": salesman_filter,
+        "salesperson_filter": salesperson_filter,
         "payment_status": payment_status,
         "date_filter": date_filter,
 
-        # Options
-        "salesman_options": salesman_options,
+        # Salesperson options
+        "salesperson_options": salesperson_options,
     }
-
 
     return render(
         request,
@@ -3664,62 +4591,40 @@ def sales(request):
         context
     )
 
-
 @login_required
 def sale_detail(request, sale_id):
 
     sale = get_object_or_404(
-
         Sale.objects
         .select_related(
             "staff",
+            "salesperson",
+            "client",
             "discount_class",
         )
         .prefetch_related(
             "items__product",
         ),
-
         id=sale_id
     )
-
 
     # =========================================================
     # AMOUNT DUE
     # =========================================================
 
-    amount_due = max(
-        sale.total - sale.payment,
-        0
-    )
-
+    amount_due = sale.amount_due
 
     # =========================================================
     # PAYMENT STATUS
     # =========================================================
 
-    if sale.payment >= sale.total:
-
-        payment_status = "PAID"
-
-    elif sale.payment > 0:
-
-        payment_status = "PARTIAL"
-
-    else:
-
-        payment_status = "UNPAID"
-
+    payment_status = sale.payment_status
 
     context = {
-
         "sale": sale,
-
         "amount_due": amount_due,
-
         "payment_status": payment_status,
-
     }
-
 
     return render(
         request,
@@ -3733,161 +4638,1913 @@ def reports(request):
     # =========================================================
     # CURRENT DATE / TIME
     # =========================================================
-    now = timezone.localtime()
+
+    now = timezone.now()
+    local_now = timezone.localtime(now)
+    today = local_now.date()
+
 
     # =========================================================
     # PERIOD
     # =========================================================
-    period = request.GET.get("period", "daily")
 
-    if period not in ["daily", "weekly", "monthly"]:
-        period = "daily"
-
-    # =========================================================
-    # BASE SALES QUERY
-    # =========================================================
-    sales = Sale.objects.all()
-
-    # =========================================================
-    # TOTAL SALES
-    # =========================================================
-    total_sales = sales.aggregate(
-        total=Sum("total")
-    )["total"] or 0
-
-    # =========================================================
-    # TOTAL TRANSACTIONS
-    # =========================================================
-    total_transactions = sales.count()
-
-    # =========================================================
-    # TOTAL ITEMS SOLD
-    # =========================================================
-    total_items = SaleItem.objects.aggregate(
-        total=Sum("quantity")
-    )["total"] or 0
-
-    # =========================================================
-    # AVERAGE SALE
-    # =========================================================
-    average_sale = (
-        total_sales / total_transactions
-        if total_transactions > 0
-        else 0
+    period = request.GET.get(
+        "period",
+        "daily"
     )
 
+    if period not in [
+        "daily",
+        "weekly",
+        "monthly",
+    ]:
+        period = "daily"
+
+
     # =========================================================
-    # CHART DATA
+    # PERIOD RANGE
     # =========================================================
 
     if period == "daily":
 
-        chart_queryset = (
-            sales
-            .annotate(period_date=TruncDay("created_at"))
-            .values("period_date")
-            .annotate(
-                sales_total=Sum("total"),
-                transaction_count=Count("id")
-            )
-            .order_by("period_date")
-        )
+        start_date = today
+        end_date = today
 
     elif period == "weekly":
 
-        chart_queryset = (
-            sales
-            .annotate(period_date=TruncWeek("created_at"))
-            .values("period_date")
-            .annotate(
-                sales_total=Sum("total"),
-                transaction_count=Count("id")
+        days_since_monday = today.weekday()
+
+        start_date = (
+            today -
+            timedelta(
+                days=days_since_monday
             )
-            .order_by("period_date")
+        )
+
+        end_date = (
+            start_date +
+            timedelta(days=6)
         )
 
     else:
 
-        chart_queryset = (
-            sales
-            .annotate(period_date=TruncMonth("created_at"))
-            .values("period_date")
-            .annotate(
-                sales_total=Sum("total"),
-                transaction_count=Count("id")
-            )
-            .order_by("period_date")
+        start_date = today.replace(
+            day=1
         )
 
+        if today.month == 12:
+
+            next_month = today.replace(
+                year=today.year + 1,
+                month=1,
+                day=1
+            )
+
+        else:
+
+            next_month = today.replace(
+                month=today.month + 1,
+                day=1
+            )
+
+        end_date = (
+            next_month -
+            timedelta(days=1)
+        )
+
+
     # =========================================================
-    # PREPARE CHART DATA
+    # PERIOD DATETIME
+    # =========================================================
+
+    start_datetime = timezone.make_aware(
+        datetime.combine(
+            start_date,
+            datetime.min.time()
+        )
+    )
+
+    end_datetime = timezone.make_aware(
+        datetime.combine(
+            end_date,
+            datetime.max.time()
+        )
+    )
+
+
+    # =========================================================
+    # SALES FOR SELECTED PERIOD
+    # =========================================================
+
+    period_sales = (
+        Sale.objects
+        .filter(
+            created_at__gte=start_datetime,
+            created_at__lte=end_datetime
+        )
+        .select_related(
+            "staff",
+            "salesperson",
+            "client",
+            "discount_class",
+        )
+        .prefetch_related(
+            "items__product"
+        )
+        .order_by(
+            "-created_at"
+        )
+    )
+
+
+    # =========================================================
+    # SALES TOTALS
+    # =========================================================
+
+    sales_summary = (
+        period_sales.aggregate(
+            total_sales=Sum("total"),
+            subtotal=Sum("subtotal"),
+            discount_amount=Sum("discount_amount"),
+            payment=Sum("payment"),
+            change=Sum("change"),
+        )
+    )
+
+
+    total_sales = (
+        sales_summary["total_sales"]
+        or Decimal("0.00")
+    )
+
+    total_subtotal = (
+        sales_summary["subtotal"]
+        or Decimal("0.00")
+    )
+
+    total_discount = (
+        sales_summary["discount_amount"]
+        or Decimal("0.00")
+    )
+
+    total_payment = (
+        sales_summary["payment"]
+        or Decimal("0.00")
+    )
+
+    total_change = (
+        sales_summary["change"]
+        or Decimal("0.00")
+    )
+
+
+    # =========================================================
+    # TRANSACTIONS
+    # =========================================================
+
+    total_transactions = (
+        period_sales.count()
+    )
+
+
+    # =========================================================
+    # PAYMENT STATUS COUNTS
+    # =========================================================
+
+    paid_sales = (
+        period_sales
+        .filter(
+            payment_status="PAID"
+        )
+        .count()
+    )
+
+    unpaid_sales = (
+        period_sales
+        .filter(
+            payment_status="UNPAID"
+        )
+        .count()
+    )
+
+    partial_sales = (
+        period_sales
+        .filter(
+            payment_status="PARTIAL"
+        )
+        .count()
+    )
+
+
+    # =========================================================
+    # AMOUNT DUE
+    # =========================================================
+
+    total_amount_due = (
+        total_sales -
+        total_payment
+    )
+
+    if total_amount_due < 0:
+
+        total_amount_due = Decimal(
+            "0.00"
+        )
+
+
+    # =========================================================
+    # AVERAGE SALE
+    # =========================================================
+
+    if total_transactions > 0:
+
+        average_sale = (
+            total_sales /
+            Decimal(
+                str(total_transactions)
+            )
+        )
+
+    else:
+
+        average_sale = Decimal(
+            "0.00"
+        )
+
+
+    # =========================================================
+    # TOTAL ITEMS SOLD
+    # =========================================================
+
+    items_summary = (
+        SaleItem.objects
+        .filter(
+            sale__in=period_sales
+        )
+        .aggregate(
+            quantity=Sum("quantity")
+        )
+    )
+
+    total_items = (
+        items_summary["quantity"]
+        or 0
+    )
+
+
+    # =========================================================
+    # SALE ITEM DISCOUNTS
+    # =========================================================
+
+    item_discount_summary = (
+        SaleItem.objects
+        .filter(
+            sale__in=period_sales
+        )
+        .aggregate(
+            total=Sum("discount_amount")
+        )
+    )
+
+    total_item_discount = (
+        item_discount_summary["total"]
+        or Decimal("0.00")
+    )
+
+
+    # =========================================================
+    # CHART DATA
+    #
+    # We intentionally do not use:
+    #
+    # TruncDay
+    # TruncWeek
+    # TruncMonth
+    #
+    # This avoids SQLite timezone issues.
+    # =========================================================
+
+    chart_data = {}
+
+
+    for sale in period_sales:
+
+        if not sale.created_at:
+            continue
+
+
+        sale_datetime = timezone.localtime(
+            sale.created_at
+        )
+
+        sale_date = sale_datetime.date()
+
+
+        # =====================================================
+        # DAILY
+        # =====================================================
+
+        if period == "daily":
+
+            key = sale_date.strftime(
+                "%b %d"
+            )
+
+
+        # =====================================================
+        # WEEKLY
+        # =====================================================
+
+        elif period == "weekly":
+
+            monday = (
+                sale_date -
+                timedelta(
+                    days=sale_date.weekday()
+                )
+            )
+
+            key = monday.strftime(
+                "%b %d, %Y"
+            )
+
+
+        # =====================================================
+        # MONTHLY
+        # =====================================================
+
+        else:
+
+            key = sale_date.strftime(
+                "%b %Y"
+            )
+
+
+        # =====================================================
+        # CREATE ENTRY
+        # =====================================================
+
+        if key not in chart_data:
+
+            chart_data[key] = {
+                "sales": Decimal(
+                    "0.00"
+                ),
+                "transactions": 0,
+            }
+
+
+        # =====================================================
+        # ADD SALE
+        # =====================================================
+
+        chart_data[key]["sales"] += (
+            sale.total
+            or Decimal("0.00")
+        )
+
+        chart_data[key]["transactions"] += 1
+
+
+    # =========================================================
+    # CHART ARRAYS
     # =========================================================
 
     chart_labels = []
     chart_sales = []
     chart_transactions = []
 
-    for row in chart_queryset:
 
-        date_value = row["period_date"]
+    for label, values in chart_data.items():
 
-        if period == "daily":
-            label = timezone.localtime(date_value).strftime("%b %d")
-
-        elif period == "weekly":
-            label = timezone.localtime(date_value).strftime(
-                "%b %d, %Y"
-            )
-
-        else:
-            label = timezone.localtime(date_value).strftime(
-                "%b %Y"
-            )
-
-        chart_labels.append(label)
+        chart_labels.append(
+            label
+        )
 
         chart_sales.append(
-            float(row["sales_total"] or 0)
+            float(
+                values["sales"]
+            )
         )
 
         chart_transactions.append(
-            row["transaction_count"]
+            values["transactions"]
         )
+
+
+    # =========================================================
+    # CLIENT SALES
+    # =========================================================
+
+    client_sales = (
+        period_sales
+        .filter(
+            client__isnull=False
+        )
+        .values(
+            "client",
+            "client__first_name",
+            "client__middle_name",
+            "client__last_name",
+            "client__organization",
+        )
+        .annotate(
+            total_sales=Sum("total"),
+            transaction_count=Count("id"),
+        )
+        .order_by(
+            "-total_sales"
+        )
+    )
+
+
+    # =========================================================
+    # SALESPERSON SALES
+    # =========================================================
+
+    salesperson_sales = (
+        period_sales
+        .filter(
+            salesperson__isnull=False
+        )
+        .values(
+            "salesperson",
+            "salesperson__first_name",
+            "salesperson__middle_name",
+            "salesperson__last_name",
+        )
+        .annotate(
+            total_sales=Sum("total"),
+            transaction_count=Count("id"),
+        )
+        .order_by(
+            "-total_sales"
+        )
+    )
+
+
+    # =========================================================
+    # DISCOUNT CLASS SALES
+    # =========================================================
+
+    discount_class_sales = (
+        period_sales
+        .filter(
+            discount_class__isnull=False
+        )
+        .values(
+            "discount_class",
+            "discount_class__code",
+            "discount_class__name",
+        )
+        .annotate(
+            total_sales=Sum("total"),
+            discount_total=Sum("discount_amount"),
+            transaction_count=Count("id"),
+        )
+        .order_by(
+            "-total_sales"
+        )
+    )
+
+
+    # =========================================================
+    # PRODUCT SALES
+    # =========================================================
+
+    product_sales = (
+        SaleItem.objects
+        .filter(
+            sale__in=period_sales
+        )
+        .values(
+            "product",
+            "product__product_model",
+            "product__description",
+            "product__category",
+        )
+        .annotate(
+            quantity_sold=Sum("quantity"),
+            gross_sales=Sum("subtotal"),
+            discount_total=Sum("discount_amount"),
+            net_sales=Sum("total"),
+            transaction_count=Count(
+                "sale",
+                distinct=True
+            ),
+        )
+        .order_by(
+            "-net_sales"
+        )
+    )
+
+
+    # =========================================================
+    # INVENTORY TRANSACTIONS
+    # =========================================================
+
+    inventory_transactions = (
+        InventoryTransaction.objects
+        .filter(
+            created_at__gte=start_datetime,
+            created_at__lte=end_datetime
+        )
+        .select_related(
+            "product",
+            "created_by",
+        )
+        .order_by(
+            "-created_at"
+        )
+    )
+
+
+    # =========================================================
+    # INVENTORY SUMMARY
+    # =========================================================
+
+    inventory_summary = (
+        inventory_transactions
+        .values(
+            "transaction_type"
+        )
+        .annotate(
+            quantity=Sum("quantity"),
+            transactions=Count("id"),
+        )
+    )
+
+
+    inventory_stock_in = 0
+    inventory_stock_out = 0
+    inventory_adjustment = 0
+
+    inventory_stock_in_transactions = 0
+    inventory_stock_out_transactions = 0
+    inventory_adjustment_transactions = 0
+
+
+    for row in inventory_summary:
+
+        transaction_type = (
+            row["transaction_type"]
+        )
+
+        quantity = (
+            row["quantity"]
+            or 0
+        )
+
+        transactions = (
+            row["transactions"]
+            or 0
+        )
+
+
+        if transaction_type == "IN":
+
+            inventory_stock_in = quantity
+
+            inventory_stock_in_transactions = (
+                transactions
+            )
+
+
+        elif transaction_type == "OUT":
+
+            inventory_stock_out = quantity
+
+            inventory_stock_out_transactions = (
+                transactions
+            )
+
+
+        elif transaction_type == "ADJUSTMENT":
+
+            inventory_adjustment = quantity
+
+            inventory_adjustment_transactions = (
+                transactions
+            )
+
+
+    # =========================================================
+    # PRODUCT / INVENTORY OVERVIEW
+    # =========================================================
+
+    products = (
+        Product.objects.all()
+    )
+
+
+    # =========================================================
+    # TOTAL PRODUCTS
+    # =========================================================
+
+    total_products = (
+        products.count()
+    )
+
+
+    # =========================================================
+    # TOTAL STOCK QUANTITY
+    # =========================================================
+
+    total_stock_quantity = (
+        products.aggregate(
+            total=Sum("qty")
+        )["total"]
+        or 0
+    )
+
+
+    # =========================================================
+    # TOTAL STOCK VALUE
+    #
+    # Calculate in Python:
+    #
+    # price * qty
+    #
+    # This avoids database expression problems between
+    # DecimalField and IntegerField, especially with SQLite.
+    # =========================================================
+
+    total_stock_value = Decimal(
+        "0.00"
+    )
+
+
+    for product in products:
+
+        price = (
+            product.price
+            or Decimal("0.00")
+        )
+
+        quantity = (
+            product.qty
+            or 0
+        )
+
+        total_stock_value += (
+            price *
+            quantity
+        )
+
+
+    # =========================================================
+    # LOW STOCK
+    # =========================================================
+
+    low_stock_products = (
+        products
+        .filter(
+            qty__gt=0,
+            qty__lte=models.F(
+                "low_stock_threshold"
+            )
+        )
+        .order_by(
+            "qty",
+            "product_model"
+        )
+    )
+
+
+    # =========================================================
+    # OUT OF STOCK
+    # =========================================================
+
+    out_of_stock_products = (
+        products
+        .filter(
+            qty=0
+        )
+        .order_by(
+            "product_model"
+        )
+    )
+
+
+    # =========================================================
+    # IN STOCK
+    # =========================================================
+
+    in_stock_products = (
+        products
+        .filter(
+            qty__gt=0
+        )
+    )
+
+
+    # =========================================================
+    # PRODUCT COUNTS
+    # =========================================================
+
+    low_stock_count = (
+        low_stock_products.count()
+    )
+
+    out_of_stock_count = (
+        out_of_stock_products.count()
+    )
+
+    in_stock_count = (
+        in_stock_products.count()
+    )
+
+
+    # =========================================================
+    # CLIENT COUNTS
+    #
+    # These are overall client records, not period-limited.
+    # =========================================================
+
+    total_clients = (
+        Client.objects.count()
+    )
+
+    active_clients = (
+        Client.objects
+        .filter(
+            is_active=True
+        )
+        .count()
+    )
+
+    inactive_clients = (
+        Client.objects
+        .filter(
+            is_active=False
+        )
+        .count()
+    )
+
+
+    # =========================================================
+    # SALESPERSON COUNTS
+    #
+    # These are overall salesperson records.
+    # =========================================================
+
+    total_salespersons = (
+        Salesperson.objects.count()
+    )
+
+    active_salespersons = (
+        Salesperson.objects
+        .filter(
+            is_active=True
+        )
+        .count()
+    )
+
+    inactive_salespersons = (
+        Salesperson.objects
+        .filter(
+            is_active=False
+        )
+        .count()
+    )
+
+
+    # =========================================================
+    # DISCOUNT CLASS COUNTS
+    # =========================================================
+
+    total_discount_classes = (
+        DiscountClass.objects.count()
+    )
+
 
     # =========================================================
     # RECENT SALES
     # =========================================================
 
     recent_sales = (
-        Sale.objects
-        .select_related("staff", "discount_class")
-        .prefetch_related("items__product")
-        .order_by("-created_at")[:10]
+        period_sales[:10]
     )
+
 
     # =========================================================
     # CONTEXT
     # =========================================================
 
     context = {
+
+        # -----------------------------------------------------
+        # PERIOD
+        # -----------------------------------------------------
+
         "period": period,
 
+        "start_date": start_date,
+
+        "end_date": end_date,
+
+        "current_date": local_now,
+
+
+        # -----------------------------------------------------
+        # SALES
+        # -----------------------------------------------------
+
         "total_sales": total_sales,
+
+        "total_subtotal": total_subtotal,
+
         "total_transactions": total_transactions,
+
         "total_items": total_items,
+
         "average_sale": average_sale,
 
+        "total_discount": total_discount,
+
+        "total_item_discount": total_item_discount,
+
+        "total_payment": total_payment,
+
+        "total_change": total_change,
+
+        "total_amount_due": total_amount_due,
+
+
+        # -----------------------------------------------------
+        # PAYMENT STATUS
+        # -----------------------------------------------------
+
+        "paid_sales": paid_sales,
+
+        "unpaid_sales": unpaid_sales,
+
+        "partial_sales": partial_sales,
+
+
+        # -----------------------------------------------------
+        # CHART
+        # -----------------------------------------------------
+
         "chart_labels": chart_labels,
+
         "chart_sales": chart_sales,
+
         "chart_transactions": chart_transactions,
+
+
+        # -----------------------------------------------------
+        # CLIENT REPORT
+        # -----------------------------------------------------
+
+        "client_sales": client_sales,
+
+        "total_clients": total_clients,
+
+        "active_clients": active_clients,
+
+        "inactive_clients": inactive_clients,
+
+
+        # -----------------------------------------------------
+        # SALESPERSON REPORT
+        # -----------------------------------------------------
+
+        "salesperson_sales": salesperson_sales,
+
+        "total_salespersons": total_salespersons,
+
+        "active_salespersons": active_salespersons,
+
+        "inactive_salespersons": inactive_salespersons,
+
+
+        # -----------------------------------------------------
+        # DISCOUNT REPORT
+        # -----------------------------------------------------
+
+        "discount_class_sales": discount_class_sales,
+
+        "total_discount_classes": total_discount_classes,
+
+
+        # -----------------------------------------------------
+        # PRODUCT SALES REPORT
+        # -----------------------------------------------------
+
+        "product_sales": product_sales,
+
+
+        # -----------------------------------------------------
+        # INVENTORY
+        # -----------------------------------------------------
+
+        "inventory_transactions": inventory_transactions,
+
+        "inventory_stock_in": inventory_stock_in,
+
+        "inventory_stock_out": inventory_stock_out,
+
+        "inventory_adjustment": inventory_adjustment,
+
+        "inventory_stock_in_transactions":
+            inventory_stock_in_transactions,
+
+        "inventory_stock_out_transactions":
+            inventory_stock_out_transactions,
+
+        "inventory_adjustment_transactions":
+            inventory_adjustment_transactions,
+
+
+        # -----------------------------------------------------
+        # PRODUCT / STOCK
+        # -----------------------------------------------------
+
+        "total_products": total_products,
+
+        "total_stock_quantity": total_stock_quantity,
+
+        "total_stock_value": total_stock_value,
+
+        "in_stock_count": in_stock_count,
+
+        "low_stock_count": low_stock_count,
+
+        "out_of_stock_count": out_of_stock_count,
+
+        "low_stock_products": low_stock_products,
+
+        "out_of_stock_products": out_of_stock_products,
+
+
+        # -----------------------------------------------------
+        # RECENT SALES
+        # -----------------------------------------------------
 
         "recent_sales": recent_sales,
 
-        "current_date": now,
     }
+
+
+    # =========================================================
+    # RENDER
+    # =========================================================
 
     return render(
         request,
         "pages/reports.html",
+        context
+    )
+# =========================================================
+# CLIENT LIST
+# =========================================================
+
+@login_required
+def client_list(request):
+
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
+
+    # ======================================================
+    # GET ACTIVE CLIENTS ONLY
+    # ======================================================
+
+    clients = (
+        Client.objects
+        .filter(is_active=True)
+        .order_by("-id")
+    )
+
+    # ======================================================
+    # SEARCH
+    # ======================================================
+
+    if search:
+
+        clients = clients.filter(
+
+            Q(
+                first_name__icontains=search
+            )
+
+            | Q(
+                middle_name__icontains=search
+            )
+
+            | Q(
+                last_name__icontains=search
+            )
+
+            | Q(
+                organization__icontains=search
+            )
+
+            | Q(
+                address__icontains=search
+            )
+
+            | Q(
+                contact_number__icontains=search
+            )
+
+            | Q(
+                email_address__icontains=search
+            )
+
+        )
+
+    # ======================================================
+    # TOTAL ACTIVE CLIENTS
+    # ======================================================
+
+    total_clients = clients.count()
+
+    # ======================================================
+    # PAGINATION
+    # ======================================================
+
+    paginator = Paginator(
+        clients,
+        10
+    )
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+    # ======================================================
+    # RENDER
+    # ======================================================
+
+    return render(
+        request,
+        "client/client.html",
+        {
+            "clients": page_obj.object_list,
+            "page_obj": page_obj,
+            "paginator": paginator,
+            "search": search,
+            "total_clients": total_clients,
+        },
+    )
+
+
+# =========================================================
+# ADD CLIENT
+# =========================================================
+
+@login_required
+def add_client(request):
+
+    # ======================================================
+    # POST
+    # ======================================================
+
+    if request.method == "POST":
+
+        # ==================================================
+        # GET FORM DATA
+        # ==================================================
+
+        first_name = request.POST.get(
+            "first_name",
+            ""
+        ).strip()
+
+        middle_name = request.POST.get(
+            "middle_name",
+            ""
+        ).strip()
+
+        last_name = request.POST.get(
+            "last_name",
+            ""
+        ).strip()
+
+        organization = request.POST.get(
+            "organization",
+            ""
+        ).strip()
+
+        address = request.POST.get(
+            "address",
+            ""
+        ).strip()
+
+        contact_number = request.POST.get(
+            "contact_number",
+            ""
+        ).strip()
+
+        email_address = request.POST.get(
+            "email_address",
+            ""
+        ).strip()
+
+        # ==================================================
+        # SALESPERSON
+        # ==================================================
+
+        salesperson_id = request.POST.get(
+            "salesperson",
+            ""
+        ).strip()
+
+        # ==================================================
+        # BUSINESS PERMIT
+        # ==================================================
+
+        business_permit = request.FILES.get(
+            "business_permit"
+        )
+
+        # ==================================================
+        # STATUS
+        # ==================================================
+
+        is_active = (
+            request.POST.get("is_active") == "on"
+        )
+
+        # ==================================================
+        # VALIDATION
+        # ==================================================
+
+        if not first_name:
+
+            return render(
+                request,
+                "client/client_form.html",
+                {
+                    "error": "First name is required.",
+                    "is_edit": False,
+                    "client": None,
+
+                    "salespersons": Salesperson.objects.filter(
+                        is_active=True
+                    ),
+                }
+            )
+
+        if not last_name:
+
+            return render(
+                request,
+                "client/client_form.html",
+                {
+                    "error": "Last name is required.",
+                    "is_edit": False,
+                    "client": None,
+
+                    "salespersons": Salesperson.objects.filter(
+                        is_active=True
+                    ),
+                }
+            )
+
+        # ==================================================
+        # VALIDATE EMAIL
+        # ==================================================
+
+        if email_address:
+
+            try:
+
+                validate_email(
+                    email_address
+                )
+
+            except ValidationError:
+
+                return render(
+                    request,
+                    "client/client_form.html",
+                    {
+                        "error": (
+                            "Please enter a valid "
+                            "email address."
+                        ),
+
+                        "is_edit": False,
+                        "client": None,
+
+                        "salespersons": Salesperson.objects.filter(
+                            is_active=True
+                        ),
+                    }
+                )
+
+        # ==================================================
+        # GET SALESPERSON
+        # ==================================================
+
+        salesperson = None
+
+        if salesperson_id:
+
+            salesperson = get_object_or_404(
+                Salesperson,
+                id=salesperson_id,
+                is_active=True
+            )
+
+        # ==================================================
+        # CREATE CLIENT
+        # ==================================================
+
+        client = Client.objects.create(
+
+            first_name=first_name,
+
+            middle_name=(
+                middle_name
+                or None
+            ),
+
+            last_name=last_name,
+
+            organization=(
+                organization
+                or None
+            ),
+
+            address=(
+                address
+                or None
+            ),
+
+            contact_number=(
+                contact_number
+                or None
+            ),
+
+            email_address=(
+                email_address
+                or None
+            ),
+
+            salesperson=salesperson,
+
+            business_permit=business_permit,
+
+            is_active=is_active,
+        )
+
+        # ==================================================
+        # SUCCESS
+        # ==================================================
+
+        return redirect(
+            "client-list"
+        )
+
+    # ======================================================
+    # GET
+    # ======================================================
+
+    return render(
+        request,
+        "client/client_form.html",
+        {
+            "is_edit": False,
+            "client": None,
+            "error": None,
+
+            "salespersons": Salesperson.objects.filter(
+                is_active=True
+            ),
+        }
+    )
+
+
+# =========================================================
+# UPDATE CLIENT
+# =========================================================
+
+@login_required
+def update_client(
+    request,
+    client_id
+):
+
+    client = get_object_or_404(
+        Client,
+        id=client_id
+    )
+
+    # ======================================================
+    # POST
+    # ======================================================
+
+    if request.method == "POST":
+
+        # ==================================================
+        # GET FORM DATA
+        # ==================================================
+
+        first_name = request.POST.get(
+            "first_name",
+            ""
+        ).strip()
+
+        middle_name = request.POST.get(
+            "middle_name",
+            ""
+        ).strip()
+
+        last_name = request.POST.get(
+            "last_name",
+            ""
+        ).strip()
+
+        organization = request.POST.get(
+            "organization",
+            ""
+        ).strip()
+
+        address = request.POST.get(
+            "address",
+            ""
+        ).strip()
+
+        contact_number = request.POST.get(
+            "contact_number",
+            ""
+        ).strip()
+
+        email_address = request.POST.get(
+            "email_address",
+            ""
+        ).strip()
+
+        # ==================================================
+        # SALESPERSON
+        # ==================================================
+
+        salesperson_id = request.POST.get(
+            "salesperson",
+            ""
+        ).strip()
+
+        # ==================================================
+        # BUSINESS PERMIT
+        # ==================================================
+
+        business_permit = request.FILES.get(
+            "business_permit"
+        )
+
+        # ==================================================
+        # STATUS
+        # ==================================================
+
+        is_active = (
+            request.POST.get("is_active") == "on"
+        )
+
+        # ==================================================
+        # VALIDATION
+        # ==================================================
+
+        if not first_name:
+
+            return render(
+                request,
+                "client/client_form.html",
+                {
+                    "client": client,
+
+                    "error": (
+                        "First name is required."
+                    ),
+
+                    "is_edit": True,
+
+                    "salespersons": Salesperson.objects.filter(
+                        is_active=True
+                    ),
+                }
+            )
+
+        if not last_name:
+
+            return render(
+                request,
+                "client/client_form.html",
+                {
+                    "client": client,
+
+                    "error": (
+                        "Last name is required."
+                    ),
+
+                    "is_edit": True,
+
+                    "salespersons": Salesperson.objects.filter(
+                        is_active=True
+                    ),
+                }
+            )
+
+        # ==================================================
+        # VALIDATE EMAIL
+        # ==================================================
+
+        if email_address:
+
+            try:
+
+                validate_email(
+                    email_address
+                )
+
+            except ValidationError:
+
+                return render(
+                    request,
+                    "client/client_form.html",
+                    {
+                        "client": client,
+
+                        "error": (
+                            "Please enter a valid "
+                            "email address."
+                        ),
+
+                        "is_edit": True,
+
+                        "salespersons": Salesperson.objects.filter(
+                            is_active=True
+                        ),
+                    }
+                )
+
+        # ==================================================
+        # GET SALESPERSON
+        # ==================================================
+
+        salesperson = None
+
+        if salesperson_id:
+
+            salesperson = get_object_or_404(
+                Salesperson,
+                id=salesperson_id,
+                is_active=True
+            )
+
+        # ==================================================
+        # UPDATE CLIENT
+        # ==================================================
+
+        client.first_name = first_name
+
+        client.middle_name = (
+            middle_name
+            or None
+        )
+
+        client.last_name = last_name
+
+        client.organization = (
+            organization
+            or None
+        )
+
+        client.address = (
+            address
+            or None
+        )
+
+        client.contact_number = (
+            contact_number
+            or None
+        )
+
+        client.email_address = (
+            email_address
+            or None
+        )
+
+        # ==================================================
+        # SALESPERSON
+        # ==================================================
+
+        client.salesperson = salesperson
+
+        # ==================================================
+        # BUSINESS PERMIT
+        # ==================================================
+
+        if business_permit:
+
+            client.business_permit = business_permit
+
+        # ==================================================
+        # STATUS
+        # ==================================================
+
+        client.is_active = is_active
+
+        # ==================================================
+        # SAVE
+        # ==================================================
+
+        client.save()
+
+        # ==================================================
+        # SUCCESS
+        # ==================================================
+
+        return redirect(
+            "client-list"
+        )
+
+    # ======================================================
+    # GET
+    # ======================================================
+
+    return render(
+        request,
+        "client/client_form.html",
+        {
+            "client": client,
+            "is_edit": True,
+            "error": None,
+
+            "salespersons": Salesperson.objects.filter(
+                is_active=True
+            ),
+        }
+    )
+
+@login_required
+def delete_client(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+
+    if request.method == "POST":
+        client.is_active = False
+        client.save(update_fields=["is_active"])
+
+        return redirect("client-list")
+
+    return redirect("client-list")
+
+@login_required
+@user_passes_test(is_superuser)
+def transactions(request):
+
+    # =========================================================
+    # BASE QUERY
+    # =========================================================
+
+    transactions = (
+        Sale.objects
+        .select_related(
+            "staff",
+            "salesperson",
+            "discount_class",
+            "client",
+        )
+        .prefetch_related(
+            "items__product",
+        )
+        .order_by("-created_at")
+    )
+
+
+    # =========================================================
+    # SEARCH
+    # =========================================================
+
+    search = request.GET.get(
+        "search",
+        ""
+    ).strip()
+
+    if search:
+
+        search_filter = (
+            Q(
+                salesperson__first_name__icontains=search
+            )
+            | Q(
+                salesperson__middle_name__icontains=search
+            )
+            | Q(
+                salesperson__last_name__icontains=search
+            )
+            | Q(
+                staff__username__icontains=search
+            )
+            | Q(
+                client__organization__icontains=search
+            )
+        )
+
+        # -----------------------------------------------------
+        # Search transaction ID if number
+        # -----------------------------------------------------
+
+        if search.isdigit():
+
+            search_filter |= Q(
+                id=int(search)
+            )
+
+        transactions = (
+            transactions
+            .filter(search_filter)
+            .distinct()
+        )
+
+
+    # =========================================================
+    # SALESPERSON FILTER
+    # =========================================================
+
+    salesperson_id = request.GET.get(
+        "salesperson",
+        ""
+    ).strip()
+
+    if salesperson_id:
+
+        transactions = transactions.filter(
+            salesperson_id=salesperson_id
+        )
+
+
+    # =========================================================
+    # PAYMENT STATUS
+    # =========================================================
+
+    payment_status = request.GET.get(
+        "payment_status",
+        ""
+    ).strip()
+
+    if payment_status:
+
+        transactions = transactions.filter(
+            payment_status=payment_status
+        )
+
+
+    # =========================================================
+    # DATE FROM
+    # =========================================================
+
+    date_from = request.GET.get(
+        "date_from",
+        ""
+    ).strip()
+
+    if date_from:
+
+        transactions = transactions.filter(
+            created_at__date__gte=date_from
+        )
+
+
+    # =========================================================
+    # DATE TO
+    # =========================================================
+
+    date_to = request.GET.get(
+        "date_to",
+        ""
+    ).strip()
+
+    if date_to:
+
+        transactions = transactions.filter(
+            created_at__date__lte=date_to
+        )
+
+
+    # =========================================================
+    # SALESPERSON LIST
+    # =========================================================
+
+    salespersons = (
+        Salesperson.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "last_name",
+            "first_name"
+        )
+    )
+
+
+    # =========================================================
+    # CLIENT LIST
+    #
+    # Client is completely independent from Salesperson.
+    #
+    # IMPORTANT:
+    # Do NOT use client.salespersons.
+    # =========================================================
+
+    clients = (
+        Client.objects
+        .filter(
+            is_active=True
+        )
+        .order_by(
+            "last_name",
+            "first_name"
+        )
+    )
+
+
+    # =========================================================
+    # ORGANIZATION LIST
+    # =========================================================
+
+    organizations = (
+        Client.objects
+        .exclude(
+            organization__isnull=True
+        )
+        .exclude(
+            organization__exact=""
+        )
+        .values_list(
+            "organization",
+            flat=True
+        )
+        .distinct()
+        .order_by(
+            "organization"
+        )
+    )
+
+
+    # =========================================================
+    # SUMMARY
+    # =========================================================
+
+    total_transactions = transactions.count()
+
+    total_sales = (
+        transactions.aggregate(
+            total=Sum("total")
+        )["total"]
+        or 0
+    )
+
+    total_paid = (
+        transactions.aggregate(
+            total=Sum("payment")
+        )["total"]
+        or 0
+    )
+
+    total_due = (
+        total_sales
+        - total_paid
+    )
+
+    if total_due < 0:
+        total_due = 0
+
+
+    # =========================================================
+    # PAYMENT COUNTS
+    # =========================================================
+
+    paid_count = (
+        transactions
+        .filter(
+            payment_status="PAID"
+        )
+        .count()
+    )
+
+    unpaid_count = (
+        transactions
+        .filter(
+            payment_status="UNPAID"
+        )
+        .count()
+    )
+
+    partial_count = (
+        transactions
+        .filter(
+            payment_status="PARTIAL"
+        )
+        .count()
+    )
+
+
+    # =========================================================
+    # PAGINATION
+    # =========================================================
+
+    paginator = Paginator(
+        transactions,
+        10
+    )
+
+    page_number = request.GET.get(
+        "page"
+    )
+
+    page_obj = paginator.get_page(
+        page_number
+    )
+
+
+    # =========================================================
+    # KEEP FILTERS DURING PAGINATION
+    # =========================================================
+
+    filter_params = request.GET.copy()
+
+    if "page" in filter_params:
+
+        del filter_params["page"]
+
+
+    # =========================================================
+    # CONTEXT
+    # =========================================================
+
+    context = {
+
+        "page_obj":
+            page_obj,
+
+        "transactions":
+            page_obj.object_list,
+
+        "salespersons":
+            salespersons,
+
+        "clients":
+            clients,
+
+        "organizations":
+            organizations,
+
+        "search":
+            search,
+
+        "selected_salesperson":
+            salesperson_id,
+
+        "selected_payment_status":
+            payment_status,
+
+        "date_from":
+            date_from,
+
+        "date_to":
+            date_to,
+
+        "filter_params":
+            filter_params.urlencode(),
+
+        "total_transactions":
+            total_transactions,
+
+        "total_sales":
+            total_sales,
+
+        "total_paid":
+            total_paid,
+
+        "total_due":
+            total_due,
+
+        "paid_count":
+            paid_count,
+
+        "unpaid_count":
+            unpaid_count,
+
+        "partial_count":
+            partial_count,
+    }
+
+
+    # =========================================================
+    # RENDER
+    # =========================================================
+
+    return render(
+        request,
+        "transactions/transactions.html",
         context
     )
