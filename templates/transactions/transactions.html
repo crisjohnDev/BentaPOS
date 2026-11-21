@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -47,37 +48,23 @@
     flex-direction: column;
     justify-content: center;
     color: #ffffff;
-    transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-/* =========================================================
-   SOLID SUMMARY CARD COLORS
-========================================================= */
-
-/* TOTAL TRANSACTIONS */
 .summary-card:nth-child(1) {
     background: #1f4e79;
-    border-color: #1f4e79;
 }
 
-/* TOTAL SALES */
 .summary-card:nth-child(2) {
     background: #237a57;
-    border-color: #237a57;
 }
 
-/* TOTAL PAID */
 .summary-card:nth-child(3) {
     background: #176b87;
-    border-color: #176b87;
 }
 
-/* TOTAL DUE */
 .summary-card:nth-child(4) {
     background: #b86b00;
-    border-color: #b86b00;
 }
 
 .summary-card:hover {
@@ -113,7 +100,6 @@
 .summary-card-icon svg {
     width: 20px;
     height: 20px;
-    color: #ffffff;
 }
 
 .summary-card-value {
@@ -156,13 +142,7 @@
 
 .filter-form {
     display: grid;
-    grid-template-columns:
-        2fr
-        1fr
-        1fr
-        1fr
-        1fr
-        auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
     gap: 12px;
     align-items: end;
 }
@@ -196,9 +176,7 @@
 .filter-input:focus,
 .filter-select:focus {
     border-color: #6b7280;
-    box-shadow:
-        0 0 0 3px
-        rgba(107, 114, 128, 0.1);
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
 }
 
 .filter-actions {
@@ -256,18 +234,28 @@
     border: 1px solid #e5e7eb;
     border-radius: 14px;
     overflow: hidden;
-    box-shadow:
-        0 2px 8px
-        rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .table-header {
     padding: 18px 20px;
-    border-bottom:
-        1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 15px;
+}
+
+.table-header-left {
+    min-width: 0;
+}
+
+.table-header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
 }
 
 .table-title {
@@ -280,7 +268,51 @@
 .table-count {
     font-size: 13px;
     color: #6b7280;
+    white-space: nowrap;
 }
+
+
+/* =========================================================
+   EXPORT EXCEL BUTTON
+========================================================= */
+
+.btn-export {
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid #166534;
+    border-radius: 8px;
+    background: #166534;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-export:hover {
+    background: #14532d;
+    border-color: #14532d;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(22, 101, 52, 0.18);
+}
+
+.btn-export svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
 
 .table-wrapper {
     width: 100%;
@@ -302,15 +334,13 @@
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    border-bottom:
-        1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
     white-space: nowrap;
 }
 
 .transactions-table td {
     padding: 16px 14px;
-    border-bottom:
-        1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 13px;
     color: #374151;
     vertical-align: top;
@@ -394,8 +424,7 @@
 .item-purchase {
     padding: 11px 12px;
     background: #fafafa;
-    border:
-        1px solid #eef0f2;
+    border: 1px solid #eef0f2;
     border-radius: 9px;
 }
 
@@ -525,6 +554,34 @@
     color: #4b5563;
 }
 
+.status-void {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+
+/* =========================================================
+   VOID BUTTON
+========================================================= */
+
+.btn-void {
+    padding: 8px 11px;
+    border: 1px solid #fecaca;
+    border-radius: 7px;
+    background: #fff1f2;
+    color: #b91c1c;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.btn-void:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
 
 /* =========================================================
    EMPTY STATE
@@ -572,8 +629,7 @@
 
 .pagination-container {
     padding: 18px 20px;
-    border-top:
-        1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -608,8 +664,7 @@
 
 .pagination a {
     color: #374151;
-    border:
-        1px solid #d1d5db;
+    border: 1px solid #d1d5db;
     background: #ffffff;
 }
 
@@ -624,8 +679,7 @@
 
 .pagination .disabled {
     color: #d1d5db;
-    border:
-        1px solid #f3f4f6;
+    border: 1px solid #f3f4f6;
     background: #f9fafb;
 }
 
@@ -637,8 +691,7 @@
 @media (max-width: 1500px) {
 
     .filter-form {
-        grid-template-columns:
-            repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .filter-group.search-group {
@@ -650,17 +703,14 @@
     }
 }
 
-
 @media (max-width: 1100px) {
 
     .summary-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .filter-form {
-        grid-template-columns:
-            repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .filter-group.search-group {
@@ -671,7 +721,6 @@
         grid-column: span 2;
     }
 }
-
 
 @media (max-width: 700px) {
 
@@ -689,6 +738,24 @@
 
     .filter-actions {
         grid-column: auto;
+    }
+
+    .filter-actions button,
+    .filter-actions a {
+        flex: 1;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .table-header-right {
+        justify-content: space-between;
+    }
+
+    .btn-export {
+        flex: 1;
     }
 
     .pagination-container {
@@ -728,30 +795,14 @@
                 </div>
 
                 <div class="summary-card-icon">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-
-                        <rect
-                            x="3"
-                            y="4"
-                            width="18"
-                            height="16"
-                            rx="2"
-                        />
-
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
                         <path d="M7 8h10"/>
                         <path d="M7 12h10"/>
                         <path d="M7 16h6"/>
-
                     </svg>
-
                 </div>
 
             </div>
@@ -778,24 +829,12 @@
                 </div>
 
                 <div class="summary-card-icon">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 1v22"/>
-
-                        <path
-                            d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"
-                        />
-
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
-
                 </div>
 
             </div>
@@ -822,20 +861,11 @@
                 </div>
 
                 <div class="summary-card-icon">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 6L9 17l-5-5"/>
-
                     </svg>
-
                 </div>
 
             </div>
@@ -845,10 +875,8 @@
             </div>
 
             <div class="summary-card-subtitle">
-
                 {{ paid_count }}
                 paid transaction{{ paid_count|pluralize }}
-
             </div>
 
         </div>
@@ -865,26 +893,12 @@
                 </div>
 
                 <div class="summary-card-icon">
-
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
-
-                        <circle
-                            cx="12"
-                            cy="12"
-                            r="9"
-                        />
-
+                    <svg viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="9"/>
                         <path d="M12 7v5l3 2"/>
-
                     </svg>
-
                 </div>
 
             </div>
@@ -894,10 +908,8 @@
             </div>
 
             <div class="summary-card-subtitle">
-
                 {{ unpaid_count }} unpaid ·
                 {{ partial_count }} partial
-
             </div>
 
         </div>
@@ -919,17 +931,11 @@
 
         </div>
 
-
-        <form
-            method="get"
-            class="filter-form"
-        >
+        <form method="get" class="filter-form">
 
             <!-- SEARCH -->
 
-            <div
-                class="filter-group search-group"
-            >
+            <div class="filter-group search-group">
 
                 <label class="filter-label">
                     Search
@@ -954,10 +960,7 @@
                     Salesperson
                 </label>
 
-                <select
-                    name="salesperson"
-                    class="filter-select"
-                >
+                <select name="salesperson" class="filter-select">
 
                     <option value="">
                         All Salespersons
@@ -971,10 +974,8 @@
                                 selected
                             {% endif %}
                         >
-
                             {{ salesperson.last_name }},
                             {{ salesperson.first_name }}
-
                         </option>
 
                     {% endfor %}
@@ -992,39 +993,22 @@
                     Payment
                 </label>
 
-                <select
-                    name="payment_status"
-                    class="filter-select"
-                >
+                <select name="payment_status" class="filter-select">
 
-                    <option value="">
-                        All Status
-                    </option>
+                    <option value="">All Status</option>
 
-                    <option
-                        value="PAID"
-                        {% if selected_payment_status == "PAID" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="PAID"
+                        {% if selected_payment_status == "PAID" %}selected{% endif %}>
                         Paid
                     </option>
 
-                    <option
-                        value="UNPAID"
-                        {% if selected_payment_status == "UNPAID" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="UNPAID"
+                        {% if selected_payment_status == "UNPAID" %}selected{% endif %}>
                         Unpaid
                     </option>
 
-                    <option
-                        value="PARTIAL"
-                        {% if selected_payment_status == "PARTIAL" %}
-                            selected
-                        {% endif %}
-                    >
+                    <option value="PARTIAL"
+                        {% if selected_payment_status == "PARTIAL" %}selected{% endif %}>
                         Partial
                     </option>
 
@@ -1073,17 +1057,11 @@
 
             <div class="filter-actions">
 
-                <button
-                    type="submit"
-                    class="btn-filter"
-                >
+                <button type="submit" class="btn-filter">
                     Filter
                 </button>
 
-                <a
-                    href="{% url 'transactions' %}"
-                    class="btn-clear"
-                >
+                <a href="{% url 'transactions' %}" class="btn-clear">
                     Clear
                 </a>
 
@@ -1100,27 +1078,58 @@
 
     <div class="table-card">
 
-
-        <!-- TABLE HEADER -->
+        <!-- TABLE HEADER + EXPORT -->
 
         <div class="table-header">
 
-            <h3 class="table-title">
-                Sales Transactions
-            </h3>
+            <div class="table-header-left">
 
-            <div class="table-count">
+                <h3 class="table-title">
+                    Sales Transactions
+                </h3>
 
-                {% if page_obj.paginator.count == 1 %}
+            </div>
 
-                    1 transaction
+            <div class="table-header-right">
 
-                {% else %}
+                <div class="table-count">
 
-                    {{ page_obj.paginator.count }}
-                    transactions
+                    {% if page_obj.paginator.count == 1 %}
 
-                {% endif %}
+                        1 transaction
+
+                    {% else %}
+
+                        {{ page_obj.paginator.count }} transactions
+
+                    {% endif %}
+
+                </div>
+
+                <!-- EXPORT EXCEL -->
+
+                <a
+                    href="{% url 'export-transactions-excel' %}?search={{ search|urlencode }}&salesperson={{ selected_salesperson|urlencode }}&payment_status={{ selected_payment_status|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}"
+                    class="btn-export"
+                    title="Export all matching transactions, products, and inventory data"
+                >
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <path d="M7 10l5 5 5-5"/>
+                        <path d="M12 15V3"/>
+                    </svg>
+
+                    Export Excel
+
+                </a>
 
             </div>
 
@@ -1129,10 +1138,7 @@
 
         {% if transactions %}
 
-
-            <!-- =================================================
-                 TABLE
-            ================================================== -->
+            <!-- TABLE -->
 
             <div class="table-wrapper">
 
@@ -1141,58 +1147,27 @@
                     <thead>
 
                         <tr>
-
-                            <th>
-                                Transaction
-                            </th>
-
-                            <th>
-                                Salesperson
-                            </th>
-
-                            <th>
-                                Client / Organization
-                            </th>
-
-                            <th>
-                                All Items Purchased
-                            </th>
-
-                            <th>
-                                Subtotal
-                            </th>
-
-                            <th>
-                                Discount
-                            </th>
-
-                            <th>
-                                Total
-                            </th>
-
-                            <th>
-                                Payment
-                            </th>
-
-                            <th>
-                                Due
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
+                            <th>Transaction</th>
+                            <th>S.O No.</th>
+                            <th>Salesperson</th>
+                            <th>Client / Organization</th>
+                            <th>All Items Purchased</th>
+                            <th>Subtotal</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
 
                     </thead>
-
 
                     <tbody>
 
                         {% for transaction in transactions %}
 
                         <tr>
-
 
                             <!-- TRANSACTION -->
 
@@ -1203,15 +1178,18 @@
                                 </div>
 
                                 <div class="transaction-date">
-
                                     {{ transaction.created_at|date:"M d, Y" }}
-
                                     <br>
-
-                                    {{ transaction.created_at|date:"h\:i A" }}
-
+                                    {{ transaction.created_at|date:"h:i A" }}
                                 </div>
 
+                            </td>
+
+
+                            <!-- SALES ORDER -->
+
+                            <td>
+                                {{ transaction.sale_number|default:"N/A" }}
                             </td>
 
 
@@ -1226,26 +1204,20 @@
                                         {{ transaction.salesperson.first_name }}
 
                                         {% if transaction.salesperson.middle_name %}
-
                                             {{ transaction.salesperson.middle_name }}
-
                                         {% endif %}
 
                                         {{ transaction.salesperson.last_name }}
 
                                     </div>
 
-
                                     {% if transaction.salesperson.contact_number %}
 
                                         <div class="person-secondary">
-
                                             {{ transaction.salesperson.contact_number }}
-
                                         </div>
 
                                     {% endif %}
-
 
                                 {% else %}
 
@@ -1258,7 +1230,7 @@
                             </td>
 
 
-                            <!-- CLIENT / ORGANIZATION -->
+                            <!-- CLIENT -->
 
                             <td class="client-organization">
 
@@ -1267,9 +1239,7 @@
                                     {% if transaction.client.organization %}
 
                                         <div class="client-organization-name">
-
                                             {{ transaction.client.organization }}
-
                                         </div>
 
                                     {% else %}
@@ -1291,35 +1261,26 @@
                             </td>
 
 
-                            <!-- ALL PURCHASED ITEMS -->
+                            <!-- PURCHASED ITEMS -->
 
                             <td>
 
                                 <div class="item-list">
 
-
                                     {% for item in transaction.items.all %}
 
                                         <div class="item-purchase">
 
-
-                                            <!-- PRODUCT -->
-
                                             <div class="item-purchase-main">
 
                                                 <div class="item-name">
-
                                                     {{ item.product.product_model }}
-
                                                 </div>
-
 
                                                 {% if item.product.description %}
 
                                                     <div class="item-description">
-
                                                         {{ item.product.description }}
-
                                                     </div>
 
                                                 {% endif %}
@@ -1327,96 +1288,45 @@
                                             </div>
 
 
-                                            <!-- ITEM DETAILS -->
-
                                             <div class="item-purchase-details">
 
-
                                                 <span>
-
-                                                    <span class="item-detail-label">
-                                                        Qty:
-                                                    </span>
-
-                                                    <span class="item-detail-value">
-                                                        {{ item.quantity }}
-                                                    </span>
-
+                                                    <span class="item-detail-label">Qty:</span>
+                                                    <span class="item-detail-value">{{ item.quantity }}</span>
                                                 </span>
 
-
                                                 <span>
-
-                                                    <span class="item-detail-label">
-                                                        Price:
-                                                    </span>
-
-                                                    <span class="item-detail-value">
-                                                        ₱{{ item.price|floatformat:2 }}
-                                                    </span>
-
+                                                    <span class="item-detail-label">Price:</span>
+                                                    <span class="item-detail-value">₱{{ item.price|floatformat:2 }}</span>
                                                 </span>
-
 
                                                 {% if item.discount_percent %}
 
                                                     <span>
-
-                                                        <span class="item-detail-label">
-                                                            Discount:
-                                                        </span>
-
-                                                        <span class="item-detail-value">
-                                                            {{ item.discount_percent|floatformat:2 }}%
-                                                        </span>
-
+                                                        <span class="item-detail-label">Discount:</span>
+                                                        <span class="item-detail-value">{{ item.discount_percent|floatformat:2 }}%</span>
                                                     </span>
 
                                                 {% endif %}
 
-
                                                 <span>
-
-                                                    <span class="item-detail-label">
-                                                        Subtotal:
-                                                    </span>
-
-                                                    <span class="item-detail-value">
-                                                        ₱{{ item.subtotal|floatformat:2 }}
-                                                    </span>
-
+                                                    <span class="item-detail-label">Subtotal:</span>
+                                                    <span class="item-detail-value">₱{{ item.subtotal|floatformat:2 }}</span>
                                                 </span>
-
 
                                                 {% if item.discount_amount %}
 
                                                     <span>
-
-                                                        <span class="item-detail-label">
-                                                            Less:
-                                                        </span>
-
-                                                        <span class="item-detail-value">
-                                                            ₱{{ item.discount_amount|floatformat:2 }}
-                                                        </span>
-
+                                                        <span class="item-detail-label">Less:</span>
+                                                        <span class="item-detail-value">₱{{ item.discount_amount|floatformat:2 }}</span>
                                                     </span>
 
                                                 {% endif %}
 
-
                                                 <span>
-
-                                                    <span class="item-detail-label">
-                                                        Total:
-                                                    </span>
-
-                                                    <span class="item-detail-total">
-                                                        ₱{{ item.total|floatformat:2 }}
-                                                    </span>
-
+                                                    <span class="item-detail-label">Total:</span>
+                                                    <span class="item-detail-total">₱{{ item.total|floatformat:2 }}</span>
                                                 </span>
-
 
                                             </div>
 
@@ -1430,7 +1340,6 @@
 
                                     {% endfor %}
 
-
                                 </div>
 
                             </td>
@@ -1439,11 +1348,9 @@
                             <!-- SUBTOTAL -->
 
                             <td>
-
                                 <span class="money">
                                     ₱{{ transaction.subtotal|floatformat:2 }}
                                 </span>
-
                             </td>
 
 
@@ -1457,13 +1364,10 @@
                                         ₱{{ transaction.discount_amount|floatformat:2 }}
                                     </span>
 
-
                                     {% if transaction.discount_percent %}
 
                                         <span class="discount-percent">
-
                                             {{ transaction.discount_percent|floatformat:2 }}%
-
                                         </span>
 
                                     {% endif %}
@@ -1476,33 +1380,27 @@
                             <!-- TOTAL -->
 
                             <td>
-
                                 <span class="money-total">
                                     ₱{{ transaction.total|floatformat:2 }}
                                 </span>
-
                             </td>
 
 
                             <!-- PAYMENT -->
 
                             <td>
-
                                 <span class="money">
                                     ₱{{ transaction.payment|floatformat:2 }}
                                 </span>
-
                             </td>
 
 
                             <!-- DUE -->
 
                             <td>
-
                                 <span class="money-due">
                                     ₱{{ transaction.amount_due|floatformat:2 }}
                                 </span>
-
                             </td>
 
 
@@ -1528,10 +1426,47 @@
                                         Partial
                                     </span>
 
+                                {% elif transaction.payment_status == "VOID" %}
+
+                                    <span class="status-badge status-void">
+                                        Voided
+                                    </span>
+
                                 {% else %}
 
                                     <span class="status-badge status-unknown">
                                         {{ transaction.get_payment_status_display }}
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- ACTION -->
+
+                            <td>
+
+                                {% if transaction.payment_status != "VOID" %}
+
+                                    <form
+                                        method="POST"
+                                        action="{% url 'void-transaction' transaction.id %}"
+                                        onsubmit="return confirm('Are you sure you want to void transaction #{{ transaction.id }}? The sold items will be returned to inventory.');"
+                                    >
+
+                                        {% csrf_token %}
+
+                                        <button type="submit" class="btn-void">
+                                            Void Transaction
+                                        </button>
+
+                                    </form>
+
+                                {% else %}
+
+                                    <span class="status-badge status-void">
+                                        Voided
                                     </span>
 
                                 {% endif %}
@@ -1549,12 +1484,9 @@
             </div>
 
 
-            <!-- =================================================
-                 PAGINATION
-            ================================================== -->
+            <!-- PAGINATION -->
 
             <div class="pagination-container">
-
 
                 <div class="pagination-info">
 
@@ -1573,22 +1505,17 @@
 
                     <div class="pagination">
 
-
                         <!-- FIRST -->
 
                         {% if page_obj.has_previous %}
 
-                            <a
-                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page=1"
-                            >
+                            <a href="?{% if filter_params %}{{ filter_params }}&{% endif %}page=1">
                                 «
                             </a>
 
                         {% else %}
 
-                            <span class="disabled">
-                                «
-                            </span>
+                            <span class="disabled">«</span>
 
                         {% endif %}
 
@@ -1597,17 +1524,13 @@
 
                         {% if page_obj.has_previous %}
 
-                            <a
-                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.previous_page_number }}"
-                            >
+                            <a href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.previous_page_number }}">
                                 ‹
                             </a>
 
                         {% else %}
 
-                            <span class="disabled">
-                                ‹
-                            </span>
+                            <span class="disabled">‹</span>
 
                         {% endif %}
 
@@ -1624,9 +1547,7 @@
 
                             {% elif page_number >= page_obj.number|add:"-2" and page_number <= page_obj.number|add:"2" %}
 
-                                <a
-                                    href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_number }}"
-                                >
+                                <a href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_number }}">
                                     {{ page_number }}
                                 </a>
 
@@ -1639,17 +1560,13 @@
 
                         {% if page_obj.has_next %}
 
-                            <a
-                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.next_page_number }}"
-                            >
+                            <a href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.next_page_number }}">
                                 ›
                             </a>
 
                         {% else %}
 
-                            <span class="disabled">
-                                ›
-                            </span>
+                            <span class="disabled">›</span>
 
                         {% endif %}
 
@@ -1658,38 +1575,28 @@
 
                         {% if page_obj.has_next %}
 
-                            <a
-                                href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.paginator.num_pages }}"
-                            >
+                            <a href="?{% if filter_params %}{{ filter_params }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
                                 »
                             </a>
 
                         {% else %}
 
-                            <span class="disabled">
-                                »
-                            </span>
+                            <span class="disabled">»</span>
 
                         {% endif %}
-
 
                     </div>
 
                 {% endif %}
-
 
             </div>
 
 
         {% else %}
 
-
-            <!-- =================================================
-                 EMPTY
-            ================================================== -->
+            <!-- EMPTY STATE -->
 
             <div class="empty-state">
-
 
                 <div class="empty-icon">
 
@@ -1701,38 +1608,25 @@
                         stroke-linecap="round"
                         stroke-linejoin="round"
                     >
-
-                        <rect
-                            x="3"
-                            y="4"
-                            width="18"
-                            height="16"
-                            rx="2"
-                        />
-
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
                         <path d="M7 8h10"/>
                         <path d="M7 12h10"/>
                         <path d="M7 16h6"/>
-
                     </svg>
 
                 </div>
-
 
                 <h3 class="empty-title">
                     No transactions found
                 </h3>
 
-
                 <p class="empty-text">
                     No sales transactions match your current filters.
                 </p>
 
-
             </div>
 
         {% endif %}
-
 
     </div>
 

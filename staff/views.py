@@ -847,33 +847,29 @@ def complete_sale(request):
                 # CREATE SALE
                 # =============================================
 
+
                 sale = Sale.objects.create(
-
                     staff=request.user,
-
                     salesperson=salesperson,
-
                     client=client,
-
                     discount_class=discount_class,
-
                     subtotal=sale_subtotal,
-
                     discount_percent=discount_percent,
-
-                    discount_amount=(
-                        total_discount_amount
-                    ),
-
+                    discount_amount=total_discount_amount,
                     total=final_total,
-
                     payment_status=payment_status,
-
                     payment=actual_payment,
-
                     change=actual_change,
-
                 )
+
+                # Generate and save the S.O. number after the sale
+                # has received its database ID.
+                sale_date = sale.created_at.strftime("%Y%m%d")
+
+                sale.sale_number = f"SO-{sale_date}-{sale.pk:03d}"
+
+                sale.save(update_fields=["sale_number"])
+
 
                 # =============================================
                 # CREATE SALE ITEMS
@@ -1089,6 +1085,7 @@ def complete_sale(request):
                 "success": True,
 
                 "sale_id": sale.id,
+                "sale_number": sale.sale_number,
 
                 "date": sale.created_at.strftime(
                     "%b %d, %Y %I:%M %p"

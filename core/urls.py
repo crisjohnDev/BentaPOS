@@ -32,4 +32,6 @@ urlpatterns = [
     path("transactions/", views.transactions, name="transactions"),
     # path("admin-portal-locked/", views.admin_portal_locked, name="admin_portal_locked"),
     path("admin-heartbeat/", views.admin_heartbeat, name="admin_heartbeat"),
+    path("transactions/<int:sale_id>/void/", views.void_transaction, name="void-transaction",),
+    path("transactions/export/", views.export_transactions_excel, name="export-transactions-excel"),
 ]

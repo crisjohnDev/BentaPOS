@@ -1392,6 +1392,128 @@ body {
 
 }
 
+/* =========================================================
+   QUANTITY CONTROL
+========================================================= */
+
+.quantity-control {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+
+    border: 1px solid #343e4c;
+    background: #0b1016;
+
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.quantity-btn {
+    width: 27px;
+    min-width: 27px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: #171e27;
+    color: #e2e8f0;
+
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.quantity-btn:hover {
+    background: #252e39;
+}
+
+.quantity-value {
+    flex: 1;
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-left: 1px solid #29313d;
+    border-right: 1px solid #29313d;
+
+    color: #f8fafc;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Editable quantity input */
+
+.quantity-input {
+    display: block;
+
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+
+    margin: 0;
+    padding: 0 2px;
+
+    border: 0;
+    border-radius: 0;
+    outline: none;
+
+    background: #0b1016;
+    color: #f8fafc;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    text-align: center;
+    box-sizing: border-box;
+
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.quantity-input:focus {
+    background: #111c2b;
+    box-shadow: inset 0 0 0 1px #3b82f6;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* =========================================================
+   RESPONSIVE QUANTITY CONTROL
+========================================================= */
+
+@media (max-width: 600px) {
+    .quantity-control {
+        height: 34px;
+    }
+
+    .quantity-btn {
+        width: 24px;
+        min-width: 24px;
+    }
+
+    .quantity-input {
+        font-size: 12px;
+    }
+}
 
 /* =========================================================
    PRINT RECEIPT
@@ -2704,6 +2826,13 @@ body {
                 Complete Sale
             </button>
 
+            <p
+                id="saleValidationMessage"
+                role="alert"
+                aria-live="polite"
+                style="margin-top: 8px; color: #dc2626; font-size: 12px;"
+            ></p>
+
 
         </div>
 
@@ -2733,7 +2862,7 @@ body {
 
 
             <h3>
-                Sale Receipt
+                Sales Order
             </h3>
 
 
@@ -4090,276 +4219,212 @@ document.addEventListener("DOMContentLoaded", function () {
        RENDER CART
        ========================================================= */
 
-    function renderCart() {
+function renderCart() {
+    if (!cartContainer) {
+        return;
+    }
 
-        if (!cartContainer) {
-            return;
+    if (cart.length === 0) {
+        cartContainer.innerHTML = `
+            <div class="empty-cart">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                >
+                    <path d="M6 7h12l-1 13H7L6 7z"></path>
+                    <path d="M9 7a3 3 0 0 1 6 0"></path>
+                </svg>
+
+                <p>No items in the sale.</p>
+            </div>
+        `;
+
+        if (cartCount) {
+            cartCount.textContent = "0 items";
         }
 
+        updateCompleteButton();
+        return;
+    }
 
-        if (cart.length === 0) {
+    let html = "";
 
-            cartContainer.innerHTML = `
+    cart.forEach(function (item, index) {
+        const lineSubtotal =
+            parseNumber(item.price) *
+            parseNumber(item.quantity);
 
-                <div class="empty-cart">
+        const itemDiscount =
+            getItemDiscountAmount(item);
 
-                    <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.7"
-                    >
-                        <path
-                            d="M6 7h12l-1 13H7L6 7z"
-                        ></path>
+        const lineTotal = Math.max(
+            0,
+            lineSubtotal - itemDiscount
+        );
 
-                        <path
-                            d="M9 7a3 3 0 0 1 6 0"
-                        ></path>
-                    </svg>
+        html += `
+            <div class="cart-item">
 
+                <div class="cart-item-main">
 
-                    <p>
-                        No items in the sale.
-                    </p>
+                    <div class="cart-item-info">
+                        <p class="cart-item-name">
+                            ${escapeHtml(item.name)}
+                        </p>
+
+                        <span class="cart-item-price">
+                            ${formatMoney(item.price)} each
+                        </span>
+                    </div>
+
+                    <div class="cart-item-total">
+                        ${formatMoney(lineTotal)}
+                    </div>
 
                 </div>
 
-            `;
+                <div class="cart-item-controls">
 
+                    <div class="quantity-control">
 
-            if (cartCount) {
+                        <button
+                            type="button"
+                            class="quantity-btn"
+                            onclick="changeQuantity(${index}, -1)"
+                            aria-label="Decrease quantity"
+                        >
+                            −
+                        </button>
 
-                cartCount.textContent =
-                    "0 items";
+                        <input
+                            type="number"
+                            class="quantity-value quantity-input"
+                            value="${parseNumber(item.quantity)}"
+                            min="1"
+                            max="${parseNumber(item.stock)}"
+                            step="1"
+                            inputmode="numeric"
+                            aria-label="Quantity for ${escapeHtml(item.name)}"
+                            onchange="window.updateCartQuantity(${index}, this)"
+                            onkeydown="
+                                if (event.key === 'Enter') {
+                                    this.blur();
+                                }
+                            "
+                        >
 
-            }
-
-
-            updateCompleteButton();
-
-            return;
-
-        }
-
-
-        let html = "";
-
-
-        cart.forEach(
-            function (
-                item,
-                index
-            ) {
-
-                const lineSubtotal =
-                    parseNumber(item.price) *
-                    parseNumber(item.quantity);
-
-
-                const itemDiscount =
-                    getItemDiscountAmount(item);
-
-
-                const lineTotal =
-                    Math.max(
-                        0,
-                        lineSubtotal -
-                        itemDiscount
-                    );
-
-
-                html += `
-
-                    <div class="cart-item">
-
-                        <div class="cart-item-main">
-
-                            <div class="cart-item-info">
-
-                                <p class="cart-item-name">
-                                    ${escapeHtml(
-                                        item.name
-                                    )}
-                                </p>
-
-                                <span class="cart-item-price">
-                                    ${formatMoney(
-                                        item.price
-                                    )}
-                                    each
-                                </span>
-
-                            </div>
-
-
-                            <div class="cart-item-total">
-                                ${formatMoney(
-                                    lineTotal
-                                )}
-                            </div>
-
-                        </div>
-
-
-                        <div class="cart-item-controls">
-
-                            <div class="quantity-control">
-
-                                <button
-                                    type="button"
-                                    class="quantity-btn"
-                                    onclick="changeQuantity(
-                                        ${index},
-                                        -1
-                                    )"
-                                >
-                                    −
-                                </button>
-
-
-                                <div class="quantity-value">
-                                    ${item.quantity}
-                                </div>
-
-
-                                <button
-                                    type="button"
-                                    class="quantity-btn"
-                                    onclick="changeQuantity(
-                                        ${index},
-                                        1
-                                    )"
-                                >
-                                    +
-                                </button>
-
-                            </div>
-
-
-                            <select
-                                class="item-discount-select"
-                                onchange="updateItemDiscount(
-                                    ${index},
-                                    this
-                                )"
-                            >
-
-                                ${getItemDiscountOptions(
-                                    item
-                                )}
-
-                            </select>
-
-
-                            <button
-                                type="button"
-                                class="remove-item-btn"
-                                onclick="removeFromCart(
-                                    ${index}
-                                )"
-                                title="Remove item"
-                            >
-
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path d="M4 7h16"></path>
-
-                                    <path d="M10 11v6"></path>
-
-                                    <path d="M14 11v6"></path>
-
-                                    <path d="M6 7l1 13h10l1-13"></path>
-
-                                    <path d="M9 7V4h6v3"></path>
-                                </svg>
-
-                            </button>
-
-                        </div>
-
-
-                        ${
-                            item.discountPercent > 0
-                                ? `
-
-                                    <div
-                                        class="cart-item-discount-info"
-                                    >
-
-                                        ${escapeHtml(
-                                            item.discountClassCode
-                                        )}
-
-                                        discount:
-
-                                        ${parseNumber(
-                                            item.discountPercent
-                                        ).toFixed(2)}%
-
-                                        ·
-
-                                        -${formatMoney(
-                                            itemDiscount
-                                        )}
-
-                                    </div>
-
-                                `
-                                : ""
-                        }
+                        <button
+                            type="button"
+                            class="quantity-btn"
+                            onclick="changeQuantity(${index}, 1)"
+                            aria-label="Increase quantity"
+                        >
+                            +
+                        </button>
 
                     </div>
 
-                `;
+                    <select
+                        class="item-discount-select"
+                        onchange="updateItemDiscount(${index}, this)"
+                    >
+                        ${getItemDiscountOptions(item)}
+                    </select>
 
-            }
+                    <button
+                        type="button"
+                        class="remove-item-btn"
+                        onclick="removeFromCart(${index})"
+                        title="Remove item"
+                        aria-label="Remove ${escapeHtml(item.name)}"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M4 7h16"></path>
+                            <path d="M10 11v6"></path>
+                            <path d="M14 11v6"></path>
+                            <path d="M6 7l1 13h10l1-13"></path>
+                            <path d="M9 7V4h6v3"></path>
+                        </svg>
+                    </button>
+
+                </div>
+
+                ${
+                    parseNumber(item.discountPercent) > 0
+                        ? `
+                            <div class="cart-item-discount-info">
+                                ${escapeHtml(item.discountClassCode || "")}
+                                discount:
+                                ${parseNumber(item.discountPercent).toFixed(2)}%
+                                · -${formatMoney(itemDiscount)}
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+        `;
+    });
+
+    cartContainer.innerHTML = html;
+
+    if (cartCount) {
+        const totalItems = cart.reduce(
+            function (sum, item) {
+                return sum + parseNumber(item.quantity);
+            },
+            0
         );
 
-
-        cartContainer.innerHTML =
-            html;
-
-
-        if (cartCount) {
-
-            const totalItems =
-                cart.reduce(
-                    function (
-                        sum,
-                        item
-                    ) {
-
-                        return (
-                            sum +
-                            item.quantity
-                        );
-
-                    },
-                    0
-                );
-
-
-            cartCount.textContent =
-                totalItems +
-                " item" +
-                (
-                    totalItems === 1
-                        ? ""
-                        : "s"
-                );
-
-        }
-
-
-        updateCompleteButton();
-
+        cartCount.textContent =
+            totalItems +
+            " item" +
+            (totalItems === 1 ? "" : "s");
     }
 
+    updateCompleteButton();
+}
+
+
+window.updateCartQuantity = function (index, input) {
+    if (!cart[index]) {
+        return;
+    }
+
+    const value = input.value.trim();
+    const quantity = Number(value);
+    const stock = parseNumber(cart[index].stock);
+
+    if (
+        value === "" ||
+        !Number.isFinite(quantity) ||
+        !Number.isInteger(quantity) ||
+        quantity < 1
+    ) {
+        input.value = cart[index].quantity;
+        return;
+    }
+
+    if (quantity > stock) {
+        alert("Quantity cannot exceed available stock: " + stock);
+        input.value = cart[index].quantity;
+        return;
+    }
+
+    // Update the cart quantity.
+    cart[index].quantity = quantity;
+
+    // Re-render the cart and recalculate all totals.
+    renderCart();
+    updateTotals();
+};
 
     /* =========================================================
        MAIN DISCOUNT CLASS
@@ -5020,21 +5085,23 @@ document.addEventListener("DOMContentLoaded", function () {
        ========================================================= */
 
     function updateCompleteButton() {
-
-        if (
-            !completeSaleBtn
-        ) {
+        if (!completeSaleBtn) {
             return;
         }
 
+        const validation = validateSale();
 
-        const validation =
-            validateSale();
+        completeSaleBtn.disabled = !validation.valid;
 
+        const messageElement = document.getElementById(
+            "saleValidationMessage"
+        );
 
-        completeSaleBtn.disabled =
-            !validation.valid;
-
+        if (messageElement) {
+            messageElement.textContent = validation.valid
+                ? ""
+                : validation.message;
+        }
     }
 
 
@@ -5378,560 +5445,415 @@ document.addEventListener("DOMContentLoaded", function () {
        RECEIPT
        ========================================================= */
 
-    function showReceipt(
-        result,
-        totals
-    ) {
 
-        if (
-            !receiptContent ||
-            !receiptModal
-        ) {
-            return;
-        }
+function showReceipt(result, totals) {
+    if (!receiptContent || !receiptModal) {
+        return;
+    }
 
+    // =========================================================
+    // DEBUG: CHECK THE DJANGO RESPONSE
+    // =========================================================
 
-        const saleNumber =
-            result.sale_number ||
-            result.receipt_number ||
-            result.reference ||
-            "SALE";
+    console.log("Django sale response:", result);
 
+    // =========================================================
+    // SALES ORDER NUMBER
+    // Supports common Django response field names.
+    // =========================================================
 
-        const salespersonText =
-            salesmanName
-                ? salesmanName.options[
-                    salesmanName.selectedIndex
-                ]?.text || ""
-                : "";
+    const saleNumberCandidates = [
+        result?.sale_number,
+        result?.receipt_number,
+        result?.so_number,
+        result?.order_number,
+        result?.reference,
+        result?.sale?.sale_number,
+        result?.sale?.receipt_number,
+        result?.sale?.so_number,
+        result?.sale?.order_number,
+        result?.data?.sale_number,
+        result?.data?.receipt_number
+    ];
 
+    const saleNumber = String(
+        saleNumberCandidates.find(function (value) {
+            return (
+                value !== undefined &&
+                value !== null &&
+                String(value).trim() !== ""
+            );
+        }) ?? ""
+    ).trim();
 
-        const selectedClientOption =
-            clientSelect
-                ? clientSelect.options[
-                    clientSelect.selectedIndex
-                ]
-                : null;
+    if (!saleNumber) {
+        console.error(
+            "S.O. number is missing from the Django response.",
+            result
+        );
+    }
 
+    // =========================================================
+    // SALESPERSON
+    // =========================================================
 
-        const clientOrganization =
-            selectedClientOption
-                ? selectedClientOption.dataset.organization || ""
-                : "";
+    const salespersonText = salesmanName
+        ? salesmanName.options[
+            salesmanName.selectedIndex
+        ]?.text || ""
+        : "";
 
+    // =========================================================
+    // CLIENT INFORMATION
+    // =========================================================
 
-        const clientText =
-            clientOrganization ||
-            selectedClientOption?.text ||
-            "Walk-in Customer";
+    const selectedClientOption = clientSelect
+        ? clientSelect.options[
+            clientSelect.selectedIndex
+        ]
+        : null;
 
+    const clientOrganization = selectedClientOption
+        ? selectedClientOption.dataset.organization || ""
+        : "";
 
-        const paymentStatusText =
-            paymentStatus?.value ||
-            "PAID";
+    const clientText =
+        clientOrganization ||
+        selectedClientOption?.text ||
+        "Walk-in Customer";
 
+    // =========================================================
+    // PAYMENT STATUS
+    // =========================================================
 
-        let itemsHtml = "";
+    const paymentStatusText =
+        paymentStatus?.value || "PAID";
 
+    // =========================================================
+    // RECEIPT ITEMS
+    // =========================================================
 
-        cart.forEach(
-            function (item) {
+    let itemsHtml = "";
 
-                const lineSubtotal =
-                    parseNumber(item.price) *
-                    parseNumber(item.quantity);
+    cart.forEach(function (item) {
+        const lineSubtotal =
+            parseNumber(item.price) *
+            parseNumber(item.quantity);
 
+        const itemDiscount =
+            getItemDiscountAmount(item);
 
-                const itemDiscount =
-                    getItemDiscountAmount(item);
-
-
-                const lineTotal =
-                    Math.max(
-                        0,
-                        lineSubtotal -
-                        itemDiscount
-                    );
-
-
-                itemsHtml += `
-
-                    <tr>
-
-                        <td class="receipt-item">
-
-                            <strong>
-                                ${escapeHtml(
-                                    item.name
-                                )}
-                            </strong>
-
-                            <div class="receipt-item-detail">
-
-                                ${item.quantity}
-                                ×
-                                ${formatMoney(
-                                    item.price
-                                )}
-
-                            </div>
-
-                        </td>
-
-
-                        <td class="receipt-number">
-
-                            ${formatMoney(
-                                lineSubtotal
-                            )}
-
-                        </td>
-
-
-                        <td class="receipt-number">
-
-                            ${
-                                itemDiscount > 0
-                                    ? "-" +
-                                      formatMoney(
-                                          itemDiscount
-                                      )
-                                    : formatMoney(0)
-                            }
-
-                        </td>
-
-
-                        <td class="receipt-number receipt-amount">
-
-                            ${formatMoney(
-                                lineTotal
-                            )}
-
-                        </td>
-
-                    </tr>
-
-                `;
-
-            }
+        const lineTotal = Math.max(
+            0,
+            lineSubtotal - itemDiscount
         );
 
+        itemsHtml += `
+            <tr>
+                <td class="receipt-item">
+                    <strong>
+                        ${escapeHtml(item.name)}
+                    </strong>
 
-        const receiptDate =
-            new Date();
-
-
-        receiptContent.innerHTML = `
-
-            <div class="official-receipt">
-
-
-                <!-- =================================================
-                     HEADER
-                ================================================== -->
-
-                <div class="receipt-header">
-
-                    <div class="receipt-logo-wrapper">
-
-                        <img
-                            src="/static/images/1789630110339.jpg"
-                            alt="BentaPOS Logo"
-                            class="receipt-logo"
-                            onerror="this.style.display='none';"
-                        >
-
+                    <div class="receipt-item-detail">
+                        ${escapeHtml(String(item.quantity))}
+                        ×
+                        ${formatMoney(item.price)}
                     </div>
+                </td>
 
+                <td class="receipt-number">
+                    ${formatMoney(lineSubtotal)}
+                </td>
 
-                    <div class="receipt-business">
+                <td class="receipt-number">
+                    ${
+                        itemDiscount > 0
+                            ? "-" + formatMoney(itemDiscount)
+                            : formatMoney(0)
+                    }
+                </td>
 
-                        <div class="receipt-business-name">
-                            BentaPOS
-                        </div>
+                <td class="receipt-number receipt-amount">
+                    ${formatMoney(lineTotal)}
+                </td>
+            </tr>
+        `;
+    });
 
+    // =========================================================
+    // DATE AND TIME
+    // Prefer the date returned by Django.
+    // =========================================================
 
-                        <div class="receipt-business-subtitle">
-                            Point of Sale System
-                        </div>
+    const receiptDateValue =
+        result?.sale_date ||
+        result?.created_at ||
+        result?.date ||
+        result?.sale?.sale_date ||
+        result?.sale?.created_at ||
+        null;
 
+    const parsedDate = receiptDateValue
+        ? new Date(receiptDateValue)
+        : new Date();
 
-                        <div class="receipt-title">
-                            OFFICIAL RECEIPT
-                        </div>
+    const receiptDate = Number.isNaN(
+        parsedDate.getTime()
+    )
+        ? new Date()
+        : parsedDate;
 
-                    </div>
+    const formattedDate = receiptDate.toLocaleDateString(
+        "en-PH",
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    );
 
+    const formattedTime = receiptDate.toLocaleTimeString(
+        "en-PH",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 
-                    <div class="receipt-header-right">
+    // =========================================================
+    // RECEIPT HTML
+    // =========================================================
 
-                        <div class="receipt-label">
-                            RECEIPT NO.
-                        </div>
+    receiptContent.innerHTML = `
+        <div class="official-receipt">
 
+            <!-- HEADER -->
 
-                        <div class="receipt-number-large">
-                            ${escapeHtml(
-                                saleNumber
-                            )}
-                        </div>
-
-                    </div>
-
+            <div class="receipt-header">
+                <div class="receipt-logo-wrapper">
+                    <img
+                        src="/static/images/1789630110339.jpg"
+                        alt="BentaPOS Logo"
+                        class="receipt-logo"
+                        onerror="this.style.display='none';"
+                    >
                 </div>
 
-
-                <!-- =================================================
-                     CUSTOMER INFORMATION
-                ================================================== -->
-
-                <div class="receipt-info">
-
-                    <div class="receipt-info-row">
-
-                        <div class="receipt-info-group">
-
-                            <span class="receipt-info-label">
-                                Client Name
-                            </span>
-
-
-                            <strong>
-                                ${escapeHtml(
-                                    clientText
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-info-group">
-
-                            <span class="receipt-info-label">
-                                Date
-                            </span>
-
-
-                            <strong>
-                                ${receiptDate.toLocaleDateString(
-                                    "en-PH",
-                                    {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric"
-                                    }
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-info-group">
-
-                            <span class="receipt-info-label">
-                                Time
-                            </span>
-
-
-                            <strong>
-                                ${receiptDate.toLocaleTimeString(
-                                    "en-PH",
-                                    {
-                                        hour: "2-digit",
-                                        minute: "2-digit"
-                                    }
-                                )}
-                            </strong>
-
-                        </div>
-
+                <div class="receipt-business">
+                    <div class="receipt-business-subtitle">
+                        MAP Distribution Inc
                     </div>
 
-
-                    <div class="receipt-info-row">
-
-                        <div class="receipt-info-group">
-
-                            <span class="receipt-info-label">
-                                Salesperson
-                            </span>
-
-
-                            <strong>
-                                ${escapeHtml(
-                                    salespersonText
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-info-group">
-
-                            <span class="receipt-info-label">
-                                Payment Status
-                            </span>
-
-
-                            <strong>
-                                ${escapeHtml(
-                                    paymentStatusText
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-info-group">
-                        </div>
-
+                    <div class="receipt-title">
+                        SALES ORDER
                     </div>
-
                 </div>
 
-
-                <!-- =================================================
-                     ITEMS
-                ================================================== -->
-
-                <table class="receipt-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Item / Description
-                            </th>
-
-
-                            <th class="receipt-number">
-                                Amount
-                            </th>
-
-
-                            <th class="receipt-number">
-                                Discount
-                            </th>
-
-
-                            <th class="receipt-number">
-                                Net Amount
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        ${itemsHtml}
-
-                    </tbody>
-
-                </table>
-
-
-                <!-- =================================================
-                     SUMMARY
-                ================================================== -->
-
-                <div class="receipt-summary">
-
-                    <div class="receipt-summary-left">
-
-                        <div class="receipt-note">
-                            Thank you for your purchase.
-                        </div>
-
-
-                        <div class="receipt-note-small">
-                            Please retain this receipt for your records.
-                        </div>
-
+                <div class="receipt-header-right">
+                    <div class="receipt-label">
+                        S.O NO.
                     </div>
 
-
-                    <div class="receipt-summary-right">
-
-                        <div class="receipt-summary-row">
-
-                            <span>
-                                Subtotal
-                            </span>
-
-
-                            <strong>
-                                ${formatMoney(
-                                    totals.subtotal
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-summary-row">
-
-                            <span>
-                                Total Discount
-                            </span>
-
-
-                            <strong>
-                                -${formatMoney(
-                                    totals.totalDiscount
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-summary-row receipt-total">
-
-                            <strong>
-                                TOTAL
-                            </strong>
-
-
-                            <strong>
-                                ${formatMoney(
-                                    totals.total
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-summary-row">
-
-                            <span>
-                                Cash Received
-                            </span>
-
-
-                            <strong>
-                                ${formatMoney(
-                                    totals.cash
-                                )}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="receipt-summary-row">
-
-                            <span>
-                                Change
-                            </span>
-
-
-                            <strong>
-                                ${formatMoney(
-                                    totals.change
-                                )}
-                            </strong>
-
-                        </div>
-
+                    <div class="receipt-number-large">
+                        ${escapeHtml(saleNumber || "UNAVAILABLE")}
                     </div>
-
                 </div>
-
-
-                <!-- =================================================
-                     SIGNATURES
-                ================================================== -->
-
-                <div class="receipt-signatures">
-
-                    <div class="receipt-signature">
-
-                        <div class="signature-line">
-                        </div>
-
-
-                        <div class="signature-title">
-                            CHECKED BY
-                        </div>
-
-
-                        <div class="signature-name">
-                            Signature / Printed Name
-                        </div>
-
-                    </div>
-
-
-                    <div class="receipt-signature">
-
-                        <div class="signature-line">
-                        </div>
-
-
-                        <div class="signature-title">
-                            APPROVED BY
-                        </div>
-
-
-                        <div class="signature-name">
-                            Signature / Printed Name
-                        </div>
-
-                    </div>
-
-
-                    <div class="receipt-signature">
-
-                        <div class="signature-line">
-                        </div>
-
-
-                        <div class="signature-title">
-                            RELEASED BY
-                        </div>
-
-
-                        <div class="signature-name">
-                            Signature / Printed Name
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- =================================================
-                     FOOTER
-                ================================================== -->
-
-                <div class="receipt-footer">
-
-                    <span>
-                        OFFICIAL RECEIPT
-                    </span>
-
-
-                    <span>
-                        ${escapeHtml(
-                            saleNumber
-                        )}
-                    </span>
-
-                </div>
-
-
             </div>
 
-        `;
+            <!-- CUSTOMER INFORMATION -->
 
+            <div class="receipt-info">
+                <div class="receipt-info-row">
+                    <div class="receipt-info-group">
+                        <span class="receipt-info-label">
+                            Client Name
+                        </span>
 
-        receiptModal.classList.add(
-            "active"
-        );
+                        <strong>
+                            ${escapeHtml(clientText)}
+                        </strong>
+                    </div>
 
-    }
+                    <div class="receipt-info-group">
+                        <span class="receipt-info-label">
+                            Date
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(formattedDate)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-info-group">
+                        <span class="receipt-info-label">
+                            Time
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(formattedTime)}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="receipt-info-row">
+                    <div class="receipt-info-group">
+                        <span class="receipt-info-label">
+                            Salesperson
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(salespersonText)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-info-group">
+                        <span class="receipt-info-label">
+                            Payment Status
+                        </span>
+
+                        <strong>
+                            ${escapeHtml(paymentStatusText)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-info-group"></div>
+                </div>
+            </div>
+
+            <!-- ITEMS -->
+
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th>Item / Description</th>
+                        <th class="receipt-number">Amount</th>
+                        <th class="receipt-number">Discount</th>
+                        <th class="receipt-number">Net Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+
+            <!-- SUMMARY -->
+
+            <div class="receipt-summary">
+                <div class="receipt-summary-left">
+                    <div class="receipt-note">
+                        Thank you for your purchase.
+                    </div>
+
+                    <div class="receipt-note-small">
+                        Please retain this receipt for your records.
+                    </div>
+                </div>
+
+                <div class="receipt-summary-right">
+                    <div class="receipt-summary-row">
+                        <span>Subtotal</span>
+
+                        <strong>
+                            ${formatMoney(totals.subtotal)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-summary-row">
+                        <span>Total Discount</span>
+
+                        <strong>
+                            -${formatMoney(totals.totalDiscount)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-summary-row receipt-total">
+                        <strong>TOTAL</strong>
+
+                        <strong>
+                            ${formatMoney(totals.total)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-summary-row">
+                        <span>Cash Received</span>
+
+                        <strong>
+                            ${formatMoney(totals.cash)}
+                        </strong>
+                    </div>
+
+                    <div class="receipt-summary-row">
+                        <span>Change</span>
+
+                        <strong>
+                            ${formatMoney(totals.change)}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIGNATURES -->
+
+            <div class="receipt-signatures">
+                <div class="receipt-signature">
+                    <div class="signature-line"></div>
+
+                    <div class="signature-title">
+                        CHECKED BY
+                    </div>
+
+                    <div class="signature-name">
+                        Signature / Printed Name
+                    </div>
+                </div>
+
+                <div class="receipt-signature">
+                    <div class="signature-line"></div>
+
+                    <div class="signature-title">
+                        APPROVED BY
+                    </div>
+
+                    <div class="signature-name">
+                        Signature / Printed Name
+                    </div>
+                </div>
+
+                <div class="receipt-signature">
+                    <div class="signature-line"></div>
+
+                    <div class="signature-title">
+                        RELEASED BY
+                    </div>
+
+                    <div class="signature-name">
+                        Signature / Printed Name
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+
+            <div class="receipt-footer">
+                <span>SALES ORDER</span>
+
+                <span>
+                    ${escapeHtml(saleNumber || "UNAVAILABLE")}
+                </span>
+            </div>
+
+        </div>
+    `;
+
+    // =========================================================
+    // SHOW RECEIPT MODAL
+    // =========================================================
+
+    receiptModal.classList.add("active");
+}
+
 
 
     /* =========================================================

@@ -1,5 +1,5 @@
 from decimal import Decimal
-
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -42,33 +42,46 @@ class UserProfile(models.Model):
 
 
 class AdminPortalLock(models.Model):
+    """
+    Tracks whether the administrator portal is occupied.
+    """
+
     locked = models.BooleanField(default=False)
 
     session_key = models.CharField(
-        max_length=255,
+        max_length=40,
         blank=True,
-        null=True
+        null=True,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="admin_portal_locks",
     )
 
     ip_address = models.GenericIPAddressField(
+        null=True,
         blank=True,
-        null=True
     )
 
     last_activity = models.DateTimeField(
+        null=True,
         blank=True,
-        null=True
     )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "Admin Portal Lock"
 
     class Meta:
         verbose_name = "Admin Portal Lock"
-        verbose_name_plural = "Admin Portal Locks"
+        verbose_name_plural = "Admin Portal Lock"
+
+    def __str__(self):
+        return (
+            "Admin Portal Locked"
+            if self.locked
+            else "Admin Portal Available"
+        )
 
 
 # =========================================================
@@ -543,10 +556,20 @@ class InventoryTransaction(models.Model):
 
 class Sale(models.Model):
 
+    sale_number = models.CharField(
+        max_length=32,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        db_index=True,
+    )
+
     PAYMENT_STATUS_CHOICES = [
         ("PAID", "Paid"),
         ("UNPAID", "Unpaid"),
         ("PARTIAL", "Partially Paid"),
+        ("VOID", "Voided"),
     ]
 
     # -----------------------------------------------------
@@ -596,6 +619,8 @@ class Sale(models.Model):
         blank=True,
         related_name="sales"
     )
+
+    discount = models.CharField(max_length=100, null=True, blank=True)
 
     # -----------------------------------------------------
     # DISCOUNT CLASS USED

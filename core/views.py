@@ -1,3 +1,9 @@
+import io
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
+from django.utils.dateparse import parse_date
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
@@ -25,8 +31,9 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 import os
 import json
-from django.db import models
+from django.db import models, transaction
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 
 def is_superuser(user):
@@ -3245,7 +3252,9 @@ def inventory_history(request):
 
             Q(notes__icontains=search) |
 
-            Q(created_by__username__icontains=search)
+            Q(created_by__username__icontains=search) |
+            
+            Q(created_by__sale_number__icontains=search)
 
         )
 
@@ -6548,3 +6557,501 @@ def transactions(request):
         "transactions/transactions.html",
         context
     )
+
+
+# =========================================================
+# VOID SALE / RESTORE INVENTORY
+# =========================================================
+
+@login_required
+@require_POST
+def void_transaction(request, sale_id):
+    """
+    Void a sale and return its sold quantities to inventory.
+
+    - Only POST requests are accepted.
+    - A sale can only be voided once.
+    - Stock restoration and status update are atomic.
+    - An inventory transaction is recorded for every product.
+    """
+
+    try:
+        with transaction.atomic():
+
+            # Lock the sale to prevent simultaneous void requests.
+            sale = get_object_or_404(
+                Sale.objects.select_for_update(),
+                pk=sale_id,
+            )
+
+            # Never restore the same sale's stock twice.
+            if sale.payment_status == "VOID":
+                messages.warning(
+                    request,
+                    f"Sale #{sale.id} has already been voided.",
+                )
+                return redirect("transactions")
+
+            # Aggregate quantities in case the same product
+            # appears in more than one sale-item row.
+            sale_items = (
+                SaleItem.objects
+                .filter(sale=sale)
+                .values("product_id")
+                .annotate(total_quantity=models.Sum("quantity"))
+                .order_by("product_id")
+            )
+
+            # Lock each product before changing its stock.
+            for sale_item in sale_items:
+                product = get_object_or_404(
+                    Product.objects.select_for_update(),
+                    pk=sale_item["product_id"],
+                )
+
+                quantity_to_return = sale_item["total_quantity"]
+
+                previous_qty = product.qty
+                product.qty = previous_qty + quantity_to_return
+                product.save(update_fields=["qty", "updated_at"])
+
+                # Record the stock restoration for auditing.
+                InventoryTransaction.objects.create(
+                    product=product,
+                    transaction_type="IN",
+                    quantity=quantity_to_return,
+                    previous_qty=previous_qty,
+                    new_qty=product.qty,
+                    reference=(
+                        sale.sale_number or f"SALE-{sale.id}"
+                    ),
+                    notes=(
+                        f"Inventory restored because sale "
+                        f"#{sale.id} was voided."
+                    ),
+                    created_by=request.user,
+                )
+
+            # Preserve the sale and its payment information
+            # for audit purposes; only change its status.
+            sale.payment_status = "VOID"
+            sale.save(update_fields=["payment_status"])
+
+        messages.success(
+            request,
+            f"Sale #{sale.id} was voided and inventory was restored.",
+        )
+
+    except Exception:
+        # Log the exception in your server logs in production.
+        # The atomic block rolls back stock, inventory records,
+        # and the sale status if an error occurs.
+        messages.error(
+            request,
+            "Unable to void this transaction. No inventory changes were saved.",
+        )
+
+    return redirect("transactions")
+
+
+
+def export_transactions_excel(request):
+
+    # =====================================================
+    # 1. GET FILTERS
+    # =====================================================
+
+    search = request.GET.get("search", "").strip()
+    salesperson = request.GET.get("salesperson", "").strip()
+    payment_status = request.GET.get("payment_status", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+
+    # =====================================================
+    # 2. TRANSACTIONS QUERYSET
+    # =====================================================
+
+    sales = Sale.objects.select_related(
+        "staff",
+        "salesperson",
+        "client",
+        "discount_class",
+    ).prefetch_related(
+        "items__product"
+    ).all()
+
+    if search:
+
+        search_filter = (
+            Q(sale_number__icontains=search)
+            | Q(salesperson__first_name__icontains=search)
+            | Q(salesperson__last_name__icontains=search)
+            | Q(client__first_name__icontains=search)
+            | Q(client__last_name__icontains=search)
+            | Q(client__organization__icontains=search)
+            | Q(staff__username__icontains=search)
+        )
+
+        if search.isdigit():
+            search_filter |= Q(id=int(search))
+
+        sales = sales.filter(search_filter)
+
+    if salesperson:
+        sales = sales.filter(
+            salesperson_id=salesperson
+        )
+
+    if payment_status:
+        sales = sales.filter(
+            payment_status=payment_status
+        )
+
+    parsed_from = parse_date(date_from) if date_from else None
+    parsed_to = parse_date(date_to) if date_to else None
+
+    if parsed_from:
+        sales = sales.filter(
+            created_at__date__gte=parsed_from
+        )
+
+    if parsed_to:
+        sales = sales.filter(
+            created_at__date__lte=parsed_to
+        )
+
+    sales = sales.order_by("-created_at")
+
+    # =====================================================
+    # 3. CREATE WORKBOOK
+    # =====================================================
+
+    workbook = Workbook()
+
+    ws_sales = workbook.active
+    ws_sales.title = "Sales Transactions"
+
+    ws_items = workbook.create_sheet(
+        "Purchased Items"
+    )
+
+    ws_products = workbook.create_sheet(
+        "Product Inventory"
+    )
+
+    ws_inventory = workbook.create_sheet(
+        "Inventory Movements"
+    )
+
+    # =====================================================
+    # 4. EXCEL FORMATTING
+    # =====================================================
+
+    header_fill = PatternFill(
+        fill_type="solid",
+        fgColor="1F2937"
+    )
+
+    header_font = Font(
+        bold=True,
+        color="FFFFFF",
+        size=10
+    )
+
+    def format_sheet(sheet, headers):
+
+        sheet.append(headers)
+
+        for cell in sheet[1]:
+
+            cell.fill = header_fill
+            cell.font = header_font
+
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center"
+            )
+
+        sheet.freeze_panes = "A2"
+        sheet.auto_filter.ref = sheet.dimensions
+        sheet.sheet_view.showGridLines = False
+
+    def finish_sheet(sheet):
+
+        for column_cells in sheet.columns:
+
+            max_length = 0
+
+            column_letter = get_column_letter(
+                column_cells[0].column
+            )
+
+            for cell in column_cells:
+
+                value = cell.value
+
+                if value is not None:
+                    max_length = max(
+                        max_length,
+                        len(str(value))
+                    )
+
+            sheet.column_dimensions[
+                column_letter
+            ].width = min(
+                max(max_length + 3, 14),
+                40
+            )
+
+    def excel_datetime(value):
+
+        if not value:
+            return None
+
+        if timezone.is_aware(value):
+            return timezone.make_naive(
+                timezone.localtime(value)
+            )
+
+        return value
+
+    # =====================================================
+    # 5. SALES TRANSACTIONS SHEET
+    # =====================================================
+
+    format_sheet(ws_sales, [
+        "Transaction ID",
+        "S.O. Number",
+        "Date",
+        "Time",
+        "Staff",
+        "Salesperson",
+        "Salesperson Contact",
+        "Client",
+        "Organization",
+        "Client Contact",
+        "Discount Class",
+        "Discount Description",
+        "Subtotal",
+        "Discount Percentage",
+        "Discount Amount",
+        "Total",
+        "Payment",
+        "Change",
+        "Amount Due",
+        "Payment Status",
+        "Notes",
+    ])
+
+    for sale in sales:
+
+        created = timezone.localtime(
+            sale.created_at
+        )
+
+        salesperson_name = (
+            sale.salesperson.full_name
+            if sale.salesperson
+            else "No salesperson"
+        )
+
+        client_name = (
+            sale.client.full_name
+            if sale.client
+            else "Walk-in Customer"
+        )
+
+        ws_sales.append([
+            sale.id,
+            sale.sale_number or "N/A",
+            excel_datetime(sale.created_at),
+            created.strftime("%I:%M %p"),
+            sale.staff.username if sale.staff else "N/A",
+            salesperson_name,
+            sale.salesperson.contact_number
+                if sale.salesperson else "",
+            client_name,
+            sale.client.organization
+                if sale.client else "",
+            sale.client.contact_number
+                if sale.client else "",
+            sale.discount_class.code
+                if sale.discount_class else "",
+            sale.discount or "",
+            float(sale.subtotal),
+            float(sale.discount_percent),
+            float(sale.discount_amount),
+            float(sale.total),
+            float(sale.payment),
+            float(sale.change),
+            float(sale.amount_due),
+            sale.get_payment_status_display(),
+            sale.notes or "",
+        ])
+
+    # =====================================================
+    # 6. PURCHASED ITEMS SHEET
+    # =====================================================
+
+    format_sheet(ws_items, [
+        "Transaction ID",
+        "S.O. Number",
+        "Transaction Date",
+        "Product ID",
+        "Product Model",
+        "Category",
+        "Description",
+        "Quantity Sold",
+        "Selling Price",
+        "Gross Subtotal",
+        "Discount Percentage",
+        "Discount Amount",
+        "Final Item Total",
+        "Current Product Price",
+        "Current Stock",
+        "Current Stock Value",
+    ])
+
+    for sale in sales:
+
+        for item in sale.items.all():
+
+            product = item.product
+
+            ws_items.append([
+                sale.id,
+                sale.sale_number or "N/A",
+                excel_datetime(sale.created_at),
+                product.id,
+                product.product_model,
+                product.category,
+                product.description or "",
+                item.quantity,
+                float(item.price),
+                float(item.subtotal),
+                float(item.discount_percent),
+                float(item.discount_amount),
+                float(item.total),
+                float(product.price),
+                product.qty,
+                float(product.stock_value),
+            ])
+
+    # =====================================================
+    # 7. PRODUCT INVENTORY SHEET
+    # =====================================================
+
+    format_sheet(ws_products, [
+        "Product ID",
+        "Product Model",
+        "Category",
+        "Description",
+        "Current Selling Price",
+        "Current Stock",
+        "Low Stock Threshold",
+        "Stock Value",
+        "Stock Status",
+        "Created At",
+        "Updated At",
+    ])
+
+    products = Product.objects.all().order_by(
+        "product_model"
+    )
+
+    for product in products:
+
+        ws_products.append([
+            product.id,
+            product.product_model,
+            product.category,
+            product.description or "",
+            float(product.price),
+            product.qty,
+            product.low_stock_threshold,
+            float(product.stock_value),
+            product.stock_status_display,
+            excel_datetime(product.created_at),
+            excel_datetime(product.updated_at),
+        ])
+
+    # =====================================================
+    # 8. INVENTORY MOVEMENTS SHEET
+    # =====================================================
+
+    format_sheet(ws_inventory, [
+        "Inventory Transaction ID",
+        "Product ID",
+        "Product Model",
+        "Transaction Type",
+        "Quantity",
+        "Previous Stock",
+        "New Stock",
+        "Reference",
+        "Notes",
+        "Created By",
+        "Date",
+    ])
+
+    inventory_transactions = (
+        InventoryTransaction.objects
+        .select_related(
+            "product",
+            "created_by"
+        )
+        .order_by("-created_at")
+    )
+
+    for movement in inventory_transactions:
+
+        ws_inventory.append([
+            movement.id,
+            movement.product_id,
+            movement.product.product_model,
+            movement.get_transaction_type_display(),
+            movement.quantity,
+            movement.previous_qty,
+            movement.new_qty,
+            movement.reference or "",
+            movement.notes or "",
+            movement.created_by.username
+                if movement.created_by else "N/A",
+            excel_datetime(movement.created_at),
+        ])
+
+    # =====================================================
+    # 9. FORMAT ALL SHEETS
+    # =====================================================
+
+    for sheet in workbook.worksheets:
+
+        finish_sheet(sheet)
+
+    # =====================================================
+    # 10. DOWNLOAD EXCEL FILE
+    # =====================================================
+
+    output = io.BytesIO()
+
+    workbook.save(output)
+
+    output.seek(0)
+
+    filename = (
+        f"BentaPOS_Complete_Export_"
+        f"{timezone.localdate().strftime('%Y%m%d')}.xlsx"
+    )
+
+    response = HttpResponse(
+        output.getvalue(),
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="{filename}"'
+    )
+
+    return response
